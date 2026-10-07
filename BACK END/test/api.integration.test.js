@@ -26,6 +26,8 @@ test('API bin monitoring and collection assignment workflow', async t => {
 
   let server;
   let generatedEvidencePath;
+  const previousDeviceKey = process.env.DEVICE_KEY;
+  process.env.DEVICE_KEY = 'workflow-test-device-key';
   try {
     await mongoose.connection.dropDatabase();
     await Promise.all([Bin.syncIndexes(), CollectionRequest.syncIndexes(), User.syncIndexes(), Report.syncIndexes()]);
@@ -64,6 +66,17 @@ test('API bin monitoring and collection assignment workflow', async t => {
     const adminToken = token(admin);
     const driver1Token = token(driver1);
     const driver2Token = token(driver2);
+    const deviceCall = async (route, method = 'GET', body, deviceKey = process.env.DEVICE_KEY) => {
+      const response = await fetch(base + route, {
+        method,
+        headers: Object.assign(
+          { 'Content-Type': 'application/json' },
+          deviceKey ? { 'x-device-key': deviceKey } : {}
+        ),
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+      return { status: response.status, body: await response.json() };
+    };
 
     const collectionRequest = {
       fullName: 'Test Requester',
@@ -180,10 +193,12 @@ test('API bin monitoring and collection assignment workflow', async t => {
     assert.equal((await call(`/driver/tasks/${task._id}/status`, 'PATCH', { status: 'in-progress' }, driver1Token)).body.data.status, 'in-progress');
     assert.equal((await call(`/driver/tasks/${task._id}/status`, 'PATCH', { status: 'completed' }, driver1Token)).body.data.status, 'completed');
     let currentBin = (await call(`/bins/${bin._id}`)).body.data;
-    assert.equal(currentBin.fillLevel, 90);
-    assert.equal(currentBin.collectionState, 'completed-awaiting-reading');
+    assert.equal(currentBin.fillLevel, 0);
+    assert.equal(currentBin.status, 'available');
+    assert.equal(currentBin.collectionState, 'none');
     assert.ok(currentBin.lastCollectionAt);
     assert.equal(currentBin.fillCondition, 'awaiting-reading');
+    assert.equal(currentBin.sensorDeviceState, 'AWAITING_RESUME');
     assert.equal((await call('/stats')).body.data.bins.collectionNeeded, 0);
     assert.equal((await call('/collection-requests/from-bin', 'POST', { binId: bin._id, driverId: driver2._id }, adminToken)).status, 409);
 
@@ -199,10 +214,83 @@ test('API bin monitoring and collection assignment workflow', async t => {
     const reassignment = await call('/collection-requests/from-bin', 'POST', { binId: bin._id, driverId: driver2._id }, adminToken);
     assert.equal(reassignment.status, 201);
     assert.equal((await call('/collection-requests/from-bin', 'POST', { binId: bin._id, driverId: driver1._id }, adminToken)).status, 409);
+
+    const sensorBin = await Bin.create({ binCode: 'BIN-001', name: 'Adama Central Bin', type: 'bin', zone: 'Central' });
+    assert.equal((await deviceCall('/bins/BIN-001/sensor-state', 'GET', undefined, '')).status, 401);
+    assert.equal((await deviceCall('/bins/BIN-001/sensor-state', 'GET', undefined, 'incorrect-key')).status, 401);
+    assert.equal((await call('/bins/BIN-001/sensor-state', 'GET', undefined, adminToken)).status, 401);
+    const initialDeviceState = await deviceCall('/bins/BIN-001/sensor-state');
+    assert.equal(initialDeviceState.status, 200);
+    assert.equal(initialDeviceState.body.data.canTransmit, true);
+    assert.equal(initialDeviceState.body.data.binId, 'BIN-001');
+    const originalCycle = initialDeviceState.body.data.cycleId;
+    const sensorReading = (fillLevel, status, sequence, cycleId = originalCycle) =>
+      deviceCall('/bins/BIN-001/sensor', 'POST', { binId: 'BIN-001', fillLevel, status, sequence, cycleId });
+
+    assert.equal((await sensorReading(101, 'FULL', 1)).status, 400);
+    assert.equal((await deviceCall('/bins/BIN-001/sensor', 'POST', {
+      binId: 'BIN-002', fillLevel: 10, status: 'NORMAL', sequence: 1, cycleId: originalCycle,
+    })).status, 400);
+    assert.equal((await sensorReading(49, 'HIGH', 1)).status, 400);
+    assert.equal((await sensorReading(49, 'NORMAL', 0)).status, 400);
+    let sensorResult = await sensorReading(49, 'NORMAL', 1);
+    assert.equal(sensorResult.status, 200);
+    assert.equal(sensorResult.body.data.binId, 'BIN-001');
+    assert.ok(sensorResult.body.data.lastUpdated);
+    assert.equal(sensorResult.body.data.sensorStatus, 'NORMAL');
+    assert.equal(sensorResult.body.data.sensorDeviceState, 'ONLINE');
+    assert.equal((await sensorReading(49, 'NORMAL', 1)).status, 409);
+    assert.equal((await sensorReading(48, 'NORMAL', 2)).status, 409);
+    for (const [fillLevel, status, sequence] of [
+      [50, 'ALMOST_FULL', 2],
+      [80, 'HIGH', 3],
+      [99, 'HIGH', 4],
+      [100, 'FULL', 5],
+    ]) {
+      sensorResult = await sensorReading(fillLevel, status, sequence);
+      assert.equal(sensorResult.status, 200);
+      assert.equal(sensorResult.body.data.sensorStatus, status);
+    }
+    assert.equal(sensorResult.body.data.sensorDeviceState, 'STOPPED_AFTER_FULL');
+    assert.equal((await sensorReading(100, 'FULL', 6)).status, 409);
+    assert.equal((await call(`/bins/${sensorBin._id}/simulated-reading`, 'POST', { fillLevel: 0 }, adminToken)).status, 409);
+    const fullDeviceState = await deviceCall('/bins/BIN-001/sensor-state');
+    assert.equal(fullDeviceState.body.data.canTransmit, false);
+    assert.equal(fullDeviceState.body.data.fillLevel, 100);
+    const publicBin = await call('/bins/BIN-001');
+    assert.equal(publicBin.body.data.sensorCycleId, undefined);
+    assert.equal(publicBin.body.data.sensorSequence, undefined);
+
+    const fullTask = await call('/collection-requests/from-bin', 'POST', { binId: sensorBin._id, driverId: driver1._id }, adminToken);
+    assert.equal(fullTask.status, 201);
+    assert.equal((await deviceCall('/bins/BIN-001/sensor-state')).body.data.canTransmit, false);
+    assert.equal((await call(`/driver/tasks/${fullTask.body.data._id}/status`, 'PATCH', { status: 'in-progress' }, driver1Token)).status, 200);
+    assert.equal((await call(`/driver/tasks/${fullTask.body.data._id}/status`, 'PATCH', { status: 'completed' }, driver1Token)).status, 200);
+
+    const resetDeviceState = await deviceCall('/bins/BIN-001/sensor-state');
+    assert.equal(resetDeviceState.status, 200);
+    assert.equal(resetDeviceState.body.data.fillLevel, 0);
+    assert.equal(resetDeviceState.body.data.status, 'NORMAL');
+    assert.equal(resetDeviceState.body.data.canTransmit, true);
+    assert.notEqual(resetDeviceState.body.data.cycleId, originalCycle);
+    assert.equal(resetDeviceState.body.data.lastSequence, 0);
+    assert.equal((await sensorReading(100, 'FULL', 6, originalCycle)).status, 409);
+    const resumedReading = await deviceCall('/bins/BIN-001/sensor', 'POST', {
+      binId: 'BIN-001',
+      fillLevel: 5,
+      status: 'NORMAL',
+      sequence: 1,
+      cycleId: resetDeviceState.body.data.cycleId,
+    });
+    assert.equal(resumedReading.status, 200);
+    assert.equal(resumedReading.body.data.fillLevel, 5);
+    assert.equal(resumedReading.body.data.sensorDeviceState, 'ONLINE');
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
     if (generatedEvidencePath && fs.existsSync(generatedEvidencePath)) fs.unlinkSync(generatedEvidencePath);
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
+    if (previousDeviceKey === undefined) delete process.env.DEVICE_KEY;
+    else process.env.DEVICE_KEY = previousDeviceKey;
   }
 });

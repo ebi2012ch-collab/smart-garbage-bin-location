@@ -14,6 +14,8 @@ const binSchema = new mongoose.Schema({
   fillLevel:    { type: Number, default: null, min: 0, max: 100 },
   readingSource: { type: String, enum: ['simulated', 'sensor', 'manual', null], default: null },
   lastReadingAt: { type: Date, default: null },
+  sensorCycleId: { type: String, default: null },
+  sensorSequence: { type: Number, default: 0, min: 0 },
   operationalStatus: { type: String, enum: ['operational', 'maintenance', 'damaged'], default: 'operational' },
   collectionState: { type: String, enum: ['none', 'needed', 'assigned', 'in-progress', 'completed-awaiting-reading'], default: 'none' },
   activeCollectionTask: { type: mongoose.Schema.Types.ObjectId, ref: 'CollectionRequest', default: null },

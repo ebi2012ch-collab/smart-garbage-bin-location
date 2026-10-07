@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Bin = require('../models/Bin');
 const CollectionRequest = require('../models/CollectionRequest');
-const { conditionFor } = require('../utils/binCondition');
+const { conditionFor, sensorStatusFor, sensorDeviceState, withCondition } = require('../utils/binCondition');
 const { requireRole } = require('../middleware/auth');
 
 test('fill thresholds produce independent fill conditions', () => {
@@ -15,6 +15,39 @@ test('fill thresholds produce independent fill conditions', () => {
   assert.equal(conditionFor(95, now, new Date(now.getTime() + 1000)), 'awaiting-reading');
   assert.equal(conditionFor(null, now), 'unavailable');
   assert.equal(conditionFor(95, new Date(Date.now() - 121 * 60 * 1000)), 'stale');
+});
+
+test('sensor statuses use the requested fill bands independently of collection thresholds', () => {
+  assert.equal(sensorStatusFor(0), 'NORMAL');
+  assert.equal(sensorStatusFor(49), 'NORMAL');
+  assert.equal(sensorStatusFor(50), 'ALMOST_FULL');
+  assert.equal(sensorStatusFor(79), 'ALMOST_FULL');
+  assert.equal(sensorStatusFor(80), 'HIGH');
+  assert.equal(sensorStatusFor(99), 'HIGH');
+  assert.equal(sensorStatusFor(100), 'FULL');
+  assert.equal(sensorStatusFor(null), 'UNAVAILABLE');
+});
+
+test('sensor communication state distinguishes simulation, offline, full, and reset-awaiting-resume', () => {
+  const now = Date.now();
+  assert.equal(sensorDeviceState({ fillLevel: 20, readingSource: 'simulated', lastReadingAt: new Date(now) }, now), 'NOT_CONNECTED');
+  assert.equal(sensorDeviceState({ fillLevel: 20, readingSource: 'sensor', lastReadingAt: new Date(now - 121 * 60 * 1000) }, now), 'OFFLINE');
+  assert.equal(sensorDeviceState({ fillLevel: 100, readingSource: 'sensor', lastReadingAt: new Date(now) }, now), 'STOPPED_AFTER_FULL');
+  assert.equal(sensorDeviceState({ fillLevel: 0, readingSource: null, lastReadingAt: new Date(now), lastCollectionAt: new Date(now) }, now), 'AWAITING_RESUME');
+  assert.equal(sensorDeviceState({ fillLevel: 0, readingSource: 'sensor', lastReadingAt: new Date(now) }, now), 'ONLINE');
+});
+
+test('public bin representations do not expose the device cycle token or sequence', () => {
+  const bin = withCondition({
+    binCode: 'BIN-001',
+    fillLevel: 0,
+    readingSource: null,
+    sensorCycleId: 'private-cycle-token',
+    sensorSequence: 42,
+  });
+  assert.equal('sensorCycleId' in bin, false);
+  assert.equal('sensorSequence' in bin, false);
+  assert.equal(bin.sensorStatus, 'NORMAL');
 });
 
 test('bins allow missing coordinates and start without claiming a reading', async () => {

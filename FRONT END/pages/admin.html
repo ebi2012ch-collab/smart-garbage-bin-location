@@ -358,6 +358,7 @@ var mapMarkers = [];
 var drivers = [];
 var notifications = [];
 var prevBinStates = {};
+var prevSensorStatuses = {};
 var prevReportCount = 0;
 var reportCache = [];
 var activeReportId = null;
@@ -632,6 +633,7 @@ function loadBinsOnMap(silent) {
         '<span style="background:#f0f4ff;color:#333;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.operationalStatus || 'operational') + '</span>' +
         '<span style="background:#f0f4ff;color:#0057b8;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + b.type + '</span>' +
         '</div>' +
+        '<p style="font-size:11px;color:#888">Sensor: <strong>' + escapeHtml(b.sensorStatus || 'UNAVAILABLE') + '</strong> · Device: <strong>' + escapeHtml(b.sensorDeviceState || 'NOT_CONNECTED') + '</strong></p>' +
         '<p style="font-size:11px;color:#888">Fill: <strong>' + (b.fillLevel == null ? 'Unavailable' : b.fillLevel + '% (' + escapeHtml(b.readingSource || 'unknown') + ')') + '</strong> | Updated: ' + escapeHtml(fmtDate(b.lastReadingAt)) + ' | Zone: ' + escapeHtml(b.zone) + '</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
         '<span>Collection task: ' + escapeHtml(b.collectionState || 'none') + '</span>' +
@@ -647,12 +649,21 @@ function loadBinsOnMap(silent) {
         attentionBins.push(b);
       }
 
-      // GIS alert: bin is full
-      var prevState = prevBinStates[b._id || b.id];
-      if (prevState && prevState !== 'collection-needed' && b.fillCondition === 'collection-needed') {
+      var binKey = b._id || b.id;
+      var prevState = prevBinStates[binKey];
+      var prevSensorStatus = prevSensorStatuses[binKey];
+      if (prevState && prevState !== 'collection-needed' && b.fillCondition === 'collection-needed' && b.sensorStatus !== 'FULL') {
         showAlert(
-          'Bin is Full!',
-          b.name + ' is now full and needs immediate service.',
+          'Bin Needs Collection',
+          b.name + ' needs collection (' + b.fillLevel + '% full).',
+          'Zone: ' + b.zone + ' | Lat: ' + b.lat + ', Lng: ' + b.lng,
+          'red'
+        );
+      }
+      if (prevSensorStatus && prevSensorStatus !== 'FULL' && b.sensorStatus === 'FULL') {
+        showAlert(
+          'Bin is FULL',
+          b.name + ' reached 100%. Sensor uploads stopped until collection is completed.',
           'Zone: ' + b.zone + ' | Lat: ' + b.lat + ', Lng: ' + b.lng,
           'red'
         );
@@ -665,7 +676,8 @@ function loadBinsOnMap(silent) {
           'orange'
         );
       }
-      prevBinStates[b._id || b.id] = b.fillCondition;
+      prevBinStates[binKey] = b.fillCondition;
+      prevSensorStatuses[binKey] = b.sensorStatus;
     });
 
     // update alert count badge
@@ -687,7 +699,7 @@ function loadBinsOnMap(silent) {
           '<td><strong>' + escapeHtml(b.binCode || b._id || b.id) + ' · ' + escapeHtml(b.name) + '</strong></td>' +
           '<td>' + escapeHtml(b.zone) + '</td>' +
           '<td>' + escapeHtml(b.operationalStatus || 'operational') + ' / ' + escapeHtml(b.fillCondition || 'unavailable') + '</td>' +
-          '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt) + '</td>' +
+          '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState) + '</td>' +
           '<td>' + escapeHtml(b.collectionState || 'none') +
             (b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask
               ? '<br><select data-bin-driver="' + escapeHtml(b._id || b.id) + '" aria-label="Select collection driver"><option value="">Select driver</option>' + drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') + '</select><button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(b._id || b.id) + '">Assign</button>'
@@ -748,7 +760,7 @@ function loadBins() {
         '<td><strong>' + escapeHtml(b.binCode || id) + '</strong><br>' + escapeHtml(b.name) + '<br><small>' + escapeHtml(b.description || '') + '</small></td>' +
         '<td>' + escapeHtml(b.zone || 'Unknown') + '<br><small>' + escapeHtml(coordinates) + '</small></td>' +
         '<td><select aria-label="Operational status" onchange="setOperationalStatus(\'' + escapeHtml(id) + '\', this.value)"><option value="operational" ' + ((b.operationalStatus || 'operational') === 'operational' ? 'selected' : '') + '>Operational</option><option value="maintenance" ' + (b.operationalStatus === 'maintenance' ? 'selected' : '') + '>Maintenance</option><option value="damaged" ' + (b.operationalStatus === 'damaged' ? 'selected' : '') + '>Damaged</option></select></td>' +
-        '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt) + (b.type === 'bin' ? '<br><label style="font-size:10px">SIMULATED test reading <input type="number" min="0" max="100" step="1" placeholder="%" aria-label="Simulated fill percent" data-sim-reading="' + escapeHtml(id) + '" style="width:52px"></label> <button class="btn-action" onclick="saveSimulatedReading(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Set</button>' : '') + '</td>' +
+        '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState) + (b.type === 'bin' ? '<br><label style="font-size:10px">SIMULATED test reading <input type="number" min="0" max="100" step="1" placeholder="%" aria-label="Simulated fill percent" data-sim-reading="' + escapeHtml(id) + '" style="width:52px"></label> <button class="btn-action" onclick="saveSimulatedReading(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Set</button>' : '') + '</td>' +
         '<td>' + escapeHtml(b.collectionState || 'none') + '<br>' + assignControls + '</td>' +
         '<td style="font-size:12px;color:var(--text-light)">Reading: ' + escapeHtml(fmtDate(b.lastReadingAt)) + '<br>Created: ' + escapeHtml(fmtDate(b.createdAt)) + '</td>' +
         '<td><button class="btn-action danger" onclick="deleteBin(this.dataset.bin, this.dataset.name)" data-bin="' + escapeHtml(id) + '" data-name="' + escapeHtml(b.name) + '"><i class="fas fa-trash"></i></button></td>' +
@@ -757,14 +769,14 @@ function loadBins() {
   }).catch(function () { toast('Could not load bins.', 'error'); });
 }
 
-function fillBar(pct, condition, source, updatedAt) {
+function fillBar(pct, condition, source, updatedAt, sensorStatus, sensorDeviceState) {
   if (pct == null || !Number.isFinite(Number(pct))) return '<span>Reading unavailable</span>';
   var label = condition || 'unknown';
   var simulated = source === 'simulated' ? ' <strong>SIMULATED</strong>' : '';
   var color = pct >= BIN_THRESHOLDS.collectionNeeded ? '#e74c3c' : pct >= BIN_THRESHOLDS.filling ? '#ff9f43' : '#00c896';
   return '<div class="fill-bar-wrap">' +
     '<div class="fill-bar-track"><div class="fill-bar-fill" style="width:' + Math.min(pct,100) + '%;background:' + color + '"></div></div>' +
-    '<span class="fill-num" style="color:' + color + '">' + pct + '% · ' + escapeHtml(label) + simulated + '<br>' + escapeHtml(fmtDate(updatedAt)) + '</span>' +
+    '<span class="fill-num" style="color:' + color + '">' + pct + '% · ' + escapeHtml(label) + simulated + '<br>Sensor: ' + escapeHtml(sensorStatus || 'UNAVAILABLE') + ' · Device: ' + escapeHtml(sensorDeviceState || 'NOT_CONNECTED') + '<br>' + escapeHtml(fmtDate(updatedAt)) + '</span>' +
     '</div>';
 }
 

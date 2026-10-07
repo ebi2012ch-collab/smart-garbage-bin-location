@@ -51,9 +51,15 @@ Public visitor features do not use accounts or require authentication. The share
 | POST | `/api/bins` | Add new bin | JWT (admin) |
 | PUT | `/api/bins/:id` | Update bin | JWT (admin) |
 | PATCH | `/api/bins/:id/status` | Update fill level / status | JWT (admin) |
+| GET | `/api/bins/:id/sensor-state` | Get device cycle, fill level, and permission to transmit | `x-device-key` |
+| POST | `/api/bins/:id/sensor` | Submit a validated, sequenced device reading | `x-device-key` |
 | DELETE | `/api/bins/:id` | Delete bin | JWT (admin) |
 
-Fill state is derived from timestamped readings, not the legacy operational status: under the filling threshold is Available, at the filling threshold is Filling, and at or above the collection threshold is Collection Needed. Missing and stale readings are labeled separately. `POST /api/bins/:id/simulated-reading` accepts `{ "fillLevel": 92 }` for an authenticated Admin and labels the stored reading `simulated`; it never represents a physical sensor. Actual devices use `POST /api/bins/:id/sensor` with `x-device-key` matching the required `DEVICE_KEY` environment setting (there is no default key).
+Fill state is derived from timestamped readings, not the legacy operational status. The separate sensor status is `NORMAL` (0–49%), `ALMOST_FULL` (50–79%), `HIGH` (80–99%), or `FULL` (100%). Device communication state is reported separately. `POST /api/bins/:id/simulated-reading` accepts `{ "fillLevel": 92 }` for an authenticated Admin and labels the stored reading `simulated`; it never represents a physical sensor.
+
+The Wokwi ESP32 uses the stable `BIN-001` code and authenticates with `x-device-key` matching the required `DEVICE_KEY` environment setting (there is no default key). Device readings contain `binId`, `fillLevel`, `status`, `cycleId`, and a strictly increasing integer `sequence`; the backend timestamps each accepted reading as `lastUpdated`/`lastReadingAt`. The status must match the submitted fill level. Readings can only increase during a cycle. At 100%, the API rejects further readings until the existing Driver collection task is completed. Completion resets the fill level to 0 and rotates the cycle ID, so delayed readings from an earlier cycle cannot undo the reset. `GET /api/bins/BIN-001/sensor-state` lets the device detect that reset and resume.
+
+To safely register the one demo bin without deleting existing data, configure `.env` and run `npm run register:wokwi-bin` from `BACK END`. The script reuses the existing Adama Central Bin record when available. See `WOKWI/README.md` for the simulator setup and full lifecycle.
 
 ### Reports
 | Method | Endpoint | Description | Auth |
@@ -129,6 +135,7 @@ BACK END/
 ├── package.json
 ├── .env.example        # Environment variable template
 ├── db/
+│   ├── registerWokwiBin.js # Safely register BIN-001 for the Wokwi demo
 │   └── data.js         # In-memory data store (seeded)
 ├── middleware/
 │   └── auth.js         # JWT verification and role guards

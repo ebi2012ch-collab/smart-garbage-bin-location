@@ -13,7 +13,7 @@ const Report   = require('../models/Report');
 const User     = require('../models/User');
 
 const BINS = [
-  { name:'Adama Central Bin',      type:'bin',        status:'available',   lat:8.5400, lng:39.2700, description:'Central city garbage point.',         zone:'Central',      capacity:500,  fillLevel:20  },
+  { binCode:'BIN-001', name:'Adama Central Bin', type:'bin', status:'available', lat:8.5400, lng:39.2700, description:'Central city garbage point.', zone:'Central', capacity:500, fillLevel:20 },
   { name:'Market Area Bin',        type:'bin',        status:'almost-full', lat:8.5450, lng:39.2780, description:'Near the main market.',               zone:'Market',       capacity:500,  fillLevel:78  },
   { name:'Hospital Road Bin',      type:'bin',        status:'available',   lat:8.5360, lng:39.2650, description:'Adjacent to Adama General Hospital.', zone:'Hospital Road',capacity:300,  fillLevel:35  },
   { name:'Railway Station Point',  type:'collection', status:'available',   lat:8.5490, lng:39.2620, description:'Large collection transfer station.',  zone:'Railway',      capacity:2000, fillLevel:40  },

@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const CollectionRequest = require('../models/CollectionRequest');
 const Bin = require('../models/Bin');
 const Report = require('../models/Report');
@@ -94,10 +95,23 @@ router.patch('/:id/status', async (req, res) => {
     if (task) {
       if (task.source === 'bin' && task.binId) {
         if (status === 'completed') {
-          await Bin.updateOne({ _id: task.binId, activeCollectionTask: task._id }, {
-            $set: { collectionState: 'completed-awaiting-reading', lastCollectionAt: task.completedAt },
+          const reset = await Bin.updateOne({ _id: task.binId, activeCollectionTask: task._id }, {
+            $set: {
+              fillLevel: 0,
+              status: 'available',
+              readingSource: null,
+              lastReadingAt: task.completedAt,
+              lastCollectionAt: task.completedAt,
+              collectionState: 'none',
+              sensorCycleId: crypto.randomUUID(),
+              sensorSequence: 0,
+            },
             $unset: { activeCollectionTask: 1 },
           });
+          if (!reset.matchedCount) {
+            console.error(`[DriverTasks] Completed bin task ${task._id} but could not reset bin ${task.binId}.`);
+            return res.status(500).json({ success: false, message: 'Task completed, but the bin could not be reset. Contact an administrator.' });
+          }
         } else {
           await Bin.updateOne({ _id: task.binId, activeCollectionTask: task._id }, { $set: { collectionState: 'in-progress' } });
         }

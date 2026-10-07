@@ -1,6 +1,8 @@
 # Dependencies
 **/node_modules/
 **/build/
+WOKWI/.pio/
+WOKWI/include/secrets.h
 
 # Environment files
 .env

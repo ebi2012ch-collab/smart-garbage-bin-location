@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "author": "Adama City Smart Bin",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": -125, "left": 230, "attrs": { "distance": "180" } }
+  ],
+  "connections": [
+    [ "esp:5V", "ultrasonic:VCC", "red", [] ],
+    [ "esp:GND.1", "ultrasonic:GND", "black", [] ],
+    [ "esp:5", "ultrasonic:TRIG", "green", [] ],
+    [ "esp:18", "ultrasonic:ECHO", "blue", [] ]
+  ],
+  "dependencies": {}
+}
