@@ -1,0 +1,514 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | Adama City Smart Bin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="contact.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0A043C">
+  <!-- EmailJS SDK — sends real emails, no server needed -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="navbar">
+      <a href="index.html" class="brand">
+        <span class="brand-city">Adama City</span>
+        <span class="brand-name">Smart Bin</span>
+      </a>
+      <nav id="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="report.html" class="nav-link">Report</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link active">Contact</a>
+        <button class="dark-mode-toggle" id="darkToggle" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+      </nav>
+      <a href="report.html" class="nav-cta">Report Issue</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SETUP NOTICE â€” only visible until configured -->
+  <div class="setup-notice" id="setupNotice">
+    <i class="fas fa-info-circle"></i>
+    <span>
+      <strong>Setup Required:</strong> To receive real emails, follow the 3-step setup below the form.
+      Once configured, this bar disappears automatically.
+    </span>
+    <button onclick="document.getElementById('setupNotice').style.display='none'">Ã—</button>
+  </div>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <span class="hero-tag"><i class="fas fa-headset"></i> Support</span>
+      <h1>Get In <span class="gradient-text">Touch</span></h1>
+      <p>Our team is here to assist citizens of Adama City. Send a message and we'll respond to your real email address.</p>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#f4f4f8"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- QUICK CONTACT CARDS -->
+  <section class="contact-cards-section">
+    <div class="contact-cards">
+      <div class="contact-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="cc-icon"><i class="fas fa-phone-alt"></i></div>
+        <h3>Call Us</h3>
+        <p>Available 24/7 for emergencies</p>
+        <a href="tel:+251221100000" class="cc-link">+251 22 110 0000</a>
+        <span class="cc-tag">Emergency Line</span>
+      </div>
+      <div class="contact-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="cc-icon green"><i class="fas fa-envelope"></i></div>
+        <h3>Email Us Directly</h3>
+        <p>Opens your email app instantly</p>
+        <a href="mailto:smartbinadamacity@gmail.com?subject=SmartBin%20Enquiry&body=Hello%20SmartBin%20Team%2C%0A%0A" class="cc-link">smartbinadamacity@gmail.com</a>
+        <span class="cc-tag">Direct Email</span>
+      </div>
+      <div class="contact-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="cc-icon orange"><i class="fas fa-map-marker-alt"></i></div>
+        <h3>Visit Us in Adama</h3>
+        <p>Adama City Hall, Ground Floor</p>
+        <a href="https://www.google.com/maps/search/Adama+City+Hall+Ethiopia" target="_blank" rel="noopener" class="cc-link">View on Google Maps</a>
+        <span class="cc-tag">Monâ€“Fri 8amâ€“5pm</span>
+      </div>
+      <div class="contact-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="cc-icon purple"><i class="fab fa-telegram-plane"></i></div>
+        <h3>Telegram</h3>
+        <p>Message us on Telegram directly</p>
+        <a href="https://t.me/smartbinadama" target="_blank" rel="noopener" class="cc-link">@smartbinadama</a>
+        <span class="cc-tag">Fastest Response</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT FORM + SIDEBAR -->
+  <section class="contact-main">
+    <div class="contact-layout">
+
+      <!-- FORM -->
+      <div class="contact-form-wrapper" data-aos="fade-right">
+        <div class="form-header">
+          <div class="form-header-icon"><i class="fas fa-paper-plane"></i></div>
+          <div>
+            <h2>Send a Message</h2>
+            <p>This form sends a <strong>real email</strong> to the SmartBin team</p>
+          </div>
+        </div>
+
+        <form id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cName">Full Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-user"></i>
+                <input type="text" id="cName" name="from_name" placeholder="Your full name" required>
+              </div>
+              <span class="err" id="cNameErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="cEmail">Your Email <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="cEmail" name="from_email" placeholder="your@email.com" required>
+              </div>
+              <span class="err" id="cEmailErr"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cPhone">Phone Number (Optional)</label>
+            <div class="input-wrap">
+              <i class="fas fa-phone"></i>
+              <input type="tel" id="cPhone" name="from_phone" placeholder="09XXXXXXXX">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cSubject">Subject <span class="req">*</span></label>
+            <div class="input-wrap select-wrap">
+              <i class="fas fa-tag"></i>
+              <select id="cSubject" name="subject" required>
+                <option value="" disabled selected>Select a subject</option>
+                <option value="Waste Collection Service">Waste Collection Service</option>
+                <option value="Bin Location Request">Bin Location Request</option>
+                <option value="Report a Waste Problem">Report a Waste Problem</option>
+                <option value="Technical Issue with Website">Technical Issue with Website</option>
+                <option value="Partnership or Collaboration">Partnership or Collaboration</option>
+                <option value="Media or Press Enquiry">Media / Press Enquiry</option>
+                <option value="General Enquiry">General Enquiry</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+            <span class="err" id="cSubjectErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="cMessage">Message <span class="req">*</span></label>
+            <div class="textarea-wrap">
+              <textarea id="cMessage" name="message" rows="6"
+                placeholder="Describe your issue or question in detailâ€¦" required></textarea>
+            </div>
+            <span class="err" id="cMsgErr"></span>
+          </div>
+
+          <!-- Honeypot anti-spam (hidden) -->
+          <input type="text" name="_hp" style="display:none" tabindex="-1" autocomplete="off">
+
+          <button type="submit" class="btn-submit" id="cSubmitBtn">
+            <span class="btn-text"><i class="fas fa-paper-plane"></i> Send Message</span>
+            <span class="btn-loading" style="display:none">
+              <i class="fas fa-spinner fa-spin"></i> Sending real emailâ€¦
+            </span>
+          </button>
+
+          <p class="form-note">
+            <i class="fas fa-lock"></i>
+            Your message is sent securely via EmailJS directly to our inbox.
+            No data is stored on any third-party server.
+          </p>
+        </form>
+
+        <!-- SUCCESS -->
+        <div class="success-msg" id="cSuccessMsg" style="display:none">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h3>Message Delivered!</h3>
+          <p>Your message was sent to the SmartBin Adama City team. We will reply to <strong id="repliedEmail"></strong> within 24 hours.</p>
+          <div class="success-ref">
+            Sent at: <strong id="sentTime"></strong>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+            <button class="btn-new" onclick="resetContactForm()">
+              <i class="fas fa-plus"></i> Send Another
+            </button>
+            <a href="index.html" class="btn-new" style="background:#f3f4f6;color:#1a1a2e;text-decoration:none">
+              <i class="fas fa-home"></i> Back to Home
+            </a>
+          </div>
+        </div>
+
+        <!-- EMAILJS SETUP GUIDE -->
+        <div class="setup-guide" id="setupGuide">
+          <div class="setup-header">
+            <i class="fas fa-tools"></i>
+            <h3>3-Step Email Setup (One Time, Free)</h3>
+            <button class="toggle-guide" id="toggleGuide">
+              <i class="fas fa-chevron-down"></i> Show Setup Steps
+            </button>
+          </div>
+          <div class="setup-steps" id="setupSteps" style="display:none">
+            <div class="setup-step">
+              <div class="step-circle">1</div>
+              <div>
+                <strong>Create Free EmailJS Account</strong>
+                <p>Go to <a href="https://www.emailjs.com" target="_blank" rel="noopener">emailjs.com</a> â†’ Sign Up Free â†’ Use your Gmail address</p>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-circle">2</div>
+              <div>
+                <strong>Connect Your Gmail & Get IDs</strong>
+                <p>Dashboard â†’ Email Services â†’ Add Gmail â†’ Note your <code>Service ID</code><br>
+                Then: Email Templates â†’ Create Template â†’ Note your <code>Template ID</code><br>
+                Then: Account â†’ General â†’ Note your <code>Public Key</code></p>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-circle">3</div>
+              <div>
+                <strong>Paste Your IDs into the Code Below</strong>
+                <p>Open <code>contact.html</code> â†’ Find the script at the bottom â†’ Replace the 3 placeholder values:</p>
+                <div class="code-block">
+<pre>var SERVICE_ID  = 'YOUR_SERVICE_ID';   // e.g. service_abc123
+var TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // e.g. template_xyz789
+var PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // e.g. user_AbCdEf</pre>
+                </div>
+                <p class="setup-done-note">
+                  <i class="fas fa-check-circle"></i>
+                  Save the file â†’ Done! The form now sends real emails to your Gmail.
+                </p>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-circle" style="background:#00c896">âœ“</div>
+              <div>
+                <strong>EmailJS Template Variables</strong>
+                <p>When creating your email template on EmailJS, use these exact variable names:</p>
+                <div class="code-block">
+<pre>From Name:    {{from_name}}
+From Email:   {{from_email}}
+Phone:        {{from_phone}}
+Subject:      {{subject}}
+Message:      {{message}}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INFO SIDEBAR -->
+      <aside class="contact-info" data-aos="fade-left">
+
+        <div class="office-card">
+          <h4><i class="fas fa-building"></i> Main Office</h4>
+          <p><i class="fas fa-map-marker-alt"></i>
+            Adama City Hall<br>Adama (Nazret)<br>Oromia Region, Ethiopia</p>
+          <p><i class="fas fa-clock"></i>
+            Monday â€“ Friday<br>8:00 AM â€“ 5:00 PM EAT</p>
+          <p><i class="fas fa-phone"></i> +251 22 110 0000</p>
+        </div>
+
+        <!-- Live Adama Map embed -->
+        <div class="office-card map-embed-card">
+          <h4><i class="fas fa-map"></i> Find Us on Map</h4>
+          <div class="map-embed">
+            <iframe
+              src="https://www.openstreetmap.org/export/embed.html?bbox=39.24%2C8.52%2C39.30%2C8.56&amp;layer=mapnik&amp;marker=8.5400%2C39.2700"
+              title="Adama City Location"
+              loading="lazy"
+              style="border:none;width:100%;height:180px;border-radius:10px">
+            </iframe>
+          </div>
+          <a href="https://www.google.com/maps/search/Adama+City+Hall+Ethiopia"
+             target="_blank" rel="noopener" class="info-link" style="margin-top:10px;display:inline-flex">
+            <i class="fas fa-external-link-alt"></i> Open in Google Maps
+          </a>
+        </div>
+
+        <div class="office-card">
+          <h4><i class="fas fa-exclamation-circle"></i> Emergency Hotline</h4>
+          <p>Urgent waste issues, hazardous spills, or overflowing bins near public areas:</p>
+          <a href="tel:+251221100000" class="emergency-link">
+            <i class="fas fa-phone-alt"></i> +251 22 110 0000
+          </a>
+          <span class="available-badge">
+            <i class="fas fa-circle"></i> Available 24/7
+          </span>
+        </div>
+
+        <div class="office-card">
+          <h4><i class="fas fa-share-alt"></i> Social Media</h4>
+          <div class="social-grid">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener" class="social-card">
+              <i class="fab fa-facebook-f"></i><span>Facebook</span>
+            </a>
+            <a href="https://t.me/smartbinadama" target="_blank" rel="noopener" class="social-card">
+              <i class="fab fa-telegram-plane"></i><span>Telegram</span>
+            </a>
+            <a href="mailto:smartbinadamacity@gmail.com" class="social-card">
+              <i class="fas fa-envelope"></i><span>Gmail</span>
+            </a>
+            <a href="https://wa.me/251221100000" target="_blank" rel="noopener" class="social-card">
+              <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <div class="brand-icon"><i class="fas fa-recycle"></i></div>
+          <div class="brand-text">
+            <span class="brand-title">SmartBin</span>
+            <span class="brand-sub">Adama City</span>
+          </div>
+        </a>
+        <p>Building a cleaner and smarter Adama City through GIS technology.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="report.html"><i class="fas fa-chevron-right"></i> Report</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p><i class="fas fa-map-marker-alt"></i> Adama City, Ethiopia</p>
+        <p><i class="fas fa-phone"></i> +251 22 110 0000</p>
+        <p><i class="fas fa-envelope"></i> smartbinadamacity@gmail.com</p>
+        <div class="social-links">
+          <a href="https://www.facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://t.me/smartbinadama" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+          <a href="https://wa.me/251221100000" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Smart Waste Management System | Adama City Administration |
+        <a href="privacy.html" style="color:rgba(255,255,255,.5)">Privacy Policy</a>
+      </p>
+    </div>
+  </footer>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="script.js"></script>
+  <script>
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  //  â–¶â–¶  STEP 3: PASTE YOUR EMAILJS IDs HERE  â—€â—€
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  var SERVICE_ID  = 'YOUR_SERVICE_ID';   // from emailjs.com â†’ Email Services
+  var TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // from emailjs.com â†’ Email Templates
+  var PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // from emailjs.com â†’ Account â†’ General
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+  // Initialize EmailJS
+  (function() {
+    if (PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+      emailjs.init({ publicKey: PUBLIC_KEY });
+      // Hide setup notice and guide when properly configured
+      var notice = document.getElementById('setupNotice');
+      var guide  = document.getElementById('setupGuide');
+      if (notice) notice.style.display = 'none';
+      if (guide)  guide.style.display  = 'none';
+    }
+  })();
+
+  // Toggle setup steps visibility
+  document.getElementById('toggleGuide').addEventListener('click', function() {
+    var steps = document.getElementById('setupSteps');
+    var icon  = this.querySelector('i');
+    if (steps.style.display === 'none') {
+      steps.style.display = 'block';
+      icon.className = 'fas fa-chevron-up';
+      this.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Setup Steps';
+    } else {
+      steps.style.display = 'none';
+      icon.className = 'fas fa-chevron-down';
+      this.innerHTML = '<i class="fas fa-chevron-down"></i> Show Setup Steps';
+    }
+  });
+
+  // Contact form handler
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Honeypot check
+    if (document.querySelector('input[name="_hp"]').value) return;
+
+    // Validate
+    var ok      = true;
+    var nameVal = document.getElementById('cName').value.trim();
+    var emailVal= document.getElementById('cEmail').value.trim();
+    var subjVal = document.getElementById('cSubject').value;
+    var msgVal  = document.getElementById('cMessage').value.trim();
+
+    document.getElementById('cNameErr').textContent    = '';
+    document.getElementById('cEmailErr').textContent   = '';
+    document.getElementById('cSubjectErr').textContent = '';
+    document.getElementById('cMsgErr').textContent     = '';
+
+    if (!nameVal)  { document.getElementById('cNameErr').textContent = 'Full name is required.'; ok = false; }
+    if (!emailVal) { document.getElementById('cEmailErr').textContent = 'Email address is required.'; ok = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      document.getElementById('cEmailErr').textContent = 'Enter a valid email address.'; ok = false;
+    }
+    if (!subjVal)  { document.getElementById('cSubjectErr').textContent = 'Please select a subject.'; ok = false; }
+    if (!msgVal)   { document.getElementById('cMsgErr').textContent = 'Please write your message.'; ok = false; }
+    else if (msgVal.length < 10) {
+      document.getElementById('cMsgErr').textContent = 'Message must be at least 10 characters.'; ok = false;
+    }
+
+    if (!ok) return;
+
+    // UI: loading state
+    var btn    = document.getElementById('cSubmitBtn');
+    var txtEl  = btn.querySelector('.btn-text');
+    var lodEl  = btn.querySelector('.btn-loading');
+    txtEl.style.display = 'none';
+    lodEl.style.display = 'flex';
+    btn.disabled = true;
+
+    // Check if EmailJS is configured
+    if (PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+      // Demo mode â€” show what would happen
+      setTimeout(function() {
+        showSuccess(emailVal);
+        window.showToast && window.showToast('Demo mode â€” configure EmailJS to send real emails', 'info');
+      }, 1500);
+      return;
+    }
+
+    // Real email send via EmailJS
+    var templateParams = {
+      from_name:  nameVal,
+      from_email: emailVal,
+      from_phone: document.getElementById('cPhone').value.trim() || 'Not provided',
+      subject:    subjVal,
+      message:    msgVal,
+      reply_to:   emailVal,
+      sent_time:  new Date().toLocaleString('en-ET', { timeZone: 'Africa/Addis_Ababa' })
+    };
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
+      .then(function(response) {
+        console.log('Email sent:', response.status);
+        showSuccess(emailVal);
+        window.showToast && window.showToast('Message sent to SmartBin team!', 'success');
+      })
+      .catch(function(error) {
+        console.error('EmailJS error:', error);
+        // Reset button
+        txtEl.style.display = 'flex';
+        lodEl.style.display = 'none';
+        btn.disabled = false;
+        // Show error
+        document.getElementById('cMsgErr').textContent =
+          'Failed to send. Please try emailing us directly at smartbinadamacity@gmail.com';
+        window.showToast && window.showToast('Send failed â€” try direct email', 'error');
+      });
+  });
+
+  function showSuccess(email) {
+    document.getElementById('contactForm').style.display  = 'none';
+    document.getElementById('cSuccessMsg').style.display  = 'block';
+    document.getElementById('repliedEmail').textContent   = email;
+    document.getElementById('sentTime').textContent       =
+      new Date().toLocaleString('en-ET', { timeZone: 'Africa/Addis_Ababa' });
+  }
+
+  function resetContactForm() {
+    document.getElementById('contactForm').reset();
+    document.getElementById('contactForm').style.display  = 'block';
+    document.getElementById('cSuccessMsg').style.display  = 'none';
+    ['cNameErr','cEmailErr','cSubjectErr','cMsgErr'].forEach(function(id) {
+      document.getElementById(id).textContent = '';
+    });
+    var btn   = document.getElementById('cSubmitBtn');
+    btn.querySelector('.btn-text').style.display    = 'flex';
+    btn.querySelector('.btn-loading').style.display = 'none';
+    btn.disabled = false;
+  }
+  </script>
+  <script>
+  // Apply dark mode preference on page load
+  if (localStorage.getItem('darkMode') === 'on') {
+    document.body.classList.add('dark-mode');
+  }
+  </script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Collection | Adama City Smart Bin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="report.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#0A043C">
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="index.html" class="brand">
+        <span class="brand-city">Adama City</span>
+        <span class="brand-name">Smart Bin</span>
+      </a>
+      <nav id="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="collection.html" class="nav-link active">Request Collection</a>
+        <a href="report.html" class="nav-link">Report</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+      <a href="collection.html" class="nav-cta">Request Collection</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <span class="hero-tag"><i class="fas fa-truck"></i> Public Service</span>
+      <h1>Request a <span class="gradient-text">Collection</span></h1>
+      <p>Submit a collection request for your location. No account or login is required.</p>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#f4f4f8"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="report-section" id="main-content">
+    <div class="report-layout">
+      <div class="report-form-wrapper">
+        <div class="form-header">
+          <div class="form-header-icon"><i class="fas fa-truck"></i></div>
+          <div>
+            <h2>Collection Request</h2>
+            <p>Tell us who to contact and where collection is needed.</p>
+          </div>
+        </div>
+
+        <form id="collectionRequestForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="requestName">Full Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-user"></i>
+                <input type="text" id="requestName" maxlength="120" autocomplete="name" required>
+              </div>
+              <span class="err" id="requestNameErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="requestPhone">Phone Number <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-phone"></i>
+                <input type="tel" id="requestPhone" maxlength="40" autocomplete="tel" required>
+              </div>
+              <span class="err" id="requestPhoneErr"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="requestLocation">Location / Area <span class="req">*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="requestLocation" maxlength="200" required>
+            </div>
+            <span class="err" id="requestLocationErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label>Map Coordinates <span class="req">*</span></label>
+            <p class="location-help">Share your current location so the Driver GIS team can find the collection place.</p>
+            <button type="button" class="location-button" id="useRequestCurrentLocation">
+              <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+              Use My Current Location
+            </button>
+            <p class="location-status" id="requestLocationStatus" role="status" aria-live="polite">Your location is required to submit a collection request.</p>
+            <div class="coordinates-grid">
+              <label for="requestLatitude">Latitude <span class="req">*</span>
+                <input type="number" id="requestLatitude" min="-90" max="90" step="any" required>
+              </label>
+              <label for="requestLongitude">Longitude <span class="req">*</span>
+                <input type="number" id="requestLongitude" min="-180" max="180" step="any" required>
+              </label>
+            </div>
+            <span class="err" id="requestCoordinatesErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="requestDescription">Description <span class="req">*</span></label>
+            <div class="textarea-wrap">
+              <textarea id="requestDescription" rows="5" maxlength="1000" required></textarea>
+            </div>
+            <span class="err" id="requestDescriptionErr"></span>
+          </div>
+
+          <div id="requestError" class="err" role="alert" style="display:none;margin-bottom:12px"></div>
+          <button type="submit" class="btn-submit" id="requestSubmit">
+            <span class="btn-text"><i class="fas fa-paper-plane"></i> Submit Request</span>
+            <span class="btn-loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Submitting…</span>
+          </button>
+        </form>
+
+        <div class="success-msg" id="requestSuccess" style="display:none">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h3>Request Submitted</h3>
+          <p>Your collection request has been received for admin review.</p>
+          <div class="success-ref">Request ID: <strong id="requestRef"></strong></div>
+          <button class="btn-new" id="newRequestBtn" type="button"><i class="fas fa-plus"></i> Submit Another Request</button>
+        </div>
+      </div>
+
+      <aside class="report-info">
+        <div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-clipboard-check"></i></div>
+          <h4>What happens next?</h4>
+          <p>Your request starts as pending. An administrator will review it and accept or reject it.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon green"><i class="fas fa-user-shield"></i></div>
+          <h4>No account required</h4>
+          <p>Submit a request as a public visitor. You do not need to register or log in.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <div class="brand-icon"><i class="fas fa-recycle"></i></div>
+          <div class="brand-text"><span class="brand-title">SmartBin</span><span class="brand-sub">Adama City</span></div>
+        </a>
+        <p>Building a cleaner and smarter Adama City through GIS technology.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="collection.html">Request Collection</a></li>
+          <li><a href="report.html">Report a Problem</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p><i class="fas fa-map-marker-alt"></i> Adama City, Ethiopia</p>
+        <p><i class="fas fa-phone"></i> +251 22 110 XXXX</p>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 Smart Waste Management System | Adama City Administration</p></div>
+  </footer>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="script.js"></script>
+  <script>
+    (function () {
+      var form = document.getElementById('collectionRequestForm');
+      var submitButton = document.getElementById('requestSubmit');
+      var errorBox = document.getElementById('requestError');
+      var locationButton = document.getElementById('useRequestCurrentLocation');
+      var locationStatus = document.getElementById('requestLocationStatus');
+      var latitudeInput = document.getElementById('requestLatitude');
+      var longitudeInput = document.getElementById('requestLongitude');
+      var apiBase = 'http://localhost:3000/api/collection-requests';
+
+      function setError(id, message) {
+        document.getElementById(id).textContent = message;
+      }
+
+      function updateManualLocationStatus() {
+        if (latitudeInput.value.trim() && longitudeInput.value.trim()) {
+          locationStatus.textContent = 'Coordinates entered. Check the values below.';
+        } else {
+          locationStatus.textContent = 'Your location is required to submit a collection request.';
+        }
+      }
+
+      latitudeInput.addEventListener('input', updateManualLocationStatus);
+      longitudeInput.addEventListener('input', updateManualLocationStatus);
+
+      locationButton.addEventListener('click', function () {
+        setError('requestCoordinatesErr', '');
+        if (!navigator.geolocation) {
+          locationStatus.textContent = 'Location is not supported by this browser. Enter the coordinates manually.';
+          return;
+        }
+
+        locationButton.disabled = true;
+        locationStatus.textContent = 'Getting your current location...';
+        navigator.geolocation.getCurrentPosition(function (position) {
+          latitudeInput.value = position.coords.latitude.toFixed(6);
+          longitudeInput.value = position.coords.longitude.toFixed(6);
+          locationStatus.textContent = 'Location found. Check the coordinates below.';
+          locationButton.disabled = false;
+        }, function (error) {
+          var message = error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. Allow location access in your browser and try again, or enter coordinates manually.'
+            : error.code === error.TIMEOUT
+              ? 'Could not get your location in time. Please try again or enter coordinates manually.'
+              : 'Your location is unavailable. Please try again or enter coordinates manually.';
+          locationStatus.textContent = message;
+          locationButton.disabled = false;
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+      });
+
+      function validate() {
+        ['requestNameErr', 'requestPhoneErr', 'requestLocationErr', 'requestCoordinatesErr', 'requestDescriptionErr']
+          .forEach(function (id) { setError(id, ''); });
+        errorBox.style.display = 'none';
+
+        var valid = true;
+        var latitude = document.getElementById('requestLatitude').value.trim();
+        var longitude = document.getElementById('requestLongitude').value.trim();
+
+        if (!document.getElementById('requestName').value.trim()) {
+          setError('requestNameErr', 'Full name is required.');
+          valid = false;
+        }
+        if (!document.getElementById('requestPhone').value.trim()) {
+          setError('requestPhoneErr', 'Phone number is required.');
+          valid = false;
+        }
+        if (!document.getElementById('requestLocation').value.trim()) {
+          setError('requestLocationErr', 'Location is required.');
+          valid = false;
+        }
+        if (!document.getElementById('requestDescription').value.trim()) {
+          setError('requestDescriptionErr', 'Description is required.');
+          valid = false;
+        }
+        if (!latitude || !longitude || !Number.isFinite(Number(latitude)) || Number(latitude) < -90 || Number(latitude) > 90 ||
+            !Number.isFinite(Number(longitude)) || Number(longitude) < -180 || Number(longitude) > 180) {
+          setError('requestCoordinatesErr', 'Enter valid latitude and longitude values.');
+          valid = false;
+        }
+        return valid;
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!validate()) return;
+
+        var text = submitButton.querySelector('.btn-text');
+        var loading = submitButton.querySelector('.btn-loading');
+        submitButton.disabled = true;
+        text.style.display = 'none';
+        loading.style.display = 'flex';
+
+        var latitude = document.getElementById('requestLatitude').value.trim();
+        var longitude = document.getElementById('requestLongitude').value.trim();
+        var payload = {
+          fullName: document.getElementById('requestName').value.trim(),
+          phone: document.getElementById('requestPhone').value.trim(),
+          location: document.getElementById('requestLocation').value.trim(),
+          description: document.getElementById('requestDescription').value.trim(),
+        };
+        payload.latitude = Number(latitude);
+        payload.longitude = Number(longitude);
+
+        fetch(apiBase, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              if (!response.ok || !data.success) throw new Error(data.message || 'Request submission failed.');
+              return data;
+            });
+          })
+          .then(function (data) {
+            form.style.display = 'none';
+            document.getElementById('requestRef').textContent = data.data.id;
+            document.getElementById('requestSuccess').style.display = 'block';
+          })
+          .catch(function (error) {
+            errorBox.textContent = error.message || 'Cannot reach the server. Please try again.';
+            errorBox.style.display = 'block';
+          })
+          .finally(function () {
+            submitButton.disabled = false;
+            text.style.display = 'flex';
+            loading.style.display = 'none';
+          });
+      });
+
+      document.getElementById('newRequestBtn').addEventListener('click', function () {
+        form.reset();
+        locationStatus.textContent = 'Your location is required to submit a collection request.';
+        setError('requestCoordinatesErr', '');
+        form.style.display = 'block';
+        document.getElementById('requestSuccess').style.display = 'none';
+        form.scrollIntoView({ behavior: 'smooth' });
+      });
+    })();
+  </script>
+</body>
+</html>

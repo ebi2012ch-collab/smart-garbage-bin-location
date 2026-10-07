@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A043C">
+  <title>Driver Dashboard | SmartBin Adama City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       BRAND TOKENS (Matched to Home Page)
+       ══════════════════════════════════════════════════════════ */
+    :root {
+      color-scheme: light;
+      --primary: var(--ds-indigo);
+      --primary-dk: var(--ds-navy);
+      --primary-lt: var(--ds-indigo-soft);
+      --accent: var(--ds-indigo);
+      --orange: var(--ds-warning);
+      --red: var(--ds-danger);
+      --green: var(--ds-success);
+      --text: var(--ds-text);
+      --text-light: var(--ds-muted);
+      --bg: var(--ds-page);
+      --white: var(--ds-surface);
+      --border: var(--ds-border);
+      --shadow: var(--ds-shadow-card);
+      --shadow-lg: 0 24px 60px rgba(10,4,60,.30);
+      --radius: var(--ds-radius-md);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0A043C 0%, #2a1f6e 100%);
+      color: var(--text);
+      font: 14px/1.5 "Poppins", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       TOPBAR
+       ══════════════════════════════════════════════════════════ */
+    .topbar {
+      height: 72px;
+      background: rgba(10, 4, 60, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    .topbar-inner {
+      width: min(1160px, calc(100% - 48px));
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: #fff;
+      font: 800 17px "Poppins", sans-serif;
+      letter-spacing: -.5px;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(145deg, #5E5CE6, #7c3aed);
+      box-shadow: 0 5px 12px rgba(94,92,230,.4);
+    }
+    .brand small {
+      display: block;
+      margin-top: -3px;
+      color: rgba(255,255,255,0.6);
+      font: 600 10px "Poppins", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .account {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: rgba(255,255,255,0.1);
+      font-size: 15px;
+    }
+    .account-name {
+      max-width: 190px;
+      overflow: hidden;
+      color: #fff;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .account-role {
+      display: block;
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .logout {
+      min-height: 38px;
+      padding: 0 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: .2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logout:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .logout i { font-size: 12px; }
+
+    /* ══════════════════════════════════════════════════════════
+       MAIN
+       ══════════════════════════════════════════════════════════ */
+    main {
+      width: min(1160px, calc(100% - 48px));
+      margin: 30px auto 56px;
+      flex: 1;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       WELCOME PANEL
+       ══════════════════════════════════════════════════════════ */
+    .welcome {
+      position: relative;
+      overflow: hidden;
+      min-height: 176px;
+      padding: 29px 34px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: white;
+      background: radial-gradient(ellipse at 88% 10%, #5E5CE6 0, transparent 36%),
+                  linear-gradient(110deg, #0A043C 0%, #2a1f6e 100%);
+      box-shadow: var(--shadow-lg);
+    }
+    .welcome:after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      right: 7%;
+      top: -130px;
+      border: 1px solid #ffffff18;
+      border-radius: 50%;
+      box-shadow: 0 0 0 30px #ffffff08, 0 0 0 60px #ffffff06;
+      pointer-events: none;
+    }
+    .welcome-copy { position: relative; z-index: 1; }
+    .eyebrow {
+      margin: 0 0 7px;
+      color: #b8b6ff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 7px;
+      font: 800 clamp(24px, 3vw, 31px)/1.2 "Poppins", sans-serif;
+      letter-spacing: -.8px;
+    }
+    .welcome-text {
+      max-width: 520px;
+      margin: 0;
+      color: rgba(255,255,255,0.8);
+      font-size: 13px;
+    }
+    .welcome-note {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 15px;
+      border: 1px solid #ffffff25;
+      border-radius: 11px;
+      background: #ffffff0d;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .welcome-note i { color: #b8b6ff; }
+
+    /* ══════════════════════════════════════════════════════════
+       STATS
+       ══════════════════════════════════════════════════════════ */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin: 20px 0 30px;
+    }
+    .stat {
+      min-height: 91px;
+      padding: 17px 19px;
+      border: none;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+      box-shadow: 0 12px 30px rgba(0,0,0,.2);
+    }
+    .stat-label {
+      margin-bottom: 3px;
+      color: var(--text-light);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .stat-value {
+      color: var(--primary-dk);
+      font: 800 25px/1.2 "Poppins", sans-serif;
+    }
+    .stat-icon {
+      width: 41px;
+      height: 41px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-lt);
+    }
+    .stat:nth-child(2) .stat-icon {
+      color: var(--orange);
+      background: #fff4ee;
+    }
+    .stat:nth-child(3) .stat-icon {
+      color: var(--green);
+      background: #e6faf5;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SECTION HEAD & TOOLS
+       ══════════════════════════════════════════════════════════ */
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 15px;
+    }
+    h2 {
+      margin-bottom: 3px;
+      color: #fff;
+      font: 800 20px "Poppins", sans-serif;
+      letter-spacing: -.4px;
+    }
+    .section-subtitle {
+      margin: 0;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+    }
+    .tools {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .search-wrap { position: relative; }
+    .search-wrap i {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      color: var(--text-light);
+      transform: translateY(-50%);
+      font-size: 12px;
+    }
+    .search, .filter {
+      height: 39px;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      outline: 0;
+      background: white;
+      color: var(--text);
+      font-size: 12px;
+      transition: .2s;
+    }
+    .search {
+      width: 220px;
+      padding: 0 14px 0 36px;
+    }
+    .filter {
+      min-width: 140px;
+      padding: 0 34px 0 14px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    .search:focus, .filter:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(94,92,230,.1);
+    }
+    .refresh {
+      width: 39px;
+      height: 39px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      background: #fff;
+      color: var(--primary);
+      cursor: pointer;
+      transition: .2s;
+      display: grid;
+      place-items: center;
+    }
+    .refresh:hover {
+      background: var(--primary-lt);
+      border-color: var(--primary);
+    }
+    .refresh:disabled { cursor: wait; opacity: .6; }
+
+    /* ══════════════════════════════════════════════════════════
+       TASK CARDS
+       ══════════════════════════════════════════════════════════ */
+    .tasks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+    .card {
+      min-width: 0;
+      padding: 24px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: 0 24px 60px rgba(0,0,0,.3);
+      transition: transform .18s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .task-ref {
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .045em;
+    }
+    .task-title {
+      margin: 3px 0 0;
+      color: var(--primary-dk);
+      font: 700 15px "Poppins", sans-serif;
+      overflow-wrap: anywhere;
+    }
+    .badge {
+      flex: 0 0 auto;
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .badge.assigned {
+      color: #c05621;
+      background: #fff4ee;
+    }
+    .badge.in-progress {
+      color: var(--primary);
+      background: var(--primary-lt);
+    }
+    .badge.completed {
+      color: #00875a;
+      background: #e6faf5;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       LOCATION BLOCK
+       ══════════════════════════════════════════════════════════ */
+    .location-block {
+      margin: 16px 0 13px;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      background: var(--bg);
+    }
+    .location-icon {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-lt);
+    }
+    .location-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text-light);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .location-value {
+      color: var(--primary-dk);
+      font-size: 12px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .coordinates {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-light);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       DETAILS
+       ══════════════════════════════════════════════════════════ */
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px 15px;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+    .detail { min-width: 0; }
+    .detail-label {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text-light);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .detail-value {
+      color: var(--primary-dk);
+      font-size: 12px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .detail-value a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .description { grid-column: 1 / -1; }
+    .description .detail-value {
+      line-height: 1.55;
+      font-weight: 500;
+    }
+    .report-work-form { display:grid; gap:10px; width:100%; }
+    .report-work-form label { display:grid; gap:6px; width:100%; color:var(--text-light); font-size:11px; font-weight:700; }
+    .report-work-form textarea { min-height:80px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-family:inherit; font-size:12px; resize:vertical; }
+    .report-work-form input[type=file] { max-width:100%; font-size:12px; }
+
+    /* ══════════════════════════════════════════════════════════
+       ACTIONS
+       ══════════════════════════════════════════════════════════ */
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .action {
+      min-height: 40px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: .18s ease;
+      text-decoration: none;
+    }
+    .action:disabled { cursor: wait; opacity: .6; }
+    .start {
+      color: white;
+      background: var(--primary);
+      flex: 1;
+      box-shadow: 0 4px 15px rgba(94,92,230,.3);
+    }
+    .start:hover:not(:disabled) {
+      background: var(--primary-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(94,92,230,.4);
+    }
+    .complete {
+      color: white;
+      background: var(--green);
+      flex: 1;
+      box-shadow: 0 4px 15px rgba(16,185,129,.3);
+    }
+    .complete:hover:not(:disabled) {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(16,185,129,.4);
+    }
+    .map {
+      border: 1px solid var(--border);
+      color: var(--primary-dk);
+      background: var(--bg);
+    }
+    .map:hover {
+      background: var(--primary-lt);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .completed-note {
+      color: #00875a;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 0;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       STATE PANEL (Empty / Error)
+       ══════════════════════════════════════════════════════════ */
+    .state-panel {
+      grid-column: 1 / -1;
+      min-height: 200px;
+      padding: 44px 20px;
+      border: none;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: rgba(255,255,255,0.95);
+      color: var(--text-light);
+      box-shadow: 0 24px 60px rgba(0,0,0,.3);
+    }
+    .state-icon {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 12px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-lt);
+      font-size: 20px;
+    }
+    .state-panel h3 {
+      margin-bottom: 4px;
+      color: var(--primary-dk);
+      font: 700 16px "Poppins", sans-serif;
+    }
+    .state-panel p {
+      max-width: 430px;
+      margin: 0;
+      font-size: 12px;
+    }
+    .state-panel.error { color: var(--red); }
+    .state-panel.error .state-icon {
+      color: var(--red);
+      background: #fdecea;
+    }
+    .state-panel.error h3 { color: var(--red); }
+
+    /* ══════════════════════════════════════════════════════════
+       TOAST NOTICE
+       ══════════════════════════════════════════════════════════ */
+    .notice {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 9999;
+      max-width: min(420px, calc(100% - 32px));
+      padding: 14px 24px;
+      border: none;
+      border-radius: 50px;
+      display: none;
+      background: var(--primary-dk);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(10,4,60,.4);
+      font-size: 13px;
+      font-weight: 500;
+      animation: toastIn .3s ease;
+    }
+    .notice.error { background: var(--red); }
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .map-dialog {
+      width: min(1120px, calc(100% - 36px));
+      max-width: none;
+      height: min(790px, calc(100dvh - 36px));
+      max-height: none;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 24px;
+      overflow: hidden;
+      background: #f4f4f8;
+      color: var(--text);
+      box-shadow: 0 28px 90px rgba(10,4,60,.42);
+    }
+    .map-dialog::backdrop { background: rgba(8,5,38,.72); backdrop-filter: blur(5px); }
+    .map-dialog-content { height: 100%; display: flex; flex-direction: column; }
+    .map-dialog-header {
+      min-height: 66px;
+      padding: 12px 18px 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: #fff;
+      background: linear-gradient(110deg, #0A043C, #2a1f6e);
+    }
+    .map-dialog-title { min-width: 0; }
+    .map-dialog-title strong { display: block; font: 700 15px "Poppins", sans-serif; }
+    .map-dialog-title span { display: block; margin-top: 2px; color: rgba(255,255,255,.68); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .map-close {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 12px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background .2s ease;
+    }
+    .map-close:hover { background: rgba(255,255,255,.2); }
+    .map-frame { width: 100%; height: 100%; min-height: 0; flex: 1; border: 0; background: #f4f4f8; }
+    body.dialog-open { overflow: hidden; }
+
+    /* ══════════════════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════════════════ */
+    @media (max-width: 760px) {
+      main, .topbar-inner { width: min(100% - 32px, 560px); }
+      .welcome { min-height: 166px; padding: 24px; }
+      .welcome-note { display: none; }
+      .tasks { grid-template-columns: 1fr; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .tools { width: 100%; }
+      .search-wrap { flex: 1; }
+      .search { width: 100%; }
+    }
+    @media (max-width: 500px) {
+      .topbar { height: 64px; }
+      main, .topbar-inner { width: calc(100% - 28px); }
+      main { margin-top: 18px; }
+      .brand { gap: 8px; font-size: 14px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .account { gap: 8px; }
+      .avatar { width: 33px; height: 33px; }
+      .account-name { max-width: 95px; font-size: 11px; }
+      .account-role { font-size: 10px; }
+      .logout { width: 36px; height: 36px; min-height: 36px; padding: 0; font-size: 0; }
+      .logout i { margin: 0; font-size: 13px; }
+      .welcome { min-height: 150px; padding: 21px; border-radius: 18px; }
+      .welcome-text { max-width: 300px; font-size: 12px; }
+      .stats { gap: 8px; margin: 13px 0 25px; grid-template-columns: 1fr; }
+      .stat { min-height: 78px; padding: 11px; }
+      .stat-label { font-size: 10px; line-height: 1.3; }
+      .stat-value { font-size: 21px; }
+      .stat-icon { width: 31px; height: 31px; border-radius: 9px; font-size: 12px; }
+      .filter { min-width: 110px; }
+      .card { padding: 15px; }
+      .actions { flex-direction: column; }
+      .action { width: 100%; }
+      .map-dialog { width: calc(100% - 16px); height: calc(100dvh - 16px); border-radius: 17px; }
+      .map-dialog-header { min-height: 58px; padding: 9px 12px 9px 16px; }
+    }
+    @media (max-width: 380px) {
+      .map-dialog-title strong { font-size: 13px; }
+      .map-dialog-title span { max-width: 230px; font-size: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *:before, *:after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="municipal-driver">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="driver.html" aria-label="SmartBin Driver dashboard">
+        <span class="brand-mark"><i class="fas fa-recycle" aria-hidden="true"></i></span>
+        <span>SmartBin<small>Adama City • Driver</small></span>
+      </a>
+      <div class="account">
+        <span class="avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+        <span class="account-name"><span id="driverName">Driver</span><span class="account-role">Collection driver</span></span>
+        <button class="logout" id="logout" type="button" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="welcome" aria-labelledby="welcomeTitle">
+      <div class="welcome-copy">
+        <p class="eyebrow">Driver workspace</p>
+        <h1 id="welcomeTitle">Your collection route</h1>
+        <p class="welcome-text">Review your assigned requests, navigate to each location, and keep your collection progress up to date.</p>
+      </div>
+      <div class="welcome-note"><i class="fas fa-location-dot" aria-hidden="true"></i> Your tasks, all in one place</div>
+    </section>
+    <section class="stats" aria-label="Task summary">
+      <article class="stat"><div><div class="stat-label">Awaiting pickup</div><div class="stat-value" id="assignedCount">—</div></div><span class="stat-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span></article>
+      <article class="stat"><div><div class="stat-label">In progress</div><div class="stat-value" id="progressCount">—</div></div><span class="stat-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span></article>
+      <article class="stat"><div><div class="stat-label">Completed</div><div class="stat-value" id="completedCount">—</div></div><span class="stat-icon"><i class="fas fa-circle-check" aria-hidden="true"></i></span></article>
+    </section>
+    <section aria-labelledby="tasksHeading">
+      <div class="section-head">
+        <div><h2 id="tasksHeading">My collection tasks</h2><p class="section-subtitle" id="taskSummary">Tasks assigned to your driver account</p></div>
+        <div class="tools">
+          <label class="search-wrap"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><input class="search" id="taskSearch" type="search" placeholder="Search tasks or locations" aria-label="Search tasks or locations"></label>
+          <select class="filter" id="statusFilter" aria-label="Filter tasks by status">
+            <option value="all">All statuses</option>
+            <option value="assigned">Assigned</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+          <button class="refresh" id="refresh" type="button" aria-label="Refresh collection tasks" title="Refresh tasks"><i class="fas fa-rotate" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div id="tasks" class="tasks" aria-live="polite" aria-busy="true">
+        <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div><h3>Loading your tasks</h3><p>Your assigned collection requests will appear here.</p></div></div>
+      </div>
+    </section>
+    <section aria-labelledby="reportsHeading" style="margin-top:30px">
+      <div class="section-head"><div><h2 id="reportsHeading">Assigned citizen reports</h2><p class="section-subtitle" id="reportSummary">Reports assigned to your driver account</p></div></div>
+      <div id="citizenReports" class="tasks" aria-live="polite"><div class="state-panel"><div><h3>Loading assigned reports</h3></div></div></div>
+    </section>
+  </main>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <dialog class="map-dialog" id="mapDialog" aria-labelledby="mapDialogTitle">
+    <div class="map-dialog-content">
+      <div class="map-dialog-header">
+        <div class="map-dialog-title">
+          <strong id="mapDialogTitle"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Collection location &amp; navigation</strong>
+          <span id="mapDialogTask"></span>
+        </div>
+        <button class="map-close" id="closeMap" type="button" aria-label="Close map"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <iframe class="map-frame" id="mapFrame" title="Interactive collection location map" loading="lazy"></iframe>
+    </div>
+  </dialog>
+  <script>
+    (function () {
+      var token = localStorage.getItem('sb_internal_token') || localStorage.getItem('sb_driver_token');
+      var tasks = document.getElementById('tasks');
+      var allTasks = [];
+      var allReports = [];
+      var noticeTimer;
+      var mapDialog = document.getElementById('mapDialog');
+      var mapFrame = document.getElementById('mapFrame');
+
+      function signOut(reason) {
+        localStorage.removeItem('sb_internal_token');
+        localStorage.removeItem('sb_driver_token');
+        localStorage.removeItem('sb_admin_token');
+        window.location.replace('login.html?role=driver' + (reason ? '&reason=role' : ''));
+      }
+      function api(path, options) {
+        options = options || {};
+        options.headers = Object.assign({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, options.headers || {});
+        return fetch('http://localhost:3000/api' + path, options).then(function (response) {
+          if (response.status === 401) {
+            signOut(false);
+            throw new Error('Session expired. Please sign in again.');
+          }
+          return response.json().then(function (data) {
+            if (!response.ok) throw new Error(data.message || 'Request failed.');
+            return data;
+          });
+        });
+      }
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+          return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char];
+        });
+      }
+      function notify(message, isError) {
+        var notice = document.getElementById('notice');
+        window.clearTimeout(noticeTimer);
+        notice.textContent = message;
+        notice.classList.toggle('error', Boolean(isError));
+        notice.style.display = 'block';
+        noticeTimer = window.setTimeout(function () { notice.style.display = 'none'; }, 3200);
+      }
+      function statePanel(title, message, isError) {
+        return '<div class="state-panel' + (isError ? ' error' : '') + '"><div><div class="state-icon"><i class="fas ' +
+          (isError ? 'fa-triangle-exclamation' : 'fa-clipboard-check') +
+          '" aria-hidden="true"></i></div><h3>' + escapeHtml(title) + '</h3><p>' + escapeHtml(message) + '</p></div></div>';
+      }
+      function updateStats() {
+        var assigned = allTasks.filter(function (task) { return task.status === 'assigned'; }).length;
+        var inProgress = allTasks.filter(function (task) { return task.status === 'in-progress'; }).length;
+        var completed = allTasks.filter(function (task) { return task.status === 'completed'; }).length;
+        document.getElementById('assignedCount').textContent = assigned;
+        document.getElementById('progressCount').textContent = inProgress;
+        document.getElementById('completedCount').textContent = completed;
+      }
+      function openTaskMap(task) {
+        var label = [task.binCode || task.refId || task._id, task.binName || task.location || 'Collection location'].join(' · ');
+        document.getElementById('mapDialogTask').textContent = label;
+        mapFrame.src = 'map.html?taskId=' + encodeURIComponent(task._id) + '&embed=1';
+        document.body.classList.add('dialog-open');
+        mapDialog.showModal();
+      }
+      function openReportMap(report) {
+        document.getElementById('mapDialogTask').textContent = [report.refId || report._id, report.location || 'Reported location'].join(' · ');
+        mapFrame.src = 'map.html?reportId=' + encodeURIComponent(report._id) + '&embed=1';
+        document.body.classList.add('dialog-open'); mapDialog.showModal();
+      }
+      function closeTaskMap() {
+        if (mapDialog.open) mapDialog.close();
+      }
+      function render(items) {
+        var query = document.getElementById('taskSearch').value.trim().toLowerCase();
+        var status = document.getElementById('statusFilter').value;
+        var visible = items.filter(function (task) {
+          var searchable = [task.refId, task.fullName, task.phone, task.location, task.description].join(' ').toLowerCase();
+          return (status === 'all' || task.status === status) && (!query || searchable.indexOf(query) !== -1);
+        });
+        document.getElementById('taskSummary').textContent = visible.length + ' of ' + items.length + ' assigned ' + (items.length === 1 ? 'task' : 'tasks');
+        if (!visible.length) {
+          tasks.innerHTML = items.length
+            ? statePanel('No matching tasks', 'Try a different search term or status filter.', false)
+            : statePanel('You’re all caught up', 'There are no collection tasks assigned to you right now. New assignments will appear here.', false);
+          return;
+        }
+        tasks.innerHTML = visible.map(function (task) {
+          var id = task._id;
+          var taskStatus = ['assigned', 'in-progress', 'completed'].indexOf(task.status) !== -1 ? task.status : 'assigned';
+          var hasCoordinates = task.latitude != null && task.longitude != null &&
+            Number.isFinite(Number(task.latitude)) && Number.isFinite(Number(task.longitude));
+          var coordinates = hasCoordinates
+            ? '<span class="coordinates"><i class="fas fa-crosshairs" aria-hidden="true"></i> ' + escapeHtml(task.latitude) + ', ' + escapeHtml(task.longitude) + '</span>'
+            : '';
+          var actions = taskStatus === 'assigned'
+            ? '<button class="action start" type="button" data-task="' + escapeHtml(id) + '" data-status="in-progress"><i class="fas fa-play" aria-hidden="true"></i> Start collection</button>'
+            : taskStatus === 'in-progress'
+              ? '<button class="action complete" type="button" data-task="' + escapeHtml(id) + '" data-status="completed"><i class="fas fa-check" aria-hidden="true"></i> Complete collection</button>'
+              : '<span class="completed-note"><i class="fas fa-circle-check" aria-hidden="true"></i> Collection completed</span>';
+          actions += '<button class="action map" type="button" data-map-task="' + escapeHtml(id) + '"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Open GIS map</button>';
+          return '<article class="card"><div class="card-top"><div><div class="task-ref">' + escapeHtml(task.binCode || task.refId || task._id) + '</div><h3 class="task-title">' + (task.source === 'bin' ? 'Bin collection · ' + escapeHtml(task.binName || 'Garbage bin') : 'Collection request') + '</h3></div>' +
+            '<span class="badge ' + taskStatus + '">' + escapeHtml(taskStatus.replace(/-/g, ' ')) + '</span></div>' +
+            '<div class="location-block"><span class="location-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span><div><span class="location-label">Collection location</span>' +
+            '<span class="location-value">' + escapeHtml(task.location || 'Location not provided') + '</span>' + coordinates + '</div></div>' +
+            '<div class="details"><div class="detail"><span class="detail-label">Requester</span><span class="detail-value">' + escapeHtml(task.fullName || 'Not provided') + '</span></div>' +
+            '<div class="detail"><span class="detail-label">Contact</span><span class="detail-value">' +
+            (task.phone ? '<a href="tel:' + escapeHtml(encodeURIComponent(task.phone)) + '">' + escapeHtml(task.phone) + '</a>' : 'Not provided') + '</span></div>' +
+            (task.source === 'bin' ? '<div class="detail"><span class="detail-label">Fill at assignment</span><span class="detail-value">' + (task.fillLevelAtAssignment == null ? 'Unavailable' : escapeHtml(task.fillLevelAtAssignment) + '% · ' + escapeHtml(task.readingSourceAtAssignment || 'unknown reading source') + ' · ' + escapeHtml(task.readingAtAssignment ? new Date(task.readingAtAssignment).toLocaleString() : 'time unavailable')) + '</span></div>' : '') +
+            '<div class="detail description"><span class="detail-label">Collection details</span><span class="detail-value">' + escapeHtml(task.description || 'No additional details provided.') + '</span></div></div>' +
+            '<div class="actions">' + actions + '</div></article>';
+        }).join('');
+        tasks.querySelectorAll('[data-task]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var taskId = button.getAttribute('data-task');
+            var nextStatus = button.getAttribute('data-status');
+            button.disabled = true;
+            api('/driver/tasks/' + encodeURIComponent(taskId) + '/status', {
+              method: 'PATCH',
+              body: JSON.stringify({ status: nextStatus })
+            }).then(function () {
+              notify(nextStatus === 'completed' ? 'Collection marked as completed.' : 'Collection started. Good luck on your route.');
+              return loadTasks();
+            }).catch(function (err) {
+              notify(err.message, true);
+              button.disabled = false;
+            });
+          });
+        });
+        tasks.querySelectorAll('[data-map-task]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var selectedTask = allTasks.find(function (task) {
+              return String(task._id) === button.getAttribute('data-map-task');
+            });
+            if (selectedTask) openTaskMap(selectedTask);
+          });
+        });
+      }
+      function loadTasks() {
+        var refresh = document.getElementById('refresh');
+        refresh.disabled = true;
+        tasks.setAttribute('aria-busy', 'true');
+        loadCitizenReports();
+        return api('/driver/tasks').then(function (result) {
+          if (!result || !Array.isArray(result.data)) throw new Error('The task list could not be loaded. Please try again.');
+          allTasks = result.data;
+          updateStats();
+          render(allTasks);
+        }).catch(function (err) {
+          tasks.innerHTML = statePanel('Unable to load tasks', err.message, true);
+          document.getElementById('taskSummary').textContent = 'Please try again';
+          notify(err.message, true);
+        }).then(function () {
+          tasks.setAttribute('aria-busy', 'false');
+          refresh.disabled = false;
+        });
+      }
+      function renderCitizenReports() {
+        var target = document.getElementById('citizenReports');
+        document.getElementById('reportSummary').textContent = allReports.length + ' assigned ' + (allReports.length === 1 ? 'report' : 'reports');
+        if (!allReports.length) { target.innerHTML = statePanel('No assigned reports', 'New citizen report assignments will appear here.', false); return; }
+        target.innerHTML = allReports.map(function (r) {
+          var waiting = Boolean(r.workSubmittedAt), state = waiting ? 'awaiting verification' : String(r.status).replace(/-/g, ' ');
+          var actions = r.status === 'pending' ? '<button class="action start" data-report-start="' + escapeHtml(r._id) + '"><i class="fas fa-play"></i> Start work</button>' : '';
+          actions += !waiting && r.status === 'in-progress' ? '<div class="report-work-form"><label>Work notes <textarea data-report-notes="' + escapeHtml(r._id) + '" maxlength="2000" placeholder="Describe the investigation, cleanup, or maintenance performed"></textarea></label><label>Completion photo (optional) <input type="file" accept="image/*" data-report-evidence="' + escapeHtml(r._id) + '"></label><button class="action complete" data-report-submit="' + escapeHtml(r._id) + '"><i class="fas fa-paper-plane"></i> Submit for verification</button></div>' : '';
+          actions += waiting ? '<span class="completed-note"><i class="fas fa-clock"></i> Work submitted · awaiting Admin verification</span>' : '';
+          actions += '<button class="action map" data-report-map="' + escapeHtml(r._id) + '"><i class="fas fa-map-location-dot"></i> View on Map</button>';
+          var photo = r.photoUrl ? '<a target="_blank" rel="noopener noreferrer" href="' + escapeHtml(new URL(r.photoUrl, 'http://localhost:3000').href) + '">View citizen evidence</a>' : '';
+          var coords = r.latitude != null && r.longitude != null ? '<span class="coordinates">' + escapeHtml(r.latitude) + ', ' + escapeHtml(r.longitude) + '</span>' : '<span class="coordinates">Map coordinates not provided</span>';
+          return '<article class="card"><div class="card-top"><div><div class="task-ref">' + escapeHtml(r.refId || r._id) + '</div><h3 class="task-title">' + escapeHtml(r.problemType || 'other') + ' report · ' + escapeHtml(r.priority || 'medium') + '</h3></div><span class="badge ' + escapeHtml(r.status) + '">' + escapeHtml(state) + '</span></div><div class="location-block"><span class="location-icon"><i class="fas fa-location-dot"></i></span><div><span class="location-label">Reported location</span><span class="location-value">' + escapeHtml(r.location || 'Location not provided') + '</span>' + coords + '</div></div><div class="details"><div class="detail description"><span class="detail-label">Report details</span><span class="detail-value">' + escapeHtml(r.description || 'No description provided.') + '</span></div>' + (r.workNotes ? '<div class="detail description"><span class="detail-label">Submitted work</span><span class="detail-value">' + escapeHtml(r.workNotes) + '</span></div>' : '') + '<div class="detail">' + photo + '</div></div><div class="actions">' + actions + '</div></article>';
+        }).join('');
+        target.querySelectorAll('[data-report-start]').forEach(function (button) { button.addEventListener('click', function () { button.disabled=true; api('/driver/tasks/reports/'+encodeURIComponent(button.dataset.reportStart)+'/start',{method:'PATCH',body:'{}'}).then(loadCitizenReports).catch(function(e){notify(e.message,true);button.disabled=false;}); }); });
+        target.querySelectorAll('[data-report-submit]').forEach(function (button) { button.addEventListener('click', function () {
+          var id=button.dataset.reportSubmit, notes=target.querySelector('[data-report-notes="'+id+'"]'), file=target.querySelector('[data-report-evidence="'+id+'"]');
+          if(!notes||!notes.value.trim()){notify('Enter work notes before submitting.',true);return;}
+          var form=new FormData();form.append('notes',notes.value.trim());if(file&&file.files[0])form.append('evidence',file.files[0]);button.disabled=true;
+          fetch('http://localhost:3000/api/driver/tasks/reports/'+encodeURIComponent(id)+'/work',{method:'POST',headers:{Authorization:'Bearer '+token},body:form}).then(function(response){return response.json().then(function(data){if(!response.ok)throw new Error(data.message||'Could not submit work.');return data;});}).then(function(){notify('Work submitted for Admin verification.');return loadCitizenReports();}).catch(function(e){notify(e.message,true);button.disabled=false;});
+        }); });
+        target.querySelectorAll('[data-report-map]').forEach(function (button) { button.addEventListener('click', function () { var report=allReports.find(function(x){return String(x._id)===button.dataset.reportMap;});if(report)openReportMap(report); }); });
+      }
+      function loadCitizenReports() {
+        return api('/driver/tasks/reports').then(function (result) { if(!result.success||!Array.isArray(result.data))throw new Error('Assigned reports could not be loaded.');allReports=result.data;renderCitizenReports(); }).catch(function(error){document.getElementById('citizenReports').innerHTML=statePanel('Unable to load assigned reports',error.message,true);});
+      }
+      document.getElementById('logout').addEventListener('click', function () { signOut(false); });
+      document.getElementById('closeMap').addEventListener('click', closeTaskMap);
+      mapDialog.addEventListener('close', function () {
+        document.body.classList.remove('dialog-open');
+        mapFrame.src = 'about:blank';
+      });
+      mapDialog.addEventListener('click', function (event) {
+        if (event.target === mapDialog) closeTaskMap();
+      });
+      window.addEventListener('message', function (event) {
+        if (event.origin !== window.location.origin || event.source !== mapFrame.contentWindow) return;
+        if (event.data && event.data.type === 'smartbin-task-updated') loadTasks();
+      });
+      document.getElementById('refresh').addEventListener('click', loadTasks);
+      document.getElementById('taskSearch').addEventListener('input', function () { render(allTasks); });
+      document.getElementById('statusFilter').addEventListener('change', function () { render(allTasks); });
+
+      if (!token) {
+        signOut(false);
+        return;
+      }
+      api('/auth/me').then(function (result) {
+        if (!result.success || !result.user || result.user.role !== 'driver') {
+          signOut(true);
+          return;
+        }
+        localStorage.setItem('sb_internal_token', token);
+        localStorage.removeItem('sb_driver_token');
+        document.getElementById('driverName').textContent = result.user.displayName || result.user.username || 'Driver';
+        return loadTasks();
+      }).catch(function (err) {
+        tasks.setAttribute('aria-busy', 'false');
+        tasks.innerHTML = statePanel('Unable to verify your session', err.message, true);
+        notify(err.message, true);
+      });
+      window.setInterval(loadTasks, 30000);
+    }());
+  </script>
+</body>
+</html>

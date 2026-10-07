@@ -1,0 +1,22 @@
+# Dependencies
+**/node_modules/
+**/build/
+
+# Environment files
+.env
+.env.*
+!**/.env.example
+
+# Uploads and runtime artifacts
+BACK END/uploads/
+FRONT END/videos/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS/editor noise
+.DS_Store
+.vscode/
+.idea/

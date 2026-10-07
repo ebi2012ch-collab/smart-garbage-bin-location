@@ -1,0 +1,302 @@
+/* ============================================
+   Adama City Smart Bin — Shared Brand Theme
+   Apply after fonts; load BEFORE page CSS.
+   Remaps legacy --primary/--accent tokens to
+   the homepage navy + lavender palette.
+   ============================================ */
+@import url('design-system.css');
+
+:root {
+  /* Brand core */
+  --navy:        var(--ds-navy);
+  --navy-mid:    var(--ds-navy-soft);
+  --navy-soft:   #2a1f6e;
+  --lavender:    #B8B6FF;
+  --lavender-lt: #DCD6F7;
+  --accent-soft: #A6B1E1;
+
+  /* Legacy aliases used by map/report/about/contact/admin */
+  --primary:     var(--ds-indigo);
+  --primary-dk:  var(--ds-navy);
+  --primary-lt:  var(--ds-indigo-soft);
+  --accent:      var(--ds-indigo);
+  --teal:        var(--ds-indigo);
+  --green:       var(--ds-success);
+  --orange:      var(--ds-warning);
+  --yellow:      #fbbf24;
+  --red:         #e74c3c;
+  --purple:      #7c6cf0;
+
+  --text:        var(--ds-text);
+  --text-light:  var(--ds-muted);
+  --text-dark:   var(--ds-navy);
+  --text-muted:  var(--ds-muted);
+  --bg:          var(--ds-page);
+  --white:       #ffffff;
+  --off-white:   #f4f4f8;
+  --grey-bar:    #e8e8ee;
+  --border:      var(--ds-border);
+
+  --shadow:      0 4px 24px rgba(10, 4, 60, .10);
+  --shadow-lg:   0 12px 40px rgba(10, 4, 60, .16);
+  --radius:      var(--ds-radius-md);
+  --radius-sm:   var(--ds-radius-sm);
+  --radius-lg:   22px;
+  --transition:  .35s cubic-bezier(.4, 0, .2, 1);
+  --max:         1180px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* ---------- Brand mark (homepage style) ---------- */
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.brand-city {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--lavender);
+  letter-spacing: .02em;
+}
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* Legacy brand structure (icon + title/sub) → brand look */
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--navy-soft), var(--primary));
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+.brand-sub   { font-size: 11px; color: var(--text-light); font-weight: 500; }
+
+/* ---------- Shared fixed header (inner pages) ---------- */
+#header {
+  background: rgba(10, 4, 60, .96) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(184, 182, 255, .12) !important;
+}
+#header .brand-title { color: var(--white); }
+#header .brand-sub { color: var(--lavender); }
+#header .brand-city { color: var(--lavender); }
+#header .brand-name { color: var(--white); }
+
+#header .navbar {
+  gap: 20px !important;
+}
+
+#header #nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 36px !important;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+#header .nav-link {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0 !important;
+  padding: 4px 0 !important;
+  border-radius: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: .04em !important;
+  text-transform: capitalize !important;
+  color: rgba(255, 255, 255, .88) !important;
+  background: transparent !important;
+  position: relative !important;
+}
+
+#header .nav-link:hover,
+#header .nav-link.active {
+  color: var(--white) !important;
+  background: transparent !important;
+}
+
+#header .nav-link.active::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -2px !important;
+  height: 1.5px !important;
+  background: var(--white) !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  transform: none !important;
+}
+
+#header .nav-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--white) !important;
+  color: #1a1a2e !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 10px 22px !important;
+  border-radius: 10px !important;
+  transition: transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s cubic-bezier(.4,0,.2,1) !important;
+  white-space: nowrap !important;
+  z-index: 2 !important;
+}
+
+#header .nav-cta:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25) !important;
+}
+
+#header .hamburger span {
+  background: var(--white) !important;
+}
+
+#header .dark-mode-toggle,
+#header .lang-btn {
+  background: rgba(184, 182, 255, .15);
+  color: var(--white);
+  border: 1px solid rgba(184, 182, 255, .25);
+}
+#header .dark-mode-toggle:hover,
+#header .lang-btn:hover {
+  background: rgba(184, 182, 255, .28);
+}
+
+@media (max-width: 768px) {
+  #header .navbar {
+    min-height: 68px;
+    padding: 14px 5%;
+  }
+
+  #header #nav {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    width: min(300px, 82vw) !important;
+    height: 100vh !important;
+    background: linear-gradient(180deg, var(--navy) 0%, #130b4d 100%) !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 90px 24px 40px !important;
+    gap: 8px !important;
+    transform: translateX(110%) !important;
+    transition: transform .35s ease !important;
+    box-shadow: -12px 0 36px rgba(0,0,0,.28) !important;
+    z-index: 1000 !important;
+  }
+
+  #header #nav.open {
+    transform: translateX(0) !important;
+  }
+
+  #header .nav-link {
+    display: flex !important;
+    width: 100% !important;
+    padding: 12px 0 !important;
+    color: rgba(255,255,255,.92) !important;
+    font-size: 16px !important;
+  }
+
+  #header .nav-link.active::after {
+    width: 42px !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 6px !important;
+  }
+
+  #header .nav-cta {
+    display: none !important;
+  }
+}
+
+/* ---------- Page heroes ---------- */
+.page-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 55%, var(--navy-soft) 100%) !important;
+  color: var(--white);
+}
+.page-hero::before {
+  background: radial-gradient(circle at 80% 20%, rgba(184, 182, 255, .18), transparent 55%) !important;
+}
+.gradient-text {
+  background: linear-gradient(90deg, #ffffff, var(--lavender)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.hero-tag,
+.page-hero .section-tag {
+  background: rgba(184, 182, 255, .15) !important;
+  color: var(--lavender-lt) !important;
+  border: 1px solid rgba(184, 182, 255, .28);
+}
+
+/* ---------- Shared accents ---------- */
+.section-tag {
+  background: var(--primary-lt) !important;
+  color: var(--primary) !important;
+}
+
+.btn-primary,
+.btn.btn-primary,
+button.btn-primary {
+  background: var(--navy) !important;
+  color: var(--white) !important;
+  border-color: var(--navy) !important;
+}
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: var(--navy-mid) !important;
+}
+
+/* Keep map/status chips readable */
+.chip.active,
+.filter-chips .chip.active {
+  background: var(--navy) !important;
+  color: var(--white) !important;
+  border-color: var(--navy) !important;
+}
+
+/* Footers on dark navy */
+footer {
+  background: var(--navy) !important;
+  color: rgba(255, 255, 255, .78);
+}
+footer .brand-title,
+footer .brand-name { color: var(--white) !important; }
+footer .brand-sub,
+footer .brand-city { color: var(--lavender) !important; }
+footer a:hover { color: var(--lavender) !important; }
+.footer-bottom {
+  border-top-color: rgba(184, 182, 255, .15) !important;
+}

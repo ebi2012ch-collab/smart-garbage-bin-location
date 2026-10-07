@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adama City Smart Bin | Official Waste Collection Services</title>
+  <meta name="description" content="Official Adama City public service portal for collection requests and waste problem reports.">
+  <meta name="keywords" content="Adama City, waste collection, waste management, Ethiopia, sanitation">
+  <meta name="author" content="Adama City Administration">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Adama City Smart Bin — Official Waste Collection Services">
+  <meta property="og:description" content="Request waste collection and report service issues in Adama City.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="images/clean.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0A043C">
+  <link rel="apple-touch-icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-inner">
+      <div class="spinner"></div>
+      <span>Loading Smart Bin…</span>
+    </div>
+  </div>
+
+  <!-- ========== HEADER ========== -->
+  <header id="header">
+    <div class="navbar">
+      <a href="index.html" class="brand">
+        <span class="brand-city">Adama City</span>
+        <span class="brand-name">Smart Bin</span>
+      </a>
+
+      <nav id="nav">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="collection.html" class="nav-link">Request Collection</a>
+        <a href="report.html" class="nav-link">Report</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+
+      <a href="report.html" class="nav-cta">Report Issue</a>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="main-content">
+    <div class="hero-bg" aria-hidden="true">
+      <img src="images/adama.jpg" alt="">
+      <div class="hero-overlay"></div>
+    </div>
+
+    <div class="hero-inner">
+      <div class="hero-content" data-aos="fade-up">
+        <p class="hero-eyebrow"><i class="fas fa-landmark" aria-hidden="true"></i> Official Adama City Government Service</p>
+        <h1 class="hero-title">
+          Waste Collection<br>
+          <span class="hero-title-accent">FOR ADAMA CITY</span>
+        </h1>
+        <p class="hero-sub">
+          Request collection or report a waste problem to the Adama City sanitation team.
+        </p>
+        <div class="hero-actions">
+          <a href="collection.html" class="btn hero-cta-primary">jdj
+            <span>Request Collection</span>
+            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          </a>
+          <a href="report.html" class="btn hero-cta-secondary">
+            <span>Report Issue</span>
+            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-visual" data-aos="fade-left" data-aos-delay="150">
+        <img
+          src="images/adama.jpg"
+          alt="Adama City residential neighborhood"
+          class="hero-mobile-img"
+          
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ANNOUNCEMENT ========== -->
+  <div class="announcement-bar">
+    <p>
+      New Feature: Report waste anonymously – your identity is protected.
+      <a href="report.html">Report Now</a>
+    </p>
+  </div>
+
+  <!-- ========== HOW CAN WE HELP ========== -->
+  <section class="help-section" id="services">
+    <div class="help-inner">
+      <h2 class="help-title" data-aos="fade-up">How Can We Help You?</h2>
+
+      <div class="help-grid" data-aos="fade-up" data-aos-delay="100">
+        <div class="help-col help-col-left">
+          <article class="help-item">
+            <span class="help-tag"><i class="fas fa-truck"></i> Request Collection</span>
+            <p>Submit a collection request for your location without creating an account.</p>
+          </article>
+          <article class="help-item">
+            <span class="help-tag"><i class="fas fa-clipboard-check"></i> Request Updates</span>
+            <p>Your request is reviewed by an administrator before it is assigned for collection.</p>
+          </article>
+        </div>
+
+        <div class="help-center">
+          <img
+            src="images/ChatGPT_Image_Jul_30__2026__04_24_55_PM-removebg-preview.png"
+            alt="Smart connected garbage bins"
+            class="help-bins"
+          >
+        </div>
+
+        <div class="help-col help-col-right">
+          <article class="help-item">
+            <span class="help-tag"><i class="fas fa-info-circle"></i> Report Waste</span>
+            <p>Report overflowing or damaged bins directly to the sanitation team in seconds.</p>
+          </article>
+          <article class="help-item">
+            <span class="help-tag"><i class="fas fa-phone"></i> Contact the Team</span>
+            <p>Contact the sanitation team for help with waste collection services.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-wave" aria-hidden="true">
+      <svg viewBox="0 0 440 320" preserveAspectRatio="none">
+        <path fill="#E8E4FF" d="M0,80 C180,200 360,20 540,120 C720,220 900,40 1080,140 C1260,240 1380,100 1440,160 L1440,320 L0,320 Z"></path>
+        <path fill="#C8C2F0" d="M0,140 C200,60 400,240 600,140 C800,40 1000,220 1200,140 C1320,100 1400,180 1440,160 L1440,320 L0,320 Z"></path>
+        <path fill="#9B93D8" d="M0,190 C260,120 520,260 780,180 C1040,100 1240,240 1440,190 L1440,320 L0,320 Z"></path>
+        <path fill="#0A043C" d="M0,250 C320,200 640,290 960,240 C1160,210 1320,270 1440,240 L1440,320 L0,320 Z"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ========== EXPERIENCE ========== -->
+  <section class="experience-section">
+    <div class="experience-inner">
+      <div class="experience-media" data-aos="fade-right">
+        <img src="images/adama.jpg" alt="Modern Adama City at night">
+      </div>
+      <div class="experience-content" data-aos="fade-left">
+        <h2>Experience Clean &amp; <span>Smart Adama City</span></h2>
+        <p>
+          Walk through a cleaner, greener and smarter city environment supported by reliable collection services
+          and backed by Adama City Administration.
+        </p>
+        <p>
+          Every citizen can request collection, report issues, and take part in building a healthier urban future —
+          one smart action at a time.
+        </p>
+        <a href="collection.html" class="btn btn-light">
+          <i class="fas fa-truck"></i>
+          Request Collection
+        </a>
+      </div>
+    </div>
+
+    <!-- News cards -->
+    <div class="news-row">
+      <article class="news-card" data-aos="fade-up">
+        <img src="images/homepage image.png" alt="New bin collection sites" class="news-thumb">
+        <div class="news-body">
+          <span class="news-label">LATEST NEWS</span>
+          <h3>New bin collection sites activated in central district.</h3>
+          <a href="about.html" class="news-link">Read More !! <i class="fas fa-external-link-alt"></i></a>
+        </div>
+      </article>
+
+      <article class="news-card" data-aos="fade-up" data-aos-delay="100">
+        <img src="images/kk.jpg" alt="City sanitation team" class="news-thumb">
+        <div class="news-body">
+          <span class="news-label">TECH UPDATE</span>
+          <h3>Collection requests are reviewed by the city sanitation team.</h3>
+          <a href="collection.html" class="news-link">Request Collection <i class="fas fa-external-link-alt"></i></a>
+        </div>
+      </article>
+    </div>
+
+    <!-- App download -->
+    <div class="app-download" data-aos="fade-up">
+      <h2>Download the App Today</h2>
+      <p>Take control of your urban environment. Available on iOS and Android.</p>
+      <div class="store-btns">
+        <a href="#" class="store-btn" aria-label="Download on the App Store">
+          <i class="fab fa-apple"></i>
+          <span>
+            <small>Download on the</small>
+            App Store
+          </span>
+        </a>
+        <a href="#" class="store-btn" aria-label="Get it on Google Play">
+          <i class="fab fa-google-play"></i>
+          <span>
+            <small>Get it on</small>
+            Google Play
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer>
+    <div class="footer-inner">
+      <a href="index.html" class="footer-brand">
+        <span class="brand-city">Adama City</span>
+        <span class="brand-name">Smart Bin</span>
+      </a>
+
+      <ul class="footer-links">
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="privacy.html">Terms of Service</a></li>
+        <li><a href="about.html">FAQ</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+      </ul>
+
+      <p class="footer-copy">&copy; 2024 Adama City Administration. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Cookie Consent -->
+  <div id="cookieConsent" class="cookie-banner" style="display:none" role="dialog" aria-label="Cookie consent">
+    <div class="cookie-content">
+      <div class="cookie-text">
+        <i class="fas fa-cookie-bite"></i>
+        <div>
+          <strong>We use cookies</strong>
+          <p>This website uses essential cookies to ensure proper functionality. <a href="privacy.html">Learn more</a></p>
+        </div>
+      </div>
+      <div class="cookie-actions">
+        <button class="btn-accept" id="acceptCookies">Accept All</button>
+        <button class="btn-decline" id="declineCookies">Essential Only</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

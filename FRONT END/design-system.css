@@ -1,0 +1,237 @@
+/* SmartBin municipal UI foundation. Component styles inherit these shared tokens. */
+:root {
+  --ds-navy: #0a043c;
+  --ds-navy-soft: #1a1250;
+  --ds-indigo: #4f46e5;
+  --ds-indigo-hover: #4338ca;
+  --ds-indigo-soft: #eef2ff;
+  --ds-page: #f5f6fa;
+  --ds-surface: #ffffff;
+  --ds-text: #172033;
+  --ds-muted: #526073;
+  --ds-border: #dfe4ed;
+  --ds-success: #166534;
+  --ds-success-bg: #dcfce7;
+  --ds-warning: #854d0e;
+  --ds-warning-bg: #fef3c7;
+  --ds-danger: #991b1b;
+  --ds-danger-bg: #fee2e2;
+  --ds-info: #1e40af;
+  --ds-info-bg: #dbeafe;
+  --ds-font: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 20px;
+  --ds-space-6: 24px;
+  --ds-radius-sm: 8px;
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 16px;
+  --ds-shadow-card: 0 2px 10px rgba(23, 32, 51, .06);
+  --ds-shadow-popover: 0 12px 32px rgba(10, 4, 60, .16);
+  --ds-control-height: 42px;
+}
+
+/* Reusable patterns for existing and future HTML pages. */
+.ui-card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-card);
+}
+.ui-button {
+  min-height: var(--ds-control-height);
+  padding: 0 var(--ds-space-4);
+  border: 1px solid var(--ds-indigo);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-indigo);
+  color: #fff;
+  font: 600 14px/1.2 var(--ds-font);
+  cursor: pointer;
+}
+.ui-button:hover { background: var(--ds-indigo-hover); border-color: var(--ds-indigo-hover); }
+.ui-control {
+  min-height: var(--ds-control-height);
+  padding: 0 var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  color: var(--ds-text);
+  font: 400 14px/1.4 var(--ds-font);
+}
+.ui-control:focus-visible,
+.ui-button:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, .28);
+  outline-offset: 2px;
+}
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Admin operations dashboard */
+.municipal-admin {
+  --primary: var(--ds-indigo);
+  --primary-dk: var(--ds-navy);
+  --primary-lt: var(--ds-indigo-soft);
+  --accent: var(--ds-indigo);
+  --text: var(--ds-text);
+  --text-light: var(--ds-muted);
+  --bg: var(--ds-page);
+  --white: var(--ds-surface);
+  --border: var(--ds-border);
+  --shadow: var(--ds-shadow-card);
+  --shadow-lg: var(--ds-shadow-popover);
+  --radius: var(--ds-radius-md);
+}
+.municipal-admin .sidebar { background: var(--ds-navy); }
+.municipal-admin .nav-item { min-height: 44px; padding-top: 10px; padding-bottom: 10px; font-size: 14px; }
+.municipal-admin .nav-label { font-size: 11px; color: rgba(255,255,255,.62); }
+.municipal-admin .topbar-title { font-size: clamp(26px, 2.2vw, 30px); line-height: 1.2; }
+.municipal-admin .section-card-header h3 { font-size: 19px; }
+.municipal-admin table { font-size: 15px; }
+.municipal-admin th { font-size: 12px; color: #465367; }
+.municipal-admin td { padding-top: 14px; padding-bottom: 14px; }
+.municipal-admin .badge { min-height: 26px; padding: 4px 10px; font-size: 12px; }
+.municipal-admin .badge.pending,
+.municipal-admin .badge.high,
+.municipal-admin .badge.urgent,
+.municipal-admin .badge.almost-full { background: var(--ds-warning-bg); color: var(--ds-warning); }
+.municipal-admin .badge.full,
+.municipal-admin .badge.rejected,
+.municipal-admin .badge.dismissed { background: var(--ds-danger-bg); color: var(--ds-danger); }
+.municipal-admin .badge.available,
+.municipal-admin .badge.accepted,
+.municipal-admin .badge.completed,
+.municipal-admin .badge.resolved { background: var(--ds-success-bg); color: var(--ds-success); }
+.municipal-admin .badge.assigned,
+.municipal-admin .badge.in-progress,
+.municipal-admin .badge.medium { background: var(--ds-info-bg); color: var(--ds-info); }
+.municipal-admin .btn-action,
+.municipal-admin .btn-primary,
+.municipal-admin .btn-logout,
+.municipal-admin .tab { min-height: var(--ds-control-height); font-size: 14px; }
+.municipal-admin .form-field-sm label { font-size: 14px; color: #39465a; }
+.municipal-admin .form-field-sm input,
+.municipal-admin .form-field-sm select,
+.municipal-admin .report-filters input,
+.municipal-admin .report-filters select,
+.municipal-admin .report-action-form input,
+.municipal-admin .report-action-form select,
+.municipal-admin .report-action-form textarea { font-size: 14px; }
+.municipal-admin :focus-visible { outline: 3px solid rgba(79, 70, 229, .26); outline-offset: 2px; }
+.municipal-admin .form-field-sm input:focus-visible,
+.municipal-admin .form-field-sm select:focus-visible,
+.municipal-admin .report-filters input:focus-visible,
+.municipal-admin .report-filters select:focus-visible,
+.municipal-admin .report-action-form input:focus-visible,
+.municipal-admin .report-action-form select:focus-visible,
+.municipal-admin .report-action-form textarea:focus-visible { outline: 3px solid rgba(79, 70, 229, .32); outline-offset: 2px; }
+
+/* Driver operations dashboard */
+.municipal-driver {
+  --primary: var(--ds-indigo);
+  --primary-dk: var(--ds-navy);
+  --primary-lt: var(--ds-indigo-soft);
+  --accent: var(--ds-indigo);
+  --orange: var(--ds-warning);
+  --green: var(--ds-success);
+  --text: var(--ds-text);
+  --text-light: var(--ds-muted);
+  --bg: var(--ds-page);
+  --white: var(--ds-surface);
+  --border: var(--ds-border);
+  --radius: var(--ds-radius-md);
+  background: var(--ds-page);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+}
+.municipal-driver .welcome { background: var(--ds-navy); box-shadow: var(--ds-shadow-card); }
+.municipal-driver .welcome:after { display: none; }
+.municipal-driver h1 { font-size: clamp(26px, 3vw, 30px); }
+.municipal-driver h2 { color: var(--ds-text); font-size: 20px; }
+.municipal-driver .section-subtitle { color: var(--ds-muted); font-size: 14px; }
+.municipal-driver .stat { min-height: 96px; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); box-shadow: var(--ds-shadow-card); }
+.municipal-driver .card { border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); box-shadow: var(--ds-shadow-card); }
+.municipal-driver .task-ref { font-size: 12px; }
+.municipal-driver .task-title { font-size: 17px; }
+.municipal-driver .badge { padding: 5px 10px; font-size: 12px; letter-spacing: 0; }
+.municipal-driver .badge.assigned { color: var(--ds-warning); background: var(--ds-warning-bg); }
+.municipal-driver .badge.in-progress { color: var(--ds-info); background: var(--ds-info-bg); }
+.municipal-driver .badge.completed { color: var(--ds-success); background: var(--ds-success-bg); }
+.municipal-driver .location-label,
+.municipal-driver .detail-label { font-size: 12px; color: #465367; }
+.municipal-driver .location-value,
+.municipal-driver .detail-value { font-size: 14px; line-height: 1.5; }
+.municipal-driver .coordinates { font-size: 12px; }
+.municipal-driver .search,
+.municipal-driver .filter,
+.municipal-driver .report-work-form textarea { font-size: 14px; }
+.municipal-driver .search,
+.municipal-driver .filter { height: var(--ds-control-height); border-radius: var(--ds-radius-sm); }
+.municipal-driver .action { min-height: var(--ds-control-height); font-size: 14px; }
+.municipal-driver .report-work-form label { font-size: 13px; color: #39465a; }
+.municipal-driver :focus-visible { outline: 3px solid rgba(79, 70, 229, .28); outline-offset: 2px; }
+.municipal-driver .search:focus-visible,
+.municipal-driver .filter:focus-visible,
+.municipal-driver .report-work-form textarea:focus-visible { outline: 3px solid rgba(79, 70, 229, .34); outline-offset: 2px; }
+
+/* Shared authentication and GIS support pages */
+.municipal-login {
+  background: var(--ds-navy);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+}
+.municipal-login .card {
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-popover);
+}
+.municipal-login h1 { font-size: 26px; color: var(--ds-navy); }
+.municipal-login label { font-size: 14px; color: var(--ds-text); }
+.municipal-login input,
+.municipal-login select {
+  min-height: var(--ds-control-height);
+  border-color: var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+}
+.municipal-login button {
+  min-height: 44px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-indigo);
+}
+.municipal-login button:hover { background: var(--ds-indigo-hover); }
+.municipal-login :focus-visible { outline: 3px solid rgba(79, 70, 229, .3); outline-offset: 2px; }
+
+.municipal-map {
+  background: var(--ds-page);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+}
+.municipal-map header { background: var(--ds-navy); border-bottom-color: rgba(255,255,255,.12); color: #fff; }
+.municipal-map .brand { color: #fff; }
+.municipal-map .request-ref { color: var(--ds-indigo); }
+.municipal-map .secondary { background: #eef0f5; color: #354156; }
+.municipal-map .start,
+.municipal-map .navigate { background: var(--ds-indigo); color: #fff; }
+.municipal-map .complete { background: var(--ds-success); color: #fff; }
+body.municipal-map.embedded .complete { background: var(--ds-success); color: #fff; }
+.municipal-map .status.in-progress { background: var(--ds-info-bg); color: var(--ds-info); }
+.municipal-map .status.completed { background: var(--ds-success-bg); color: var(--ds-success); }
+.municipal-map button:focus-visible,
+.municipal-map a:focus-visible { outline: 3px solid rgba(79, 70, 229, .32); outline-offset: 2px; }
+
+@media (max-width: 700px) {
+  .municipal-admin .topbar-title { font-size: 26px; }
+  .municipal-admin .section-card-header { gap: 12px; flex-wrap: wrap; }
+  .municipal-admin table { min-width: 720px; }
+  .municipal-driver main { width: min(calc(100% - 32px), 1160px); margin-top: 20px; }
+  .municipal-driver .card { padding: 18px; }
+}

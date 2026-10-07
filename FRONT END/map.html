@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collection Map | SmartBin Driver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f5f8; color: #19243a; font-family: Poppins, Arial, sans-serif; }
+    header { min-height: 64px; background: #fff; border-bottom: 1px solid #e5e9ef; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px max(16px, calc((100% - 1200px) / 2)); }
+    .brand { color: #087f62; font-weight: 700; text-decoration: none; }
+    .brand i { margin-right: 8px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    button, .button { border: 0; border-radius: 8px; padding: 10px 14px; font: 600 13px Poppins, Arial, sans-serif; cursor: pointer; text-decoration: none; }
+    .secondary { background: #f0f2f5; color: #344054; }
+    main { width: min(1200px, 100%); margin: 24px auto; padding: 0 16px; }
+    h1 { margin: 0; font-size: clamp(21px, 4vw, 28px); }
+    .subtitle { margin: 5px 0 18px; color: #697586; font-size: 14px; }
+    .layout { display: grid; grid-template-columns: minmax(280px, 350px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+    .task-panel, .map-panel { min-width: 0; background: #fff; border: 1px solid #e5e9ef; border-radius: 14px; box-shadow: 0 5px 18px #1c2c4410; }
+    .task-panel { padding: 20px; }
+    .task-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .request-ref { font-weight: 700; color: #087f62; overflow-wrap: anywhere; }
+    .status { display: inline-block; padding: 5px 9px; border-radius: 99px; background: #fff3d6; color: #8a5a00; font-size: 11px; text-transform: uppercase; }
+    .status.in-progress { background: #e7f1ff; color: #145ca8; }
+    .status.completed { background: #e7f8f1; color: #087346; }
+    .task-details { margin: 16px 0; color: #536175; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+    .task-details strong { color: #28364d; }
+    .location-state { min-height: 44px; margin: 12px 0; color: #536175; font-size: 13px; line-height: 1.5; }
+    .map-actions, .task-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+    .locate { background: #eef4fb; color: #145ca8; }
+    .navigate { background: #145ca8; color: white; text-align: center; }
+    .start { background: #087f62; color: white; }
+    .complete { background: #145ca8; color: white; }
+    button:disabled { cursor: wait; opacity: .65; }
+    .task-actions button { flex: 1 1 160px; }
+    .map-panel { position: relative; min-height: 520px; overflow: hidden; }
+    #map { position: absolute; inset: 0; min-height: 520px; }
+    .map-message { position: absolute; z-index: 500; left: 50%; top: 16px; width: min(90%, 480px); transform: translateX(-50%); margin: 0; padding: 10px 14px; border-radius: 9px; background: #fff; box-shadow: 0 3px 14px #1c2c4420; color: #536175; font-size: 13px; text-align: center; }
+    .map-panel.no-location { min-height: 120px; }
+    .map-panel.no-location #map { display: none; }
+    .map-panel.no-location .map-message { position: relative; left: auto; top: auto; width: auto; transform: none; margin: 20px; }
+    .notice { position: fixed; right: 16px; bottom: 16px; z-index: 1000; max-width: calc(100% - 32px); padding: 12px 16px; background: #172033; color: white; border-radius: 9px; display: none; }
+    .error { color: #b42318; }
+    .hidden { display: none !important; }
+    #authStatus { max-width: 540px; margin: 15vh auto; padding: 24px; color: #536175; text-align: center; }
+    body:not(.authorized) header, body:not(.authorized) main { display: none; }
+    body.authorized #authStatus { display: none; }
+    @media (max-width: 760px) {
+      header { align-items: flex-start; }
+      .header-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .layout { grid-template-columns: 1fr; }
+      .task-panel { order: 1; }
+      .map-panel { order: 2; min-height: 55vh; min-height: max(320px, 55vh); }
+      #map { min-height: max(320px, 55vh); }
+      main { margin: 18px auto; }
+    }
+    @media (max-width: 420px) {
+      header { flex-direction: column; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .task-panel { padding: 16px; }
+    }
+    body.embedded {
+      min-height: 100vh;
+      overflow: hidden;
+      background: #f4f4f8;
+    }
+    body.embedded header { display: none; }
+    body.embedded #authStatus { margin: 0; padding: 24px; }
+    body.embedded.authorized main {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 10px;
+      display: block;
+    }
+    body.embedded main > h1,
+    body.embedded main > .subtitle { display: none; }
+    body.embedded .layout {
+      height: 100%;
+      grid-template-columns: minmax(250px, 34%) minmax(0, 1fr);
+      gap: 10px;
+    }
+    body.embedded .task-panel,
+    body.embedded .map-panel {
+      border: 1px solid #e5e4f0;
+      border-radius: 18px;
+      box-shadow: 0 8px 26px rgba(10, 4, 60, .12);
+    }
+    body.embedded .task-panel {
+      padding: 18px;
+      overflow-y: auto;
+    }
+    body.embedded .request-ref { color: #5e5ce6; }
+    body.embedded .status { border-radius: 50px; font-weight: 700; }
+    body.embedded .status.in-progress { background: #eeecff; color: #5e5ce6; }
+    body.embedded .status.completed { background: #e6faf5; color: #00875a; }
+    body.embedded .task-details { color: #6b6b80; }
+    body.embedded .task-details strong { color: #0a043c; }
+    body.embedded .location-state { color: #6b6b80; }
+    body.embedded .locate { border: 1px solid #e5e4f0; border-radius: 50px; background: #eeecff; color: #0a043c; }
+    body.embedded .navigate { border-radius: 50px; background: #5e5ce6; }
+    body.embedded .start { border-radius: 50px; background: #5e5ce6; }
+    body.embedded .complete { border-radius: 50px; background: #10b981; }
+    body.embedded .map-panel {
+      min-height: 0;
+      overflow: hidden;
+    }
+    body.embedded #map { min-height: 0; }
+    body.embedded .map-message { z-index: 500; }
+    @media (max-width: 760px) {
+      body.embedded.authorized main { height: 100dvh; padding: 8px; }
+      body.embedded .layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(200px, 42%) minmax(220px, 1fr);
+        gap: 8px;
+      }
+      body.embedded .task-panel { order: 1; padding: 13px 15px; }
+      body.embedded .map-panel { order: 2; min-height: 0; }
+    }
+  </style>
+</head>
+<body class="municipal-map">
+  <script>
+    if (new URLSearchParams(window.location.search).get('embed') === '1') {
+      document.body.classList.add('embedded');
+    }
+  </script>
+  <p id="authStatus" role="status">Verifying driver access...</p>
+  <header>
+    <a class="brand" href="driver.html"><i class="fas fa-recycle"></i>SmartBin Driver</a>
+    <div class="header-actions">
+      <a class="button secondary" href="driver.html"><i class="fas fa-list"></i> My Tasks</a>
+      <button class="secondary" id="logout"><i class="fas fa-sign-out-alt"></i> Log out</button>
+    </div>
+  </header>
+  <main>
+    <h1>Collection Location</h1>
+    <p class="subtitle">Map and collection details for your assigned task.</p>
+    <div id="pageError" class="task-panel error hidden" role="alert"></div>
+    <div class="layout hidden" id="taskLayout">
+      <section class="task-panel" aria-label="Assigned collection details">
+        <div class="task-top">
+          <span id="requestRef" class="request-ref"></span>
+          <span id="taskStatus" class="status"></span>
+        </div>
+        <div class="task-details">
+          <div><strong>Requester:</strong> <span id="requester"></span></div>
+          <div><strong>Phone:</strong> <span id="phone"></span></div>
+          <div><strong>Location:</strong> <span id="location"></span></div>
+          <div><strong>Description:</strong> <span id="description"></span></div>
+          <div id="coordinatesRow" class="hidden"><strong>Coordinates:</strong> <span id="coordinates"></span></div>
+        </div>
+        <p class="location-state" id="locationState" role="status"></p>
+        <div class="map-actions">
+          <button class="locate" id="locateDriver"><i class="fas fa-location-crosshairs"></i> Use My Location</button>
+          <a class="button navigate hidden" id="navigate" target="_blank" rel="noopener noreferrer"><i class="fas fa-diamond-turn-right"></i> Navigate</a>
+        </div>
+        <div class="task-actions" id="taskActions"></div>
+      </section>
+      <section class="map-panel" aria-label="Collection location map">
+        <div id="map" role="application" aria-label="Map showing the assigned collection location"></div>
+        <p class="map-message hidden" id="mapMessage" role="status"></p>
+      </section>
+    </div>
+  </main>
+  <div id="notice" class="notice" role="status"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function () {
+      var API_BASE = 'http://localhost:3000/api';
+      var token = localStorage.getItem('sb_internal_token') || localStorage.getItem('sb_driver_token');
+      var taskId = new URLSearchParams(window.location.search).get('taskId');
+      var reportId = new URLSearchParams(window.location.search).get('reportId');
+      var isReport = Boolean(reportId);
+      var task = null;
+      var destinationMarker = null;
+      var driverMarker = null;
+      var driverCoordinates = null;
+      var map = null;
+
+      function signIn(reason) {
+        window.location.replace('login.html?role=driver' + (reason ? '&reason=role' : ''));
+      }
+      function signOut(reason) {
+        localStorage.removeItem('sb_internal_token');
+        localStorage.removeItem('sb_driver_token');
+        signIn(reason);
+      }
+      function initializeMap(center, zoom) {
+        if (map) return true;
+        if (!window.L) {
+          mapMessage('The map service could not be loaded. Check your connection; coordinates and navigation are still available.');
+          return false;
+        }
+        map = L.map('map', { zoomControl: false }).setView(center, zoom);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 19
+        }).addTo(map);
+        return true;
+      }
+      function api(path, options) {
+        options = options || {};
+        options.headers = Object.assign(
+          { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          options.headers || {}
+        );
+        return fetch(API_BASE + path, options).then(function (response) {
+          return response.json().catch(function () {
+            throw new Error('The server returned an invalid response.');
+          }).then(function (data) {
+            if (response.status === 401) {
+              signOut(false);
+              throw new Error('Your session has expired. Please sign in again.');
+            }
+            if (!response.ok) throw new Error(data.message || 'Request failed.');
+            return data;
+          });
+        });
+      }
+      function validCoordinates(latitude, longitude) {
+        return latitude !== null && latitude !== '' && longitude !== null && longitude !== '' &&
+          Number.isFinite(Number(latitude)) && Number(latitude) >= -90 && Number(latitude) <= 90 &&
+          Number.isFinite(Number(longitude)) && Number(longitude) >= -180 && Number(longitude) <= 180;
+      }
+      function showError(message) {
+        document.getElementById('pageError').textContent = message;
+        document.getElementById('pageError').classList.remove('hidden');
+      }
+      function setAuthMessage(message) {
+        document.getElementById('authStatus').textContent = message;
+      }
+      function notify(message) {
+        var notice = document.getElementById('notice');
+        notice.textContent = message;
+        notice.style.display = 'block';
+        window.setTimeout(function () { notice.style.display = 'none'; }, 3500);
+      }
+      function mapMessage(message) {
+        var element = document.getElementById('mapMessage');
+        element.textContent = message || '';
+        element.classList.toggle('hidden', !message);
+      }
+      function updateNavigationLink() {
+        var link = document.getElementById('navigate');
+        if (!validCoordinates(task.latitude, task.longitude)) {
+          link.classList.add('hidden');
+          return;
+        }
+        var destination = Number(task.latitude) + ',' + Number(task.longitude);
+        var url = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(destination);
+        if (driverCoordinates) {
+          url += '&origin=' + encodeURIComponent(driverCoordinates.latitude + ',' + driverCoordinates.longitude);
+        }
+        link.href = url;
+        link.classList.remove('hidden');
+      }
+      function renderStatus() {
+        var status = document.getElementById('taskStatus');
+        if (isReport) {
+          status.textContent = task.workSubmittedAt ? 'awaiting verification' : String(task.status).replace(/-/g, ' ');
+          status.className = 'status' + (task.status === 'in-progress' ? ' in-progress' : '');
+          document.getElementById('taskActions').innerHTML = '<span>' + (task.workSubmittedAt ? 'Work submitted for Admin verification.' : 'Use the report card on your Driver Dashboard to start work or submit results.') + '</span>';
+          return;
+        }
+        status.textContent = task.status.replace(/-/g, ' ');
+        status.className = 'status' + (task.status === 'in-progress' || task.status === 'completed' ? ' ' + task.status : '');
+        var actions = document.getElementById('taskActions');
+        if (task.status === 'assigned') {
+          actions.innerHTML = '<button class="start" id="changeStatus"><i class="fas fa-play"></i> Start collection</button>';
+          document.getElementById('changeStatus').setAttribute('data-status', 'in-progress');
+        } else if (task.status === 'in-progress') {
+          actions.innerHTML = '<button class="complete" id="changeStatus"><i class="fas fa-check"></i> Mark completed</button>';
+          document.getElementById('changeStatus').setAttribute('data-status', 'completed');
+        } else {
+          actions.innerHTML = '<span><i class="fas fa-check-circle"></i> Collection completed</span>';
+          return;
+        }
+        document.getElementById('changeStatus').addEventListener('click', changeTaskStatus);
+      }
+      function renderTask() {
+        document.getElementById('requestRef').textContent = task.refId || task._id;
+        document.getElementById('requester').textContent = isReport ? (task.problemType + ' · ' + task.priority + ' priority') : (task.fullName || 'Not provided');
+        document.getElementById('phone').textContent = task.phone || 'Not provided';
+        document.getElementById('location').textContent = task.location || 'Not provided';
+        document.getElementById('description').textContent = task.description || 'No description provided.';
+        renderStatus();
+        if (validCoordinates(task.latitude, task.longitude)) {
+          var latitude = Number(task.latitude);
+          var longitude = Number(task.longitude);
+          var mapReady = initializeMap([latitude, longitude], 16);
+          document.querySelector('.map-panel').classList.toggle('no-location', !mapReady);
+          document.getElementById('coordinates').textContent = latitude + ', ' + longitude;
+          document.getElementById('coordinatesRow').classList.remove('hidden');
+          if (mapReady) {
+            destinationMarker = L.marker([latitude, longitude]).addTo(map);
+            var popup = document.createElement('div');
+            var label = document.createElement('strong');
+            label.textContent = task.location || 'Collection location';
+            var ref = document.createElement('div');
+            ref.textContent = task.refId || task._id;
+            popup.appendChild(label);
+            popup.appendChild(ref);
+            destinationMarker.bindPopup(popup).openPopup();
+            map.setView([latitude, longitude], 16);
+            document.getElementById('locationState').textContent = isReport ? 'Reported location shown on the map.' : 'Assigned collection destination shown on the map.';
+            mapMessage('');
+          } else {
+            document.getElementById('locationState').textContent = 'The assigned location coordinates are available below, but the map could not be loaded.';
+          }
+          updateNavigationLink();
+        } else {
+          document.querySelector('.map-panel').classList.add('no-location');
+          document.getElementById('locationState').textContent = isReport ? 'This report has no valid latitude/longitude. Use the written location details or contact an administrator.' : 'This assigned request has no valid latitude/longitude. Contact an administrator for corrected location details.';
+          mapMessage(isReport ? 'No valid report coordinates are available.' : 'No valid collection coordinates are available for this task.');
+        }
+        document.getElementById('taskLayout').classList.remove('hidden');
+        if (map) window.setTimeout(function () { map.invalidateSize(); }, 0);
+      }
+      function loadAssignedTask() {
+        api('/auth/me').then(function (result) {
+          if (!result.success || !result.user || result.user.role !== 'driver') {
+            signIn(true);
+            return;
+          }
+          document.body.classList.add('authorized');
+          if (!(isReport ? reportId : taskId)) {
+            showError('No task or report was selected. Return to your Driver Dashboard and open a map from an assignment.');
+            return;
+          }
+          return api(isReport ? '/driver/tasks/reports' : '/driver/tasks').then(function (tasksResult) {
+            var assignedTasks = Array.isArray(tasksResult.data) ? tasksResult.data : [];
+            task = assignedTasks.find(function (item) { return String(item._id) === (isReport ? reportId : taskId); });
+            if (!task) {
+              showError('This task or report is not assigned to your driver account, or it is no longer available.');
+              return;
+            }
+            renderTask();
+          });
+        }).catch(function (error) {
+          setAuthMessage(error.message || 'Unable to verify access or load this assigned task.');
+        });
+      }
+      function changeTaskStatus(event) {
+        var button = event.currentTarget;
+        var status = button.getAttribute('data-status');
+        button.disabled = true;
+        api('/driver/tasks/' + encodeURIComponent(task._id) + '/status', {
+          method: 'PATCH',
+          body: JSON.stringify({ status: status })
+        }).then(function (result) {
+          task = result.data;
+          renderStatus();
+          notify(status === 'completed' ? 'Collection marked completed.' : 'Collection started.');
+          if (new URLSearchParams(window.location.search).get('embed') === '1' && window.parent !== window) {
+            window.parent.postMessage({ type: 'smartbin-task-updated', status: status }, window.location.origin);
+          }
+        }).catch(function (error) {
+          notify(error.message);
+          button.disabled = false;
+        });
+      }
+      function locateDriver() {
+        if (!navigator.geolocation) {
+          document.getElementById('locationState').textContent = 'This browser does not support location access. You can still open directions to the collection destination.';
+          return;
+        }
+        document.getElementById('locationState').textContent = 'Getting your current location...';
+        navigator.geolocation.getCurrentPosition(function (position) {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          if (!validCoordinates(latitude, longitude)) {
+            document.getElementById('locationState').textContent = 'Your location could not be read. You can still navigate to the collection destination.';
+            return;
+          }
+          driverCoordinates = { latitude: latitude, longitude: longitude };
+          if (!map) {
+            if (!initializeMap([latitude, longitude], 15)) {
+              document.getElementById('locationState').textContent = validCoordinates(task.latitude, task.longitude)
+                ? 'Your location was found, but the map could not be loaded. Directions can still use your current location.'
+                : 'Your location was found, but this task has no valid destination coordinates.';
+              updateNavigationLink();
+              return;
+            }
+            document.querySelector('.map-panel').classList.remove('no-location');
+            mapMessage('');
+          }
+          if (driverMarker) map.removeLayer(driverMarker);
+          driverMarker = L.circleMarker([latitude, longitude], {
+            radius: 8, color: '#145ca8', fillColor: '#4da3ff', fillOpacity: 0.9, weight: 3
+          }).addTo(map).bindPopup('Your current location');
+          if (destinationMarker) {
+            map.fitBounds([driverMarker.getLatLng(), destinationMarker.getLatLng()], { padding: [40, 40], maxZoom: 16 });
+          } else {
+            map.setView([latitude, longitude], 15);
+          }
+          document.getElementById('locationState').textContent = validCoordinates(task.latitude, task.longitude)
+            ? 'Your current location is shown. Navigate will use it as the route origin.'
+            : 'Your current location is shown, but this task has no valid destination coordinates.';
+          if (!validCoordinates(task.latitude, task.longitude)) {
+            mapMessage('No valid collection coordinates are available for this task.');
+          }
+          updateNavigationLink();
+        }, function (error) {
+          var message = 'Location access was denied. You can still view the destination and open directions.';
+          if (error.code === 2) message = 'Your current location is unavailable. You can still view the destination and open directions.';
+          else if (error.code === 3) message = 'The location request timed out. You can still view the destination and open directions.';
+          document.getElementById('locationState').textContent = message;
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+      }
+      document.getElementById('logout').addEventListener('click', signOut);
+      document.getElementById('locateDriver').addEventListener('click', locateDriver);
+      if (!token) {
+        signIn(false);
+        return;
+      }
+      loadAssignedTask();
+    }());
+  </script>
+</body>
+</html>

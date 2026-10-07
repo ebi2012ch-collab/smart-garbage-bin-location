@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Login | SmartBin Adama City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *{box-sizing:border-box}
+    
+    /* UPDATED: Matched the dark navy background from the Home Page hero */
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      background:linear-gradient(135deg, #0A043C 0%, #2a1f6e 100%);
+      font-family:'Poppins',Arial,sans-serif;
+      color:#0A043C;
+    }
+    
+    .card{
+      width:min(100%,420px);
+      padding:34px;
+      background:#fff;
+      border-radius:24px; /* Matched the softer rounded corners */
+      box-shadow:0 24px 60px rgba(0,0,0,.3); /* Matched deeper shadow */
+    }
+    
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:24px;
+    }
+    
+    /* UPDATED: Matched the purple brand gradient from the Home Page */
+    .icon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:white;
+      background:linear-gradient(135deg, #5E5CE6, #7c3aed); 
+      font-size:22px;
+    }
+    
+    h1{
+      font-size:22px;
+      margin:0;
+      color:#0A043C; /* Brand dark color */
+    }
+    
+    .sub{
+      font-size:13px;
+      color:#6b6b80;
+      margin-top:3px;
+    }
+    
+    .intro{
+      font-size:14px;
+      color:#6b6b80;
+      margin:0 0 22px;
+    }
+    
+    label{
+      display:block;
+      font-size:13px;
+      font-weight:600;
+      margin:14px 0 6px;
+      color:#0A043C;
+    }
+    
+    input,select{
+      width:100%;
+      height:44px;
+      border:1.5px solid #e5e4f0; /* Matched border color */
+      border-radius:11px;
+      padding:0 12px;
+      font:inherit;
+      font-size:14px;
+      background:white;
+      transition: .2s;
+      outline: none;
+    }
+
+    .role-options{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .role-option{
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:8px 10px;
+      border:1.5px solid #e5e4f0;
+      border-radius:11px;
+      color:#6b6b80;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .role-option:has(input:checked){
+      border-color:#5E5CE6;
+      background:#f5f4ff;
+      color:#0A043C;
+      box-shadow:0 0 0 3px rgba(94,92,230,.1);
+    }
+
+    .role-option input{
+      position:absolute;
+      width:1px;
+      height:1px;
+      opacity:0;
+    }
+
+    .role-option:focus-within{
+      outline:2px solid #5E5CE6;
+      outline-offset:2px;
+    }
+    
+    /* UPDATED: Focus state matches brand purple */
+    input:focus, select:focus {
+      border-color: #5E5CE6;
+      box-shadow: 0 0 0 3px rgba(94,92,230,.1);
+    }
+    
+    /* UPDATED: Button matches the Home Page CTA pill shape and color */
+    button{
+      width:100%;
+      height:46px;
+      margin-top:22px;
+      border:0;
+      border-radius:50px; /* Pill shape */
+      background:#5E5CE6; /* Brand purple */
+      color:white;
+      font:600 14px Poppins,Arial,sans-serif;
+      cursor:pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(94,92,230,.3);
+      transition: .2s;
+    }
+    
+    button:hover {
+      background: #0A043C; /* Darker navy on hover */
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(94,92,230,.4);
+    }
+    
+    button:disabled{
+      opacity:.65;
+      cursor:wait;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .error{
+      min-height:20px;
+      margin-top:12px;
+      color:#e74c3c;
+      font-size:13px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .public{
+      display:block;
+      text-align:center;
+      margin-top:20px;
+      color:#5E5CE6; /* Matched brand purple */
+      font-size:13px;
+      text-decoration:none;
+      font-weight: 500;
+      transition: .2s;
+    }
+    
+    .public:hover {
+      color: #0A043C;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body class="municipal-login">
+  <main class="card">
+    <div class="brand"><div class="icon"><i class="fas fa-recycle"></i></div><div><h1>SmartBin Staff</h1><div class="sub">Adama City GIS Dashboard</div></div></div>
+    <p class="intro">Sign in to your Admin or Driver workspace.</p>
+    <form id="loginForm">
+      <label>Sign in as</label>
+      <div class="role-options" role="radiogroup" aria-label="Choose staff role">
+        <label class="role-option"><input type="radio" name="role" value="admin" checked> Login as Admin</label>
+        <label class="role-option"><input type="radio" name="role" value="driver"> Login as Driver</label>
+      </div>
+      <label for="username">Username</label>
+      <input id="username" name="username" required autocomplete="username">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+      <button id="submitButton" type="submit"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      <div id="loginError" class="error" role="alert"></div>
+    </form>
+    <a class="public" href="index.html">Return to public website</a>
+  </main>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var requestedRole = params.get('role');
+      var selectedRole = ['admin', 'driver'].includes(requestedRole)
+        ? document.querySelector('input[name="role"][value="' + requestedRole + '"]')
+        : null;
+      if (selectedRole) selectedRole.checked = true;
+      if (params.get('reason') === 'role') {
+        document.getElementById('loginError').textContent = 'That account does not have access to the selected workspace.';
+      }
+      document.getElementById('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var button = document.getElementById('submitButton');
+        var error = document.getElementById('loginError');
+        button.disabled = true;
+        error.textContent = '';
+        fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            role: document.querySelector('input[name="role"]:checked').value,
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value
+          })
+        }).then(function (response) {
+          return response.json().then(function (data) {
+            if (!response.ok || !data.success) throw new Error(data.message || 'Sign-in failed.');
+            return data;
+          });
+        }).then(function (data) {
+          localStorage.removeItem('sb_admin_token');
+          localStorage.removeItem('sb_driver_token');
+          localStorage.setItem('sb_internal_token', data.token);
+          window.location.replace(data.user.role === 'driver' ? 'driver.html' : 'pages/admin.html');
+        }).catch(function (err) {
+          error.textContent = err.message === 'Failed to fetch'
+            ? 'Cannot reach the server. Make sure the API server is running.'
+            : err.message;
+          button.disabled = false;
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

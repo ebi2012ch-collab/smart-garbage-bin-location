@@ -1,0 +1,21 @@
+{
+  "name": "SmartBin Adama City — Official Waste Management",
+  "short_name": "SmartBin",
+  "description": "Official Adama City public service portal for collection requests and waste problem reports.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8faff",
+  "theme_color": "#0057b8",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "categories": ["government", "utilities", "environment"],
+  "icons": [
+    { "src": "images/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "images/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Report Problem", "short_name": "Report", "url": "/report.html", "icons": [{ "src": "images/logo.png", "sizes": "96x96" }] }
+  ],
+  "screenshots": []
+}

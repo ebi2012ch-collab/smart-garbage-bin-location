@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Adama City Smart Bin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="../brand.css">
+  <link rel="stylesheet" href="admin.css">
+  <meta name="theme-color" content="#0A043C">
+</head>
+<body class="municipal-admin">
+
+<!-- ACCESS CHECK -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="fas fa-recycle"></i></div>
+      <div>
+        <div class="login-logo-title">Verifying Admin Access</div>
+        <div class="login-logo-sub">Adama City GIS Dashboard</div>
+      </div>
+    </div>
+    <p class="login-desc">Checking your authenticated role. Admin access is required for this dashboard.</p>
+    <a class="btn-login" href="../login.html?role=admin" style="display:block;text-align:center">Continue to staff login</a>
+  </div>
+</div>
+
+<!-- ALERT POPUP (GIS notification) -->
+<div id="alertPopup" class="alert-popup" style="display:none">
+  <div class="alert-popup-inner">
+    <div class="alert-popup-icon" id="alertPopupIcon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="alert-popup-body">
+      <h3 id="alertPopupTitle">Alert</h3>
+      <p id="alertPopupMsg">Something happened</p>
+      <div class="alert-popup-meta" id="alertPopupMeta"></div>
+    </div>
+    <button class="alert-popup-close" onclick="closePopup()"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sb-icon"><i class="fas fa-recycle"></i></div>
+    <div><div class="sb-title">SmartBin</div><div class="sb-sub">Adama City Admin</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">MAIN</div>
+    <div class="nav-item active" data-view="dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
+    <div class="nav-item" data-view="gismap"><i class="fas fa-map-marked-alt"></i><span>GIS Map</span><span class="nav-badge" id="alertCount" style="display:none">0</span></div>
+    <div class="nav-label">MANAGEMENT</div>
+    <div class="nav-item" data-view="bins"><i class="fas fa-trash-alt"></i><span>Bins</span></div>
+    <div class="nav-item" data-view="reports"><i class="fas fa-flag"></i><span>Reports</span><span class="nav-badge pending-badge" id="pendingCount" style="display:none">0</span></div>
+    <div class="nav-item" data-view="collectionRequests"><i class="fas fa-truck"></i><span>Requests</span><span class="nav-badge pending-badge" id="pendingRequestCount" style="display:none">0</span></div>
+    <div class="nav-item" data-view="drivers"><i class="fas fa-id-badge"></i><span>Drivers</span></div>
+    <div class="nav-label">SYSTEM</div>
+    <div class="nav-item" onclick="window.open('../index.html')"><i class="fas fa-external-link-alt"></i><span>View Website</span></div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="server-status" id="serverStatus"><span class="status-dot"></span> Checking API…</div>
+    <div style="margin-top:6px;font-size:11px;opacity:.45">&copy; 2026 Adama City Administration</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main" id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn" id="notifBtn" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
+      <div class="admin-info">
+        <div class="admin-avatar" id="adminAvatar">A</div>
+        <span id="adminName">admin</span>
+      </div>
+      <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-header">
+      <h3><i class="fas fa-bell" style="color:var(--primary)"></i> Alerts</h3>
+      <button onclick="closeNotif()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="notif-list" id="notifList">
+      <div class="empty-state"><i class="fas fa-check-circle"></i><p>No alerts right now</p></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD VIEW ══ -->
+    <div id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-trash-alt"></i></div><div><div class="stat-num" id="s-total">–</div><div class="stat-label">Total Bins</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-num" id="s-avail">–</div><div class="stat-label">Available Bins</div></div></div>
+        <div class="stat-card"><div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-num" id="s-full">–</div><div class="stat-label">Fresh Collection Needed</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div><div class="stat-num" id="s-stale">–</div><div class="stat-label">Stale Readings</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-flag"></i></div><div><div class="stat-num" id="s-pending">–</div><div class="stat-label">Pending Reports</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-recycle"></i></div><div><div class="stat-num" id="s-recycle">–</div><div class="stat-label">Recycling Points</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-num" id="s-zones">–</div><div class="stat-label">City Zones</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-inbox"></i></div><div><div class="stat-num" id="s-requests-pending">–</div><div class="stat-label">Pending Requests</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-user-clock"></i></div><div><div class="stat-num" id="s-requests-unassigned">–</div><div class="stat-label">Unassigned Requests</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-truck-loading"></i></div><div><div class="stat-num" id="s-collections-progress">–</div><div class="stat-label">Collections In Progress</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-double"></i></div><div><div class="stat-num" id="s-collections-today">–</div><div class="stat-label">Completed Today</div></div></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header"><h3><i class="fas fa-history"></i> Recent Reports</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ref ID</th><th>Problem</th><th>Location</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
+            <tbody id="recentTbody"><tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GIS MAP VIEW ══ -->
+    <div id="view-gismap" style="display:none">
+      <div class="section-card">
+        <div class="section-card-header">
+          <h3><i class="fas fa-map-marked-alt"></i> Live GIS Map — Adama City Bins</h3>
+          <button class="btn-primary" onclick="loadBinsOnMap()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div style="padding:16px 22px 0">
+          <div class="map-controls">
+            <button class="map-chip active" data-filter="all">All</button>
+            <button class="map-chip" data-filter="available">Available</button>
+            <button class="map-chip" data-filter="filling">Filling</button>
+            <button class="map-chip" data-filter="collection-needed">Collection Needed</button>
+            <button class="map-chip" data-filter="maintenance">Maintenance / Damaged</button>
+            <button class="map-chip" data-filter="recycle">Recycling</button>
+          </div>
+        </div>
+        <div style="padding:0 22px">
+          <div id="adminMap"></div>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#00c896"></div> Available</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ff9f43"></div> Almost Full</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Full / Needs Service</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#0057b8"></div> Recycling</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div> Collection Point</div>
+          </div>
+        </div>
+        <div style="padding:16px 22px">
+          <div class="section-card-header" style="padding:0 0 12px;border:none"><h3><i class="fas fa-exclamation-triangle" style="color:var(--red)"></i> Bins Needing Attention</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bin Name</th><th>Zone</th><th>Status</th><th>Fill Level</th><th>Action</th></tr></thead>
+              <tbody id="attentionTbody"><tr><td colspan="5"><div class="empty-state"><i class="fas fa-check-circle"></i><p>All bins are OK</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ BINS VIEW ══ -->
+    <div id="view-bins" style="display:none">
+      <div class="section-card">
+        <div class="tabs">
+          <div class="tab active" data-tab="bin-list">All Bins</div>
+          <div class="tab" data-tab="bin-add">+ Add New Bin</div>
+        </div>
+        <div class="tab-panel active" id="tab-bin-list">
+          <div style="padding:14px 18px"><label for="binConditionFilter">Filter bins </label>
+            <select id="binConditionFilter" style="padding:8px;border:1px solid var(--border);border-radius:8px">
+              <option value="all">All conditions</option><option value="available">Available</option><option value="filling">Filling (70–89%)</option><option value="collection-needed">Collection needed (90%+)</option><option value="awaiting-reading">Awaiting new reading after collection</option><option value="stale">Stale reading</option><option value="unavailable">Reading unavailable</option><option value="maintenance">Maintenance</option><option value="damaged">Damaged</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bin ID / Name</th><th>Zone / Coordinates</th><th>Operational</th><th>Fill condition / reading</th><th>Collection task</th><th>Last updated</th><th>Actions</th></tr></thead>
+              <tbody id="binsTbody"><tr><td colspan="7"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-panel" id="tab-bin-add">
+          <form id="addBinForm">
+            <div class="form-grid">
+              <div class="form-field-sm"><label>Bin Name *</label><input type="text" id="nb-name" placeholder="e.g. Central Park Bin" required></div>
+              <div class="form-field-sm"><label>Zone *</label><input type="text" id="nb-zone" placeholder="e.g. Central" required></div>
+              <div class="form-field-sm"><label>Latitude (optional)</label><input type="number" id="nb-lat" placeholder="8.5400" step="any" min="-90" max="90"></div>
+              <div class="form-field-sm"><label>Longitude (optional)</label><input type="number" id="nb-lng" placeholder="39.2700" step="any" min="-180" max="180"></div>
+              <div class="form-field-sm"><label>Type</label>
+                <select id="nb-type">
+                  <option value="bin">Garbage Bin</option>
+                  <option value="recycle">Recycling Point</option>
+                  <option value="collection">Collection Station</option>
+                </select>
+              </div>
+              <div class="form-field-sm"><label>Capacity (Litres)</label><input type="number" id="nb-cap" placeholder="300" min="50"></div>
+              <div class="form-field-sm full"><label>Description</label><input type="text" id="nb-desc" placeholder="Short description of this bin location…"></div>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top:18px"><i class="fas fa-plus"></i> Add Bin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS VIEW ══ -->
+    <div id="view-reports" style="display:none">
+      <div class="stats-grid report-summary-grid">
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div><div class="stat-num" id="reportPendingCount">–</div><div class="stat-label">Pending</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-user-slash"></i></div><div><div class="stat-num" id="reportUnassignedCount">–</div><div class="stat-label">Unassigned</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-person-circle-check"></i></div><div><div class="stat-num" id="reportProgressCount">–</div><div class="stat-label">In Progress</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-circle-check"></i></div><div><div class="stat-num" id="reportResolvedCount">–</div><div class="stat-label">Resolved</div></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-card-header">
+          <h3><i class="fas fa-flag"></i> Citizen Reports</h3>
+          <div class="report-filters">
+            <input id="reportSearch" type="search" maxlength="120" placeholder="Search ref, reporter, phone, location…" aria-label="Search reports">
+            <select id="filterStatus" aria-label="Filter reports by status">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="dismissed">Rejected</option>
+            </select>
+            <select id="filterPriority" aria-label="Filter reports by priority">
+              <option value="">All Priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="filterProblemType" aria-label="Filter reports by problem type">
+              <option value="">All Problem Types</option><option value="overflow">Overflow</option><option value="illegal">Illegal dumping</option><option value="damaged">Damaged</option><option value="missing">Missing</option><option value="smell">Smell</option><option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Report</th><th>Location</th><th>Priority</th><th>Status</th><th>Assigned Driver</th><th>Submitted</th><th></th></tr></thead>
+            <tbody id="reportsTbody"><tr><td colspan="7"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ COLLECTION REQUESTS VIEW ══ -->
+    <div id="view-collectionRequests" style="display:none">
+      <div class="section-card">
+        <div class="section-card-header">
+          <h3><i class="fas fa-truck"></i> Collection Requests</h3>
+          <select id="filterCollectionRequestStatus" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:12px;font-family:inherit;outline:none;color:var(--text)">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+            <option value="assigned">Assigned</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Request ID</th><th>Requester</th><th>Location</th><th>Description</th><th>Status</th><th>Driver</th><th>Submitted</th><th>Actions</th></tr></thead>
+            <tbody id="collectionRequestsTbody"><tr><td colspan="8"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DRIVERS VIEW ══ -->
+    <div id="view-drivers" style="display:none">
+      <div class="section-card" style="margin-bottom:20px">
+        <div class="section-card-header"><h3><i class="fas fa-user-plus"></i> Add Driver</h3></div>
+        <form id="addDriverForm" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end">
+          <div class="form-field-sm"><label for="driverDisplayName">Driver Name</label><input id="driverDisplayName" type="text" maxlength="120" autocomplete="name" placeholder="Driver name"></div>
+          <div class="form-field-sm"><label for="driverUsername">Username *</label><input id="driverUsername" type="text" maxlength="120" required autocomplete="username" placeholder="driver username"></div>
+          <div class="form-field-sm"><label for="driverPassword">Initial Password *</label><input id="driverPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="At least 8 characters"></div>
+          <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Create Driver</button>
+        </form>
+      </div>
+      <div class="section-card">
+        <div class="section-card-header"><h3><i class="fas fa-id-badge"></i> Drivers</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Username</th><th>Created</th></tr></thead>
+            <tbody id="driversTbody"><tr><td colspan="3"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<dialog id="reportDetailsDialog" class="report-dialog" aria-labelledby="reportDetailsTitle">
+  <div class="report-dialog-card">
+    <div class="report-dialog-header">
+      <h2 id="reportDetailsTitle">Report Details</h2>
+      <button type="button" class="btn-action" onclick="closeReportDetails()" aria-label="Close report details"><i class="fas fa-times"></i></button>
+    </div>
+    <dl class="report-details-grid">
+      <div><dt>Reference</dt><dd id="reportDetailRef">–</dd></div>
+      <div><dt>Reporter</dt><dd id="reportDetailReporter">–</dd></div>
+      <div><dt>Phone</dt><dd id="reportDetailPhone">–</dd></div>
+      <div><dt>Problem</dt><dd id="reportDetailProblem">–</dd></div>
+      <div><dt>Location</dt><dd id="reportDetailLocation">–</dd></div>
+      <div><dt>Priority / Status</dt><dd id="reportDetailStatus">–</dd></div>
+      <div><dt>Coordinates</dt><dd id="reportDetailCoordinates">–</dd></div>
+      <div><dt>Submitted</dt><dd id="reportDetailCreated">–</dd></div>
+      <div><dt>Last Updated</dt><dd id="reportDetailUpdated">–</dd></div>
+      <div id="reportDetailResolvedWrap" hidden><dt>Resolved</dt><dd id="reportDetailResolved">–</dd></div>
+      <div class="report-detail-wide"><dt>Description</dt><dd id="reportDetailDescription">–</dd></div>
+      <div class="report-detail-wide" id="reportDetailResolutionWrap" hidden><dt>Recorded resolution</dt><dd id="reportDetailResolution">–</dd></div>
+      <div class="report-detail-wide" id="reportDetailRejectionWrap" hidden><dt>Rejection reason</dt><dd id="reportDetailRejection">–</dd></div>
+      <div class="report-detail-wide" id="reportDetailWorkWrap" hidden><dt>Driver work submitted</dt><dd><span id="reportDetailWorkNotes"></span><br><a id="reportDetailWorkEvidence" target="_blank" rel="noopener noreferrer" hidden>Open Driver evidence</a></dd></div>
+      <div class="report-detail-wide" id="reportDetailHistoryWrap" hidden><dt>Assignment history</dt><dd id="reportDetailHistory"></dd></div>
+      <div class="report-detail-wide" id="reportDetailPhotoWrap" hidden><dt>Attached Photo</dt><dd><img id="reportDetailPhoto" class="report-detail-photo" alt="Photo attached to this report"></dd></div>
+    </dl>
+    <div id="reportAssignmentForm" class="report-action-form">
+      <label class="report-resolution-label" for="reportDriverSelect">Assign / reassign Driver</label>
+      <select id="reportDriverSelect"><option value="">Select an eligible Driver</option></select>
+      <label class="report-resolution-label" for="reportAssignmentReason">Assignment note (optional)</label>
+      <input id="reportAssignmentReason" maxlength="500" placeholder="Reason for assignment or reassignment">
+      <button type="button" class="btn-action" id="reportAssignAction" onclick="assignReportDriver()">Assign Driver</button>
+    </div>
+    <div id="reportResolutionForm" class="report-action-form" hidden>
+      <label class="report-resolution-label" for="reportResolutionNote">Admin verification note</label>
+      <textarea id="reportResolutionNote" maxlength="1000" rows="3" placeholder="Review the submitted work and record your verification" required></textarea>
+    </div>
+    <div id="reportRejectForm" class="report-action-form" hidden>
+      <label class="report-resolution-label" for="reportRejectionReason">Reason for rejection</label>
+      <textarea id="reportRejectionReason" maxlength="1000" rows="2" placeholder="Explain why this report is being rejected"></textarea>
+    </div>
+    <div class="report-dialog-actions">
+      <button type="button" class="btn-action danger" id="reportRejectAction" onclick="rejectReport()"><i class="fas fa-ban"></i> Reject</button>
+      <button type="button" class="btn-action success" id="reportResolveAction" onclick="saveReportAction('resolved')"><i class="fas fa-check"></i> Verify and resolve</button>
+      <button type="button" class="btn-action danger" onclick="deleteReport(activeReportId)"><i class="fas fa-box-archive"></i> Archive</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   SmartBin Admin — Full JavaScript
+   ═══════════════════════════════════════════════════ */
+var API   = 'http://localhost:3000/api';
+var TOKEN = localStorage.getItem('sb_internal_token') || localStorage.getItem('sb_admin_token');
+var adminMap = null;
+var mapMarkers = [];
+var drivers = [];
+var notifications = [];
+var prevBinStates = {};
+var prevReportCount = 0;
+var reportCache = [];
+var activeReportId = null;
+var reportFilterTimer = null;
+var REQUEST_STATUSES = ['pending', 'accepted', 'rejected', 'assigned', 'in-progress', 'completed'];
+var BIN_THRESHOLDS = { filling: 70, collectionNeeded: 90 };
+
+/* ─── TOAST ──────────────────────────────────── */
+function toast(msg, type) {
+  var wrap = document.getElementById('toastWrap');
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(function () { t.remove(); }, 3500);
+}
+
+/* ─── ALERT POPUP ────────────────────────────── */
+function showAlert(title, msg, meta, type) {
+  var popup = document.getElementById('alertPopup');
+  var icon  = document.getElementById('alertPopupIcon');
+  document.getElementById('alertPopupTitle').textContent = title;
+  document.getElementById('alertPopupMsg').textContent   = msg;
+  document.getElementById('alertPopupMeta').textContent  = meta || '';
+  icon.className = 'alert-popup-icon ' + (type || 'red');
+  icon.innerHTML = type === 'orange'
+    ? '<i class="fas fa-exclamation-circle"></i>'
+    : type === 'blue'
+    ? '<i class="fas fa-info-circle"></i>'
+    : '<i class="fas fa-exclamation-triangle"></i>';
+  popup.style.display = 'block';
+  // auto hide after 8 seconds
+  setTimeout(closePopup, 8000);
+  addNotification(title, msg, type || 'red');
+}
+function closePopup() {
+  document.getElementById('alertPopup').style.display = 'none';
+}
+
+/* ─── NOTIFICATIONS PANEL ────────────────────── */
+function addNotification(title, msg, type) {
+  notifications.unshift({ title: title, msg: msg, type: type, time: new Date() });
+  renderNotifications();
+  document.getElementById('notifDot').style.display = 'block';
+}
+function renderNotifications() {
+  var list = document.getElementById('notifList');
+  if (!notifications.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No alerts right now</p></div>';
+    return;
+  }
+  list.innerHTML = notifications.slice(0, 20).map(function (n, i) {
+    var dot = n.type === 'red' ? 'red' : n.type === 'orange' ? 'orange' : 'blue';
+    return '<div class="notif-item ' + (i < 3 ? 'unread' : '') + '">' +
+      '<div class="notif-dot-sm ' + dot + '"></div>' +
+      '<div class="notif-item-text">' +
+        '<strong>' + n.title + '</strong>' +
+        '<span>' + n.msg + '</span>' +
+      '</div></div>';
+  }).join('');
+}
+document.getElementById('notifBtn').addEventListener('click', function () {
+  var p = document.getElementById('notifPanel');
+  p.classList.toggle('open');
+  document.getElementById('notifDot').style.display = 'none';
+});
+function closeNotif() { document.getElementById('notifPanel').classList.remove('open'); }
+
+/* ─── AUTH HELPERS ───────────────────────────── */
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+}
+function setServerStatus(isOnline) {
+  var status = document.getElementById('serverStatus');
+  status.querySelector('.status-dot').className = 'status-dot ' + (isOnline ? 'green' : 'red');
+  status.lastChild.nodeValue = isOnline ? ' Server Online' : ' Server Offline';
+}
+function apiFetch(path, opts) {
+  opts = opts || {};
+  opts.headers = Object.assign({}, authHeaders(), opts.headers || {});
+  return fetch(API + path, opts).then(function (r) {
+    setServerStatus(true);
+    if (r.status === 401) { doLogout(); throw new Error('Unauthorized'); }
+    return r.json();
+  }, function (error) {
+    setServerStatus(false);
+    throw error;
+  });
+}
+
+/* ─── LOGOUT ─────────────────────────────────── */
+document.getElementById('logoutBtn').addEventListener('click', doLogout);
+function doLogout() {
+  TOKEN = null;
+  localStorage.removeItem('sb_internal_token');
+  localStorage.removeItem('sb_admin_token');
+  localStorage.removeItem('sb_driver_token');
+  window.location.replace('../login.html?role=admin');
+}
+
+/* ─── SIDEBAR TOGGLE ─────────────────────────── */
+document.getElementById('menuBtn').addEventListener('click', function () {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ─── VIEW SWITCHING ─────────────────────────── */
+document.querySelectorAll('.nav-item[data-view]').forEach(function (item) {
+  item.addEventListener('click', function () {
+    var view = item.getAttribute('data-view');
+    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+    item.classList.add('active');
+    document.getElementById('topbarTitle').textContent = item.querySelector('span').textContent.trim();
+    ['dashboard','gismap','bins','reports','collectionRequests','drivers'].forEach(function (v) {
+      document.getElementById('view-' + v).style.display = v === view ? 'block' : 'none';
+    });
+    if (view === 'dashboard') loadDashboard();
+    if (view === 'gismap')    { initMap(); loadBinsOnMap(); }
+    if (view === 'bins')      loadDrivers().then(loadBins);
+    if (view === 'reports')   loadReports();
+    if (view === 'collectionRequests') loadDrivers().then(loadCollectionRequests);
+    if (view === 'drivers') loadDrivers();
+    document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+/* ─── TAB SWITCHING ──────────────────────────── */
+document.querySelectorAll('.tab').forEach(function (tab) {
+  tab.addEventListener('click', function () {
+    var panel = tab.getAttribute('data-tab');
+    tab.closest('.section-card').querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    tab.closest('.section-card').querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('tab-' + panel).classList.add('active');
+  });
+});
+</script>
+<script>
+/* ─── DASHBOARD ──────────────────────────────── */
+function loadDashboard() {
+  Promise.all([apiFetch('/stats'), apiFetch('/bins')]).then(function (results) {
+    var d = results[0];
+    var binsResult = results[1];
+    if (!d.success || !d.data || !d.data.bins || !d.data.reports ||
+        !binsResult.success || !Array.isArray(binsResult.data)) {
+      throw new Error(d.message || 'Dashboard statistics are unavailable.');
+    }
+    var r = d.data.reports;
+    var c = d.data.collectionRequests || null;
+    var bins = binsResult.data;
+    var garbageBins = bins.filter(function (bin) { return bin.type === 'bin'; });
+    var zones = bins.reduce(function (uniqueZones, bin) {
+      var zone = typeof bin.zone === 'string' ? bin.zone.trim() : '';
+      if (zone && zone.toLowerCase() !== 'unknown') uniqueZones.add(zone);
+      return uniqueZones;
+    }, new Set());
+    var availableBins = garbageBins.filter(function (bin) { return bin.fillCondition === 'available'; }).length;
+    var needsService = garbageBins.filter(function (bin) {
+      return bin.fillCondition === 'collection-needed' && bin.operationalStatus === 'operational';
+    }).length;
+
+    document.getElementById('s-total').textContent   = garbageBins.length;
+    document.getElementById('s-avail').textContent   = availableBins;
+    document.getElementById('s-full').textContent    = d.data.bins.collectionNeeded == null ? needsService : d.data.bins.collectionNeeded;
+    document.getElementById('s-stale').textContent   = d.data.bins.staleReadings == null ? '–' : d.data.bins.staleReadings;
+    document.getElementById('s-pending').textContent = r.pending;
+    document.getElementById('s-recycle').textContent = bins.filter(function (bin) { return bin.type === 'recycle'; }).length;
+    document.getElementById('s-zones').textContent   = zones.size;
+    document.getElementById('s-requests-pending').textContent = c ? c.pending : '–';
+    document.getElementById('s-requests-unassigned').textContent = c ? c.unassigned : '–';
+    document.getElementById('s-collections-progress').textContent = c ? c.inProgress : '–';
+    document.getElementById('s-collections-today').textContent = c ? c.completedToday : '–';
+
+    // pending badge in sidebar
+    document.getElementById('pendingCount').textContent = r.pending;
+    document.getElementById('pendingCount').style.display = r.pending > 0 ? 'inline' : 'none';
+
+    // recent reports table
+    var tbody = document.getElementById('recentTbody');
+    var recent = r.recent || [];
+    if (!recent.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-inbox"></i><p>No reports yet</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = recent.map(function (rep) {
+      var id = rep._id || rep.id || rep.refId || '';
+      return '<tr>' +
+        '<td><button type="button" class="report-link" onclick="openReportDetails(this.dataset.reportId)" data-report-id="' + escapeHtml(id) + '">' + escapeHtml(rep.refId || rep.id || id || '–') + '</button></td>' +
+        '<td>' + escapeHtml(typeLabel(rep.problemType)) + '</td>' +
+        '<td>' + escapeHtml(rep.location || '–') + '</td>' +
+        '<td><span class="badge ' + escapeHtml(rep.priority) + '">' + escapeHtml(rep.priority) + '</span></td>' +
+        '<td><span class="badge ' + escapeHtml(rep.status) + '">' + escapeHtml(rep.status.replace(/-/g,' ')) + '</span></td>' +
+        '<td style="color:var(--text-light);font-size:12px">' + escapeHtml(fmtDate(rep.createdAt)) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    // alert if new reports since last check
+    if (prevReportCount > 0 && r.total > prevReportCount) {
+      var diff = r.total - prevReportCount;
+      showAlert('New Report Received', diff + ' new citizen report(s) submitted.', 'Check the Reports section.', 'orange');
+    }
+    prevReportCount = r.total;
+  }).catch(function (error) {
+    ['s-total', 's-avail', 's-full', 's-stale', 's-pending', 's-recycle', 's-zones',
+      's-requests-pending', 's-requests-unassigned', 's-collections-progress', 's-collections-today']
+      .forEach(function (id) { document.getElementById(id).textContent = '–'; });
+    toast(error.message || 'Could not load dashboard.', 'error');
+  });
+}
+
+/* ─── GIS MAP ────────────────────────────────── */
+function initMap() {
+  if (adminMap) return; // already initialised
+  adminMap = L.map('adminMap', { zoomControl: true }).setView([8.5400, 39.2700], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom: 19
+  }).addTo(adminMap);
+
+  // filter chips
+  document.querySelectorAll('.map-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.map-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      var f = chip.getAttribute('data-filter');
+      mapMarkers.forEach(function (m) {
+        var show = f === 'all' || m.binData.fillCondition === f || m.binData.operationalStatus === f || (f === 'maintenance' && m.binData.operationalStatus === 'damaged') || m.binData.type === f;
+        if (show) m.marker.addTo(adminMap); else adminMap.removeLayer(m.marker);
+      });
+    });
+  });
+}
+
+function binColor(b) {
+  if (b.type === 'recycle')    return '#0057b8';
+  if (b.type === 'collection') return '#9b59b6';
+  if (b.operationalStatus !== 'operational') return '#95a5a6';
+  if (b.fillCondition === 'collection-needed') return '#e74c3c';
+  if (b.fillCondition === 'filling') return '#ff9f43';
+  return '#00c896';
+}
+
+function makeMapIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:' + color + ';border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,.3)"></div>',
+    iconSize: [28,28], iconAnchor:[14,28], popupAnchor:[0,-30]
+  });
+}
+
+function loadBinsOnMap(silent) {
+  if (!adminMap) initMap();
+  apiFetch('/bins').then(function (d) {
+    if (!d.success) return;
+    if (d.thresholds) BIN_THRESHOLDS = d.thresholds;
+
+    // clear old markers
+    mapMarkers.forEach(function (m) { adminMap.removeLayer(m.marker); });
+    mapMarkers = [];
+
+    var attentionBins = [];
+
+    d.data.forEach(function (b) {
+      if (!Number.isFinite(Number(b.lat)) || !Number.isFinite(Number(b.lng))) return;
+      var color  = binColor(b);
+      var marker = L.marker([b.lat, b.lng], { icon: makeMapIcon(color) });
+
+      var popupHtml =
+        '<div style="font-family:Inter;min-width:200px;padding:4px">' +
+        '<strong style="font-size:14px">' + b.name + '</strong>' +
+        '<p style="font-size:12px;color:#666;margin:5px 0">' + (b.description || '') + '</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">' +
+        '<span style="background:' + color + ';color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.fillCondition || 'unavailable') + '</span>' +
+        '<span style="background:#f0f4ff;color:#333;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.operationalStatus || 'operational') + '</span>' +
+        '<span style="background:#f0f4ff;color:#0057b8;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + b.type + '</span>' +
+        '</div>' +
+        '<p style="font-size:11px;color:#888">Fill: <strong>' + (b.fillLevel == null ? 'Unavailable' : b.fillLevel + '% (' + escapeHtml(b.readingSource || 'unknown') + ')') + '</strong> | Updated: ' + escapeHtml(fmtDate(b.lastReadingAt)) + ' | Zone: ' + escapeHtml(b.zone) + '</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+        '<span>Collection task: ' + escapeHtml(b.collectionState || 'none') + '</span>' +
+        '</div>' +
+        '</div>';
+
+      marker.bindPopup(popupHtml);
+      marker.addTo(adminMap);
+      mapMarkers.push({ marker: marker, binData: b });
+
+      // collect bins needing attention
+      if (b.fillCondition === 'collection-needed' || b.fillCondition === 'stale' || b.operationalStatus !== 'operational') {
+        attentionBins.push(b);
+      }
+
+      // GIS alert: bin is full
+      var prevState = prevBinStates[b._id || b.id];
+      if (prevState && prevState !== 'collection-needed' && b.fillCondition === 'collection-needed') {
+        showAlert(
+          'Bin is Full!',
+          b.name + ' is now full and needs immediate service.',
+          'Zone: ' + b.zone + ' | Lat: ' + b.lat + ', Lng: ' + b.lng,
+          'red'
+        );
+      }
+      if (prevState && prevState !== 'filling' && b.fillCondition === 'filling') {
+        showAlert(
+          'Bin Almost Full',
+          b.name + ' is almost full (' + b.fillLevel + '% capacity).',
+          'Zone: ' + b.zone,
+          'orange'
+        );
+      }
+      prevBinStates[b._id || b.id] = b.fillCondition;
+    });
+
+    // update alert count badge
+    var alertCountEl = document.getElementById('alertCount');
+    if (attentionBins.length > 0) {
+      alertCountEl.textContent    = attentionBins.length;
+      alertCountEl.style.display = 'inline';
+    } else {
+      alertCountEl.style.display = 'none';
+    }
+
+    // render attention table
+    var tbody = document.getElementById('attentionTbody');
+    if (!attentionBins.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-check-circle"></i><p>All bins are OK</p></div></td></tr>';
+    } else {
+      tbody.innerHTML = attentionBins.map(function (b) {
+        return '<tr>' +
+          '<td><strong>' + escapeHtml(b.binCode || b._id || b.id) + ' · ' + escapeHtml(b.name) + '</strong></td>' +
+          '<td>' + escapeHtml(b.zone) + '</td>' +
+          '<td>' + escapeHtml(b.operationalStatus || 'operational') + ' / ' + escapeHtml(b.fillCondition || 'unavailable') + '</td>' +
+          '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt) + '</td>' +
+          '<td>' + escapeHtml(b.collectionState || 'none') +
+            (b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask
+              ? '<br><select data-bin-driver="' + escapeHtml(b._id || b.id) + '" aria-label="Select collection driver"><option value="">Select driver</option>' + drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') + '</select><button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(b._id || b.id) + '">Assign</button>'
+              : '') +
+          '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    if (!silent) toast('Map updated — ' + d.data.length + ' bins loaded.', 'success');
+  }).catch(function () { toast('Could not load bins for map.', 'error'); });
+}
+
+function adminMarkServiced(id) {
+  apiFetch('/bins/' + id + '/status', {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'available', fillLevel: 0 }),
+  }).then(function (d) {
+    if (d.success) {
+      toast('Bin marked as serviced.', 'success');
+      loadBinsOnMap();
+      loadBins();
+      loadDashboard();
+    } else toast(d.message, 'error');
+  }).catch(function () { toast('Action failed.', 'error'); });
+}
+</script>
+
+<script>
+/* ─── BINS TABLE ─────────────────────────────── */
+function loadBins() {
+  apiFetch('/bins').then(function (d) {
+    var tbody = document.getElementById('binsTbody');
+    if (d.thresholds) {
+      BIN_THRESHOLDS = d.thresholds;
+      var fillingOption = document.querySelector('#binConditionFilter option[value="filling"]');
+      var collectionOption = document.querySelector('#binConditionFilter option[value="collection-needed"]');
+      if (fillingOption) fillingOption.textContent = 'Filling (' + BIN_THRESHOLDS.filling + '–' + (BIN_THRESHOLDS.collectionNeeded - 1) + '%)';
+      if (collectionOption) collectionOption.textContent = 'Collection needed (' + BIN_THRESHOLDS.collectionNeeded + '%+)';
+    }
+    if (!d.success || !d.data.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-trash-alt"></i><p>No bins found</p></div></td></tr>';
+      return;
+    }
+    var selectedCondition = document.getElementById('binConditionFilter').value;
+    var visibleBins = selectedCondition === 'all' ? d.data : d.data.filter(function (bin) { return bin.fillCondition === selectedCondition || bin.operationalStatus === selectedCondition; });
+    if (!visibleBins.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>No bins match this condition.</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = visibleBins.map(function (b) {
+      var id = b._id || b.id;
+      var coordinates = b.lat == null || b.lng == null ? 'Coordinates unavailable' : b.lat + ', ' + b.lng;
+      var assignControls = b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask
+        ? '<select data-bin-driver="' + escapeHtml(id) + '" aria-label="Select collection driver"><option value="">Select driver</option>' + drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') + '</select> <button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Assign</button>'
+        : (b.activeCollectionTask ? 'Task active' : '—');
+      return '<tr>' +
+        '<td><strong>' + escapeHtml(b.binCode || id) + '</strong><br>' + escapeHtml(b.name) + '<br><small>' + escapeHtml(b.description || '') + '</small></td>' +
+        '<td>' + escapeHtml(b.zone || 'Unknown') + '<br><small>' + escapeHtml(coordinates) + '</small></td>' +
+        '<td><select aria-label="Operational status" onchange="setOperationalStatus(\'' + escapeHtml(id) + '\', this.value)"><option value="operational" ' + ((b.operationalStatus || 'operational') === 'operational' ? 'selected' : '') + '>Operational</option><option value="maintenance" ' + (b.operationalStatus === 'maintenance' ? 'selected' : '') + '>Maintenance</option><option value="damaged" ' + (b.operationalStatus === 'damaged' ? 'selected' : '') + '>Damaged</option></select></td>' +
+        '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt) + (b.type === 'bin' ? '<br><label style="font-size:10px">SIMULATED test reading <input type="number" min="0" max="100" step="1" placeholder="%" aria-label="Simulated fill percent" data-sim-reading="' + escapeHtml(id) + '" style="width:52px"></label> <button class="btn-action" onclick="saveSimulatedReading(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Set</button>' : '') + '</td>' +
+        '<td>' + escapeHtml(b.collectionState || 'none') + '<br>' + assignControls + '</td>' +
+        '<td style="font-size:12px;color:var(--text-light)">Reading: ' + escapeHtml(fmtDate(b.lastReadingAt)) + '<br>Created: ' + escapeHtml(fmtDate(b.createdAt)) + '</td>' +
+        '<td><button class="btn-action danger" onclick="deleteBin(this.dataset.bin, this.dataset.name)" data-bin="' + escapeHtml(id) + '" data-name="' + escapeHtml(b.name) + '"><i class="fas fa-trash"></i></button></td>' +
+        '</tr>';
+    }).join('');
+  }).catch(function () { toast('Could not load bins.', 'error'); });
+}
+
+function fillBar(pct, condition, source, updatedAt) {
+  if (pct == null || !Number.isFinite(Number(pct))) return '<span>Reading unavailable</span>';
+  var label = condition || 'unknown';
+  var simulated = source === 'simulated' ? ' <strong>SIMULATED</strong>' : '';
+  var color = pct >= BIN_THRESHOLDS.collectionNeeded ? '#e74c3c' : pct >= BIN_THRESHOLDS.filling ? '#ff9f43' : '#00c896';
+  return '<div class="fill-bar-wrap">' +
+    '<div class="fill-bar-track"><div class="fill-bar-fill" style="width:' + Math.min(pct,100) + '%;background:' + color + '"></div></div>' +
+    '<span class="fill-num" style="color:' + color + '">' + pct + '% · ' + escapeHtml(label) + simulated + '<br>' + escapeHtml(fmtDate(updatedAt)) + '</span>' +
+    '</div>';
+}
+
+function saveSimulatedReading(id) {
+  var input = document.querySelector('[data-sim-reading="' + id + '"]');
+  if (!input || input.value === '') { toast('Enter a fill reading from 0 to 100.', 'error'); return; }
+  apiFetch('/bins/' + encodeURIComponent(id) + '/simulated-reading', { method:'POST', body: JSON.stringify({ fillLevel: Number(input.value) }) })
+    .then(function (result) {
+      toast(result.message || 'Simulated reading saved.', 'success');
+      loadBins(); loadDashboard();
+      if (adminMap) loadBinsOnMap();
+    }).catch(function (error) { toast(error.message || 'Could not save test reading.', 'error'); });
+}
+
+function assignBinCollection(id) {
+  var select = document.querySelector('[data-bin-driver="' + id + '"]');
+  if (!select || !select.value) { toast('Select an eligible driver.', 'error'); return; }
+  apiFetch('/collection-requests/from-bin', { method:'POST', body: JSON.stringify({ binId:id, driverId:select.value }) })
+    .then(function () { toast('Bin collection task assigned.', 'success'); loadBins(); loadDashboard(); loadCollectionRequests(); })
+    .catch(function (error) { toast(error.message || 'Could not assign bin task.', 'error'); });
+}
+
+function setOperationalStatus(id, operationalStatus) {
+  apiFetch('/bins/' + encodeURIComponent(id) + '/status', { method:'PATCH', body: JSON.stringify({ operationalStatus: operationalStatus }) })
+    .then(function () { toast('Operational status updated.', 'success'); loadBins(); loadDashboard(); })
+    .catch(function (error) { toast(error.message || 'Could not update operational status.', 'error'); loadBins(); });
+}
+
+document.getElementById('binConditionFilter').addEventListener('change', loadBins);
+
+function markServiced(id) {
+  apiFetch('/bins/' + id + '/status', { method:'PATCH', body: JSON.stringify({ operationalStatus:'operational' }) })
+    .then(function (d) {
+      if (d.success) { toast('Bin marked as serviced!', 'success'); loadBins(); loadDashboard(); }
+      else toast(d.message, 'error');
+    }).catch(function () { toast('Action failed.', 'error'); });
+}
+
+function deleteBin(id, name) {
+  if (!confirm('Delete bin "' + name + '"? This cannot be undone.')) return;
+  apiFetch('/bins/' + id, { method:'DELETE' })
+    .then(function (d) {
+      if (d.success) { toast('Bin deleted.', 'success'); loadBins(); loadDashboard(); }
+      else toast(d.message, 'error');
+    }).catch(function () { toast('Delete failed.', 'error'); });
+}
+
+document.getElementById('addBinForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var body = {
+    name:        document.getElementById('nb-name').value.trim(),
+    zone:        document.getElementById('nb-zone').value.trim(),
+    lat:         document.getElementById('nb-lat').value || null,
+    lng:         document.getElementById('nb-lng').value || null,
+    type:        document.getElementById('nb-type').value,
+    capacity:    document.getElementById('nb-cap').value || 300,
+    description: document.getElementById('nb-desc').value.trim(),
+  };
+  apiFetch('/bins', { method:'POST', body: JSON.stringify(body) })
+    .then(function (d) {
+      if (d.success) {
+        toast('Bin added!', 'success');
+        document.getElementById('addBinForm').reset();
+        document.querySelector('.tab[data-tab="bin-list"]').click();
+        loadBins();
+        loadDashboard();
+      } else toast(d.message, 'error');
+    }).catch(function () { toast('Could not add bin.', 'error'); });
+});
+
+/* ─── REPORTS TABLE ──────────────────────────── */
+document.getElementById('filterStatus').addEventListener('change', loadReports);
+document.getElementById('filterPriority').addEventListener('change', loadReports);
+document.getElementById('filterProblemType').addEventListener('change', loadReports);
+document.getElementById('reportSearch').addEventListener('input', function () { clearTimeout(reportFilterTimer); reportFilterTimer = setTimeout(loadReports, 250); });
+function loadReportSummary() {
+  apiFetch('/stats').then(function (d) {
+    var r = d.data.reports;
+    ['reportPendingCount','reportUnassignedCount','reportProgressCount','reportResolvedCount'].forEach(function (id, i) { document.getElementById(id).textContent = [r.pending,r.unassigned,r.inProgress,r.resolved][i]; });
+  }).catch(function (e) { toast(e.message || 'Could not load report counts.', 'error'); });
+}
+function loadReports() {
+  var p = new URLSearchParams();
+  [['status','filterStatus'],['priority','filterPriority'],['problemType','filterProblemType']].forEach(function (x) { var v=document.getElementById(x[1]).value; if(v)p.set(x[0],v); });
+  var q=document.getElementById('reportSearch').value.trim(); if(q)p.set('q',q);
+  Promise.all([apiFetch('/reports'+(p.toString()?'?'+p.toString():'')),loadDrivers()]).then(function (results) {
+    var d=results[0], body=document.getElementById('reportsTbody'); if(!d.success||!Array.isArray(d.data))throw new Error(d.message||'Could not load reports.');
+    reportCache=d.data;
+    if(!reportCache.length){body.innerHTML='<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No reports found</p></div></td></tr>';return;}
+    body.innerHTML=reportCache.map(function(r){var id=escapeHtml(r._id||r.id),state=r.workSubmittedAt&&r.status==='in-progress'?'awaiting verification':(r.status==='dismissed'?'rejected':String(r.status).replace(/-/g,' ')),driver=r.assignedDriver&&(r.assignedDriver.displayName||r.assignedDriver.username)||'Unassigned';return '<tr><td><button type="button" class="report-link" onclick="openReportDetails(this.dataset.reportId)" data-report-id="'+id+'">'+escapeHtml(r.refId||id)+'</button><br><span>'+escapeHtml(typeLabel(r.problemType))+'</span></td><td>'+escapeHtml(r.location||'Location not provided')+'</td><td><span class="badge '+escapeHtml(r.priority)+'">'+escapeHtml(r.priority)+'</span></td><td><span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(state)+'</span></td><td>'+escapeHtml(driver)+'</td><td>'+escapeHtml(fmtDate(r.createdAt))+'</td><td><button type="button" class="btn-action" onclick="openReportDetails(this.dataset.reportId)" data-report-id="'+id+'"><i class="fas fa-eye"></i> View</button></td></tr>';}).join('');
+  }).catch(function(e){toast(e.message||'Could not load reports.','error');}); loadReportSummary();
+}
+function reportPhotoUrl(path){return new URL(path,API.replace(/\/api\/?$/,'')).href;}
+function openReportDetails(id){apiFetch('/reports/'+encodeURIComponent(id)).then(function(d){if(!d.success||!d.data)throw new Error(d.message||'Could not load report.');renderReportDetails(d.data);document.getElementById('reportDetailsDialog').showModal();}).catch(function(e){toast(e.message||'Could not load report details.','error');});}
+function renderReportDetails(r){
+ activeReportId=String(r._id||r.id||'');
+ [['reportDetailRef',r.refId||activeReportId],['reportDetailReporter',r.fullName],['reportDetailPhone',r.phone],['reportDetailProblem',typeLabel(r.problemType)],['reportDetailLocation',r.location],['reportDetailCoordinates',r.latitude!=null&&r.longitude!=null?r.latitude+', '+r.longitude:'Not provided'],['reportDetailStatus',(r.priority||'')+' / '+(r.workSubmittedAt&&r.status==='in-progress'?'awaiting verification':(r.status==='dismissed'?'rejected':String(r.status||'').replace(/-/g,' ')))],['reportDetailCreated',fmtDate(r.createdAt)],['reportDetailUpdated',fmtDate(r.updatedAt)],['reportDetailDescription',r.description||'–']].forEach(function(x){document.getElementById(x[0]).textContent=x[1]||'–';});
+ document.getElementById('reportDetailResolvedWrap').hidden=!r.resolvedAt;document.getElementById('reportDetailResolved').textContent=fmtDate(r.resolvedAt);
+ var current=r.assignedDriver&&(r.assignedDriver._id||r.assignedDriver),sel=document.getElementById('reportDriverSelect');sel.innerHTML='<option value="">Select an eligible Driver</option>'+drivers.map(function(d){var n=d.activeAssignments||0;return '<option value="'+escapeHtml(d.id)+'" '+(String(d.id)===String(current)?'selected':'')+'>'+escapeHtml(d.displayName)+' · '+(n?n+' active assignment(s)':'Available')+'</option>';}).join('');
+ var open=['pending','in-progress'].indexOf(r.status)>=0&&!r.workSubmittedAt;document.getElementById('reportAssignmentForm').hidden=!open;document.getElementById('reportAssignAction').textContent=current?'Reassign Driver':'Assign Driver';document.getElementById('reportAssignmentReason').value='';
+ var submitted=r.status==='in-progress'&&!!r.workSubmittedAt;document.getElementById('reportResolutionForm').hidden=!submitted;document.getElementById('reportResolveAction').hidden=!submitted;document.getElementById('reportResolutionNote').value='';
+ document.getElementById('reportRejectForm').hidden=r.status!=='pending';document.getElementById('reportRejectAction').hidden=r.status!=='pending';document.getElementById('reportRejectionReason').value='';
+ document.getElementById('reportDetailResolutionWrap').hidden=!r.resolutionNote;document.getElementById('reportDetailResolution').textContent=r.resolutionNote||'';document.getElementById('reportDetailRejectionWrap').hidden=!r.rejectionReason;document.getElementById('reportDetailRejection').textContent=r.rejectionReason||'';
+ document.getElementById('reportDetailWorkWrap').hidden=!r.workSubmittedAt;document.getElementById('reportDetailWorkNotes').textContent=r.workNotes||'Work submitted without notes.';var we=document.getElementById('reportDetailWorkEvidence');we.hidden=!r.workEvidenceUrl;if(r.workEvidenceUrl)we.href=reportPhotoUrl(r.workEvidenceUrl);
+ var hist=r.assignmentHistory||[];document.getElementById('reportDetailHistoryWrap').hidden=!hist.length;document.getElementById('reportDetailHistory').textContent=hist.map(function(x){return (x.driverName||'Driver')+' · '+fmtDate(x.assignedAt)+(x.reason?' · '+x.reason:'');}).join(' | ');
+ var photo=document.getElementById('reportDetailPhoto');document.getElementById('reportDetailPhotoWrap').hidden=!r.photoUrl;if(r.photoUrl)photo.src=reportPhotoUrl(r.photoUrl);else photo.removeAttribute('src');
+}
+function updateReport(body){if(!activeReportId)return;apiFetch('/reports/'+encodeURIComponent(activeReportId)+(body.driverId?'/assign':'/status'),{method:'PATCH',body:JSON.stringify(body)}).then(function(d){if(!d.success)throw new Error(d.message||'Could not update report.');toast(d.message||'Report updated.','success');renderReportDetails(d.data);loadReports();loadDashboard();}).catch(function(e){toast(e.message||'Update failed.','error');});}
+function assignReportDriver(){var id=document.getElementById('reportDriverSelect').value;if(!id)return toast('Select a Driver first.','error');updateReport({driverId:id,reason:document.getElementById('reportAssignmentReason').value.trim()});}
+function saveReportAction(status){if(status==='resolved')updateReport({status:status,resolutionNote:document.getElementById('reportResolutionNote').value.trim()});}
+function rejectReport(){var reason=document.getElementById('reportRejectionReason').value.trim();if(!reason)return toast('Enter a reason for rejection.','error');updateReport({status:'dismissed',rejectionReason:reason});}
+function closeReportDetails(){document.getElementById('reportDetailsDialog').close();activeReportId=null;}
+document.getElementById('reportDetailsDialog').addEventListener('close',function(){activeReportId=null;});
+function deleteReport(id){if(!id||!confirm('Archive this report? It will be hidden from active reports, but preserved in the database.'))return;apiFetch('/reports/'+encodeURIComponent(id),{method:'DELETE'}).then(function(d){if(!d.success)throw new Error(d.message||'Could not archive report.');toast('Report archived.','success');if(activeReportId===String(id))closeReportDetails();loadReports();loadDashboard();}).catch(function(e){toast(e.message||'Archive failed.','error');});}
+document.getElementById('filterCollectionRequestStatus').addEventListener('change', loadCollectionRequests);
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+  });
+}
+
+function loadCollectionRequests() {
+  var status = document.getElementById('filterCollectionRequestStatus').value;
+  var qs = status ? '?status=' + encodeURIComponent(status) : '';
+  apiFetch('/collection-requests' + qs).then(function (d) {
+    var tbody = document.getElementById('collectionRequestsTbody');
+    if (!d.success || !d.data.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-inbox"></i><p>No collection requests found</p></div></td></tr>';
+      if (!status) updatePendingRequestCount(0);
+      return;
+    }
+
+    if (!status) {
+      var pendingCount = d.data.filter(function (request) { return request.status === 'pending'; }).length;
+      updatePendingRequestCount(pendingCount);
+    }
+    tbody.innerHTML = d.data.map(function (request) {
+      var id = request._id || request.id;
+      var requestId = request.refId || id;
+      var escapedId = escapeHtml(id);
+      var actionButtons = '';
+      if (request.status === 'pending') {
+        actionButtons = '<button class="btn-action success" onclick="updateCollectionRequestStatus(this.dataset.id, \'accepted\')" data-id="' + escapedId + '"><i class="fas fa-check"></i> Accept</button>' +
+          '<button class="btn-action danger" onclick="updateCollectionRequestStatus(this.dataset.id, \'rejected\')" data-id="' + escapedId + '"><i class="fas fa-times"></i> Reject</button>';
+      } else if (request.status === 'accepted' && !request.assignedDriver) {
+        var options = drivers.map(function (driver) {
+          return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>';
+        }).join('');
+        actionButtons = drivers.length
+          ? '<select data-driver-select="' + escapedId + '" aria-label="Assign driver" style="padding:6px;border:1px solid var(--border);border-radius:7px">' +
+            '<option value="">Select driver</option>' + options + '</select>' +
+            '<button class="btn-action success" onclick="assignCollectionRequestDriver(this.dataset.id)" data-id="' + escapedId + '"><i class="fas fa-user-check"></i> Assign</button>'
+          : '<span style="font-size:11px;color:var(--text-light)">Create a driver account first</span>';
+      }
+      var location = request.latitude != null && request.longitude != null
+        ? escapeHtml(request.location) + '<br><span style="font-size:11px;color:var(--text-light)">' +
+          escapeHtml(request.latitude) + ', ' + escapeHtml(request.longitude) + '</span>'
+        : escapeHtml(request.location);
+      if (request.source === 'bin') location = '<strong>' + escapeHtml(request.binCode || 'Bin task') + '</strong> · ' + escapeHtml(request.binName || request.location) + '<br>' + location;
+      var requestDetails = request.source === 'bin'
+        ? 'Fill at assignment: ' + (request.fillLevelAtAssignment == null ? 'unavailable' : escapeHtml(request.fillLevelAtAssignment) + '% · ' + escapeHtml(request.readingSourceAtAssignment || 'unknown')) + '<br>' + escapeHtml(request.description)
+        : escapeHtml(request.description);
+      var assignedDriver = request.assignedDriver
+        ? escapeHtml(request.assignedDriver.displayName || request.assignedDriver.username)
+        : '–';
+
+      return '<tr>' +
+        '<td><code style="font-size:11px;color:var(--primary)">' + escapeHtml(requestId) + '</code></td>' +
+        '<td>' + escapeHtml(request.fullName) + '<br><span style="font-size:11px;color:var(--text-light)">' + escapeHtml(request.phone) + '</span></td>' +
+        '<td>' + location + '</td>' +
+        '<td>' + requestDetails + '</td>' +
+        '<td><span class="badge ' + escapeHtml(request.status) + '">' + escapeHtml(request.status.replace(/-/g, ' ')) + '</span></td>' +
+        '<td>' + assignedDriver + '</td>' +
+        '<td style="font-size:12px;color:var(--text-light)">' + escapeHtml(fmtDate(request.createdAt)) + '</td>' +
+        '<td style="white-space:nowrap;display:flex;gap:5px;flex-wrap:wrap">' + actionButtons + '</td>' +
+        '</tr>';
+    }).join('');
+  }).catch(function () { toast('Could not load collection requests.', 'error'); });
+}
+
+function loadPendingCollectionRequestCount() {
+  apiFetch('/collection-requests?status=pending').then(function (d) {
+    if (d.success) updatePendingRequestCount(d.count || 0);
+  }).catch(function () { toast('Could not refresh pending collection requests.', 'error'); });
+}
+
+function updatePendingRequestCount(count) {
+  var badge = document.getElementById('pendingRequestCount');
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline' : 'none';
+}
+
+function updateCollectionRequestStatus(id, status) {
+  if (!REQUEST_STATUSES.includes(status) || !['accepted', 'rejected'].includes(status)) {
+    toast('Invalid collection request action.', 'error');
+    return;
+  }
+  apiFetch('/collection-requests/' + encodeURIComponent(id) + '/status', {
+    method: 'PATCH',
+    body: JSON.stringify({ status: status }),
+  }).then(function (d) {
+    if (d.success) {
+      toast('Collection request ' + status + '.', 'success');
+      loadCollectionRequests();
+      loadDashboard();
+      loadPendingCollectionRequestCount();
+    } else {
+      toast(d.message || 'Could not update collection request.', 'error');
+    }
+  }).catch(function () { toast('Could not update collection request.', 'error'); });
+}
+
+function assignCollectionRequestDriver(id) {
+  var select = document.querySelector('[data-driver-select="' + id + '"]');
+  if (!select || !select.value) {
+    toast('Select a driver before assigning this request.', 'error');
+    return;
+  }
+  apiFetch('/collection-requests/' + encodeURIComponent(id) + '/assign', {
+    method: 'PATCH',
+    body: JSON.stringify({ driverId: select.value }),
+  }).then(function (d) {
+    if (d.success) {
+      toast('Driver assigned to collection request.', 'success');
+      loadCollectionRequests();
+      loadDashboard();
+    } else {
+      toast(d.message || 'Could not assign driver.', 'error');
+    }
+  }).catch(function () { toast('Could not assign driver.', 'error'); });
+}
+
+/* ─── DRIVER MANAGEMENT ──────────────────────── */
+document.getElementById('addDriverForm').addEventListener('submit', function (event) {
+  event.preventDefault();
+  var form = event.currentTarget;
+  apiFetch('/drivers', {
+    method: 'POST',
+    body: JSON.stringify({
+      displayName: document.getElementById('driverDisplayName').value.trim(),
+      username: document.getElementById('driverUsername').value.trim(),
+      password: document.getElementById('driverPassword').value,
+    }),
+  }).then(function (d) {
+    if (d.success) {
+      toast('Driver account created.', 'success');
+      form.reset();
+      loadDrivers();
+    } else {
+      toast(d.message || 'Could not create driver.', 'error');
+    }
+  }).catch(function () { toast('Could not create driver.', 'error'); });
+});
+
+function loadDrivers() {
+  return apiFetch('/drivers').then(function (d) {
+    if (!d.success) {
+      toast(d.message || 'Could not load drivers.', 'error');
+      return;
+    }
+    drivers = d.data;
+    var tbody = document.getElementById('driversTbody');
+    if (!drivers.length) {
+      tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state"><i class="fas fa-id-badge"></i><p>No drivers have been created</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = drivers.map(function (driver) {
+      return '<tr><td>' + escapeHtml(driver.displayName) + '</td>' +
+        '<td>' + escapeHtml(driver.username) + '</td>' +
+        '<td>' + escapeHtml(fmtDate(driver.createdAt)) + '</td></tr>';
+    }).join('');
+  }).catch(function () { toast('Could not load drivers.', 'error'); });
+}
+
+/* ─── HELPERS ────────────────────────────────── */
+function typeLabel(t) {
+  return ({overflow:'Overflowing bin',illegal:'Illegal dumping',damaged:'Damaged bin',missing:'Missing bin',smell:'Bad odour',other:'Other'})[t] || t;
+}
+function fmtDate(iso) {
+  if (!iso) return '–';
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+         d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ─── BOOT ───────────────────────────────────── */
+function bootDashboard() {
+  loadDashboard();
+  loadPendingCollectionRequestCount();
+  // auto-refresh every 30 seconds
+  setInterval(function () {
+    loadDashboard();
+    loadPendingCollectionRequestCount();
+    // also refresh reports if that view is active
+    if (document.getElementById('view-reports').style.display !== 'none') loadReports();
+    if (document.getElementById('view-bins').style.display !== 'none') loadBins();
+    if (document.getElementById('view-gismap').style.display !== 'none') loadBinsOnMap(true);
+    if (document.getElementById('view-collectionRequests').style.display !== 'none') loadCollectionRequests();
+    if (document.getElementById('view-drivers').style.display !== 'none') loadDrivers();
+  }, 30000);
+}
+
+/* ─── ADMIN ROLE GUARD ───────────────────────── */
+if (!TOKEN) {
+  window.location.replace('../login.html?role=admin');
+} else {
+  fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + TOKEN } })
+    .then(function (r) { setServerStatus(true); return r.json(); })
+    .then(function (d) {
+      if (d.success && d.user.role === 'admin') {
+        localStorage.setItem('sb_internal_token', TOKEN);
+        localStorage.removeItem('sb_admin_token');
+        document.getElementById('loginScreen').style.display = 'none';
+        var adminName = d.user.displayName || d.user.username;
+        document.getElementById('adminName').textContent = adminName;
+        document.getElementById('adminAvatar').textContent = adminName.charAt(0).toUpperCase();
+        bootDashboard();
+      } else {
+        localStorage.removeItem('sb_internal_token');
+        localStorage.removeItem('sb_admin_token');
+        localStorage.removeItem('sb_driver_token');
+        window.location.replace('../login.html?role=admin&reason=role');
+      }
+    })
+    .catch(function () {
+      setServerStatus(false);
+      document.querySelector('#loginScreen .login-desc').textContent =
+        'Cannot verify your session. Make sure the API server is running, then sign in again.';
+    });
+}
+</script>
+</body>
+</html>

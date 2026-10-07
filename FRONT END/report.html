@@ -1,0 +1,582 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report | Adama City Smart Bin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="report.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#0A043C">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="navbar">
+      <a href="index.html" class="brand">
+        <span class="brand-city">Adama City</span>
+        <span class="brand-name">Smart Bin</span>
+      </a>
+      <nav id="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="report.html" class="nav-link active">Report</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+      <a href="report.html" class="nav-cta">Report Issue</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <span class="hero-tag"><i class="fas fa-flag"></i> Citizen Report</span>
+      <h1>Report a <span class="gradient-text">Garbage Problem</span></h1>
+      <p>Help keep Adama City clean by reporting overflowing, damaged, or misplaced garbage bins directly to our sanitation team.</p>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#f4f4f8"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="section-header">
+      <span class="section-tag">Simple Process</span>
+      <h2>How Reporting Works</h2>
+      <p>Three easy steps to report a waste management issue in your area</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <h3>Enter Your Location</h3>
+        <p>Tell us exactly where the problem is so our team can find it quickly.</p>
+      </div>
+      <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon orange"><i class="fas fa-list-alt"></i></div>
+        <h3>Describe the Issue</h3>
+        <p>Select the problem type and add details or a photo to help us understand.</p>
+      </div>
+      <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon green"><i class="fas fa-check-circle"></i></div>
+        <h3>Submit &amp; Track</h3>
+        <p>Our sanitation team receives your report and resolves it within 24 hours.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORT FORM + SIDEBAR -->
+  <section class="report-section">
+    <div class="report-layout">
+
+      <!-- FORM -->
+      <div class="report-form-wrapper">
+        <div class="form-header">
+          <div class="form-header-icon"><i class="fas fa-file-alt"></i></div>
+          <div>
+            <h2>Submit a Report</h2>
+            <p>All fields marked <span class="req">*</span> are required</p>
+          </div>
+        </div>
+
+        <form id="reportForm" novalidate>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fullName">Full Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-user"></i>
+                <input type="text" id="fullName" placeholder="Enter your full name" required>
+              </div>
+              <span class="err" id="nameErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fas fa-phone"></i>
+                <input type="tel" id="phone" placeholder="09XXXXXXXX" required>
+              </div>
+              <span class="err" id="phoneErr"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Location / Area <span class="req">*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="location" placeholder="e.g. Adama Market Area, Near Hospital Roadâ€¦" required>
+            </div>
+            <span class="err" id="locErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label>Map Coordinates <span class="req">*</span></label>
+            <p class="location-help">Share your current location so the Driver GIS team can find the reported problem.</p>
+            <button type="button" class="location-button" id="useCurrentLocation">
+              <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+              Use My Current Location
+            </button>
+            <p class="location-status" id="locationStatus" role="status" aria-live="polite">Your location is required to submit a report.</p>
+            <div class="coordinates-grid">
+              <label for="latitude">Latitude <span class="req">*</span>
+                <input type="number" id="latitude" step="any" min="-90" max="90" placeholder="e.g. 8.54" required>
+              </label>
+              <label for="longitude">Longitude <span class="req">*</span>
+                <input type="number" id="longitude" step="any" min="-180" max="180" placeholder="e.g. 39.27" required>
+              </label>
+            </div>
+            <span class="err" id="coordinatesErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="problemType">Problem Type <span class="req">*</span></label>
+            <div class="input-wrap select-wrap">
+              <i class="fas fa-exclamation-triangle"></i>
+              <select id="problemType" required>
+                <option value="" disabled selected>Select a problem type</option>
+                <option value="overflow">Overflowing Garbage Bin</option>
+                <option value="illegal">Illegal Waste Dumping</option>
+                <option value="damaged">Damaged Garbage Bin</option>
+                <option value="missing">Missing Garbage Bin</option>
+                <option value="smell">Bad Odour / Sanitation Issue</option>
+                <option value="other">Other</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+            <span class="err" id="typeErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label>Priority Level</label>
+            <div class="priority-options">
+              <label class="priority-card">
+                <input type="radio" name="priority" value="low">
+                <div class="priority-inner low"><i class="fas fa-arrow-down"></i><span>Low</span></div>
+              </label>
+              <label class="priority-card">
+                <input type="radio" name="priority" value="medium" checked>
+                <div class="priority-inner medium"><i class="fas fa-minus"></i><span>Medium</span></div>
+              </label>
+              <label class="priority-card">
+                <input type="radio" name="priority" value="high">
+                <div class="priority-inner high"><i class="fas fa-arrow-up"></i><span>High</span></div>
+              </label>
+              <label class="priority-card">
+                <input type="radio" name="priority" value="urgent">
+                <div class="priority-inner urgent"><i class="fas fa-exclamation"></i><span>Urgent</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description <span class="req">*</span></label>
+            <div class="textarea-wrap">
+              <textarea id="description" rows="5"
+                placeholder="Describe the problem in detail â€” bin ID if visible, access instructions, etc." required></textarea>
+            </div>
+            <div class="char-count"><span id="charCount">0</span> / 500 characters</div>
+            <span class="err" id="descErr"></span>
+          </div>
+
+          <div class="form-group">
+            <label>Photo Evidence <span style="font-weight:400;color:var(--text-light)">(Optional)</span></label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="photoInput" accept="image/*" style="display:none">
+              <i class="fas fa-camera"></i>
+              <p>Drag &amp; drop a photo, or <button type="button" id="uploadBtn">Browse</button></p>
+              <span>JPG, PNG, WEBP â€” Max 5MB</span>
+              <div class="upload-preview" id="uploadPreview" style="display:none">
+                <img id="previewImg" src="" alt="Preview">
+                <button type="button" class="remove-photo" id="removePhoto"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text"><i class="fas fa-paper-plane"></i> Submit Report</span>
+            <span class="btn-loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Submittingâ€¦</span>
+          </button>
+
+        </form>
+
+        <!-- SUCCESS MESSAGE -->
+        <div class="success-msg" id="successMsg" style="display:none">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h3>Report Submitted!</h3>
+          <p>Thank you. Our sanitation team will address your report within 24 hours.</p>
+          <div class="success-ref">Reference ID: <strong id="refId">ADM-2026-####</strong></div>
+          <button class="btn-new" id="newReportBtn"><i class="fas fa-plus"></i> Submit Another</button>
+        </div>
+      </div>
+
+      <!-- INFO SIDEBAR -->
+      <aside class="report-info">
+
+        <div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-clock"></i></div>
+          <h4>Response Time</h4>
+          <p>Most reports addressed within <strong>24 hours</strong>. Urgent issues within <strong>2 hours</strong>.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon green"><i class="fas fa-phone-alt"></i></div>
+          <h4>Emergency Line</h4>
+          <p>For immediate help call:<br><strong>+251 22 110 XXXX</strong></p>
+          <a href="tel:+251221100000" class="info-link"><i class="fas fa-phone"></i> Call Now</a>
+        </div>
+
+        <div class="recent-reports">
+          <h4><i class="fas fa-history"></i> Recent Reports</h4>
+          <ul>
+            <li>
+              <span class="rr-dot red"></span>
+              <div><strong>Overflowing bin</strong><span>Market Area Â· 1h ago</span></div>
+              <span class="rr-status resolved">Resolved</span>
+            </li>
+            <li>
+              <span class="rr-dot orange"></span>
+              <div><strong>Illegal dumping</strong><span>Zone B Â· 3h ago</span></div>
+              <span class="rr-status pending">Pending</span>
+            </li>
+            <li>
+              <span class="rr-dot blue"></span>
+              <div><strong>Damaged bin</strong><span>Hospital Rd Â· 6h ago</span></div>
+              <span class="rr-status resolved">Resolved</span>
+            </li>
+            <li>
+              <span class="rr-dot red"></span>
+              <div><strong>Bad odour</strong><span>School Zone Â· 8h ago</span></div>
+              <span class="rr-status in-progress">In Progress</span>
+            </li>
+          </ul>
+        </div>
+
+      </aside>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <div class="brand-icon"><i class="fas fa-recycle"></i></div>
+          <div class="brand-text">
+            <span class="brand-title">SmartBin</span>
+            <span class="brand-sub">Adama City</span>
+          </div>
+        </a>
+        <p>Building a cleaner and smarter Adama City through GIS technology.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="report.html"><i class="fas fa-chevron-right"></i> Report</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p><i class="fas fa-map-marker-alt"></i> Adama City, Ethiopia</p>
+        <p><i class="fas fa-phone"></i> +251 22 110 XXXX</p>
+        <p><i class="fas fa-envelope"></i> info@smartbin.adama.gov.et</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Smart Waste Management System | Adama City Administration</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+
+  <!-- â”€â”€ BACKEND INTEGRATION: Real API report submission â”€â”€ -->
+  <script>
+  (function () {
+    var API_BASE = 'http://localhost:3000/api';
+
+    /* Override the default form submit from script.js */
+    var form = document.getElementById('reportForm');
+    if (!form) return;
+
+    /* Remove any existing submit listeners by cloning */
+    var freshForm = form.cloneNode(true);
+    form.parentNode.replaceChild(freshForm, form);
+    form = freshForm;
+
+    /* Re-attach char counter (was on old node) */
+    var descEl    = form.querySelector('#description');
+    var charCount = form.querySelector('#charCount');
+    if (descEl && charCount) {
+      descEl.addEventListener('input', function () {
+        var len = Math.min(descEl.value.length, 500);
+        descEl.value = descEl.value.slice(0, 500);
+        charCount.textContent = len;
+        charCount.style.color = len > 480 ? '#e74c3c' : '#b0bec5';
+      });
+    }
+
+    /* Fill required report coordinates using the browser's location permission. */
+    var locationButton = form.querySelector('#useCurrentLocation');
+    var locationStatus = form.querySelector('#locationStatus');
+    var latitudeEl = form.querySelector('#latitude');
+    var longitudeEl = form.querySelector('#longitude');
+    if (locationButton && locationStatus && latitudeEl && longitudeEl) {
+      locationButton.addEventListener('click', function () {
+        setErr('coordinatesErr', '');
+        if (!navigator.geolocation) {
+          locationStatus.textContent = 'Location is not supported by this browser. Enter the coordinates manually.';
+          return;
+        }
+
+        locationButton.disabled = true;
+        locationStatus.textContent = 'Getting your current location...';
+        navigator.geolocation.getCurrentPosition(function (position) {
+          latitudeEl.value = position.coords.latitude.toFixed(6);
+          longitudeEl.value = position.coords.longitude.toFixed(6);
+          locationStatus.textContent = 'Location found. Check the coordinates below.';
+          locationButton.disabled = false;
+        }, function (error) {
+          var message = error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. Allow location access in your browser and try again, or enter coordinates manually.'
+            : error.code === error.TIMEOUT
+              ? 'Could not get your location in time. Please try again or enter coordinates manually.'
+              : 'Your location is unavailable. Please try again or enter coordinates manually.';
+          locationStatus.textContent = message;
+          locationButton.disabled = false;
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+      });
+    }
+
+    /* Re-attach photo upload listeners */
+    var uploadArea    = form.querySelector('#uploadArea');
+    var photoInput    = form.querySelector('#photoInput');
+    var uploadBtn     = form.querySelector('#uploadBtn');
+    var uploadPreview = form.querySelector('#uploadPreview');
+    var previewImg    = form.querySelector('#previewImg');
+    var removePhoto   = form.querySelector('#removePhoto');
+
+    function showPreview(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      if (file.size > 5 * 1024 * 1024) { alert('File too large â€” max 5 MB.'); return; }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result;
+        uploadPreview.style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (uploadBtn)   uploadBtn.addEventListener('click', function () { photoInput.click(); });
+    if (photoInput)  photoInput.addEventListener('change', function () { showPreview(photoInput.files[0]); });
+    if (removePhoto) removePhoto.addEventListener('click', function (e) {
+      e.stopPropagation();
+      photoInput.value = '';
+      uploadPreview.style.display = 'none';
+      previewImg.src = '';
+    });
+    if (uploadArea) {
+      uploadArea.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#0057b8';
+        uploadArea.style.background  = '#e8f1ff';
+      });
+      uploadArea.addEventListener('dragleave', function () {
+        uploadArea.style.borderColor = '';
+        uploadArea.style.background  = '';
+      });
+      uploadArea.addEventListener('drop', function (e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '';
+        uploadArea.style.background  = '';
+        var file = e.dataTransfer.files[0];
+        if (file) {
+          try { var dt = new DataTransfer(); dt.items.add(file); photoInput.files = dt.files; } catch (_) {}
+          showPreview(file);
+        }
+      });
+    }
+
+    /* Validation */
+    function setErr(id, msg) {
+      var el = form.querySelector('#' + id);
+      if (el) el.textContent = msg;
+    }
+    function clearErrors() {
+      ['nameErr','phoneErr','locErr','coordinatesErr','typeErr','descErr'].forEach(function(id) { setErr(id, ''); });
+    }
+    function validate() {
+      clearErrors();
+      var ok = true;
+      var nameEl  = form.querySelector('#fullName');
+      var phoneEl = form.querySelector('#phone');
+      var locEl   = form.querySelector('#location');
+      var latitude = form.querySelector('#latitude');
+      var longitude = form.querySelector('#longitude');
+      var typeEl  = form.querySelector('#problemType');
+      var descElv = form.querySelector('#description');
+
+      if (!nameEl || !nameEl.value.trim())   { setErr('nameErr', 'Full name is required.'); ok = false; }
+      if (!phoneEl || !phoneEl.value.trim()) { setErr('phoneErr', 'Phone number is required.'); ok = false; }
+      else if (!/^(0|\+?251)\d{8,9}$/.test(phoneEl.value.trim())) {
+        setErr('phoneErr', 'Enter a valid Ethiopian phone number.'); ok = false;
+      }
+      if (!locEl  || !locEl.value.trim())   { setErr('locErr',  'Location is required.'); ok = false; }
+      if (!latitude || !longitude || !latitude.value || !longitude.value ||
+          !Number.isFinite(Number(latitude.value)) || Number(latitude.value) < -90 || Number(latitude.value) > 90 ||
+          !Number.isFinite(Number(longitude.value)) || Number(longitude.value) < -180 || Number(longitude.value) > 180) {
+        setErr('coordinatesErr', 'Use your current location or enter valid latitude and longitude.'); ok = false;
+      }
+      if (!typeEl || !typeEl.value)          { setErr('typeErr', 'Please select a problem type.'); ok = false; }
+      if (!descElv || !descElv.value.trim()) { setErr('descErr', 'Please describe the problem.'); ok = false; }
+      else if (descElv.value.trim().length < 10) { setErr('descErr', 'Description must be at least 10 characters.'); ok = false; }
+
+      return ok;
+    }
+
+    /* Submit â†’ POST /api/reports */
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!validate()) return;
+
+      var submitBtn  = form.querySelector('#submitBtn');
+      var btnText    = submitBtn && submitBtn.querySelector('.btn-text');
+      var btnLoading = submitBtn && submitBtn.querySelector('.btn-loading');
+      if (btnText)    btnText.style.display    = 'none';
+      if (btnLoading) btnLoading.style.display = 'flex';
+      if (submitBtn)  submitBtn.disabled = true;
+
+      var priorityEl = form.querySelector('input[name="priority"]:checked');
+
+      var formData = new FormData();
+      formData.append('fullName',    form.querySelector('#fullName').value.trim());
+      formData.append('phone',       form.querySelector('#phone').value.trim());
+      formData.append('location',    form.querySelector('#location').value.trim());
+      var latitude = form.querySelector('#latitude').value;
+      var longitude = form.querySelector('#longitude').value;
+      formData.append('latitude', latitude);
+      formData.append('longitude', longitude);
+      formData.append('problemType', form.querySelector('#problemType').value);
+      formData.append('priority',    priorityEl ? priorityEl.value : 'medium');
+      formData.append('description', form.querySelector('#description').value.trim());
+      if (photoInput && photoInput.files[0]) {
+        formData.append('photo', photoInput.files[0]);
+      }
+
+      fetch(API_BASE + '/reports', { method: 'POST', body: formData })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            form.style.display = 'none';
+            var successMsg = document.getElementById('successMsg');
+            if (successMsg) {
+              successMsg.style.display = 'block';
+              var refId = document.getElementById('refId');
+              if (refId) refId.textContent = data.data.refId;
+            }
+          } else {
+            if (btnText)    btnText.style.display    = 'flex';
+            if (btnLoading) btnLoading.style.display = 'none';
+            if (submitBtn)  submitBtn.disabled = false;
+            window.showToast && window.showToast(data.message || 'Submission failed. Try again.', 'error');
+          }
+        })
+        .catch(function () {
+          if (btnText)    btnText.style.display    = 'flex';
+          if (btnLoading) btnLoading.style.display = 'none';
+          if (submitBtn)  submitBtn.disabled = false;
+          window.showToast && window.showToast('Cannot reach server. Please check your connection.', 'error');
+        });
+    });
+
+    /* Reset form */
+    var newBtn = document.getElementById('newReportBtn');
+    if (newBtn) {
+      newBtn.addEventListener('click', function () {
+        form.reset();
+        if (charCount) charCount.textContent = '0';
+        if (uploadPreview) uploadPreview.style.display = 'none';
+        if (previewImg)    previewImg.src = '';
+        clearErrors();
+        if (locationStatus) locationStatus.textContent = 'Your location is required to submit a report.';
+        var successMsg = document.getElementById('successMsg');
+        if (successMsg) successMsg.style.display = 'none';
+        form.style.display = 'block';
+        var sb  = form.querySelector('#submitBtn');
+        var bt  = sb && sb.querySelector('.btn-text');
+        var bl  = sb && sb.querySelector('.btn-loading');
+        if (bt) bt.style.display = 'flex';
+        if (bl) bl.style.display = 'none';
+        if (sb) sb.disabled = false;
+        form.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    /* Load recent reports from API into the sidebar */
+    fetch(API_BASE + '/stats')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) return;
+        var recent = data.data.reports.recent;
+        var ul = document.querySelector('.recent-reports ul');
+        if (!ul || !recent || !recent.length) return;
+
+        var typeLabels = {
+          overflow: 'Overflowing bin',
+          illegal:  'Illegal dumping',
+          damaged:  'Damaged bin',
+          missing:  'Missing bin',
+          smell:    'Bad odour',
+          other:    'Other issue',
+        };
+        var priorityDot = { urgent: 'red', high: 'red', medium: 'orange', low: 'blue' };
+
+        ul.innerHTML = recent.map(function (r) {
+          var when = timeSince(r.createdAt);
+          var dot  = priorityDot[r.priority] || 'orange';
+          var label = typeLabels[r.problemType] || r.problemType;
+          return '<li>' +
+            '<span class="rr-dot ' + dot + '"></span>' +
+            '<div><strong>' + label + '</strong><span>' + r.location + ' Â· ' + when + '</span></div>' +
+            '<span class="rr-status ' + r.status + '">' + capitalize(r.status) + '</span>' +
+            '</li>';
+        }).join('');
+      })
+      .catch(function () { /* sidebar stays with default HTML */ });
+
+    function timeSince(iso) {
+      var diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+      if (diff < 60)   return diff + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400)return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  })();
+  </script>
+  <script>
+  // Apply dark mode preference on page load
+  if (localStorage.getItem('darkMode') === 'on') {
+    document.body.classList.add('dark-mode');
+  }
+  </script>
+</body>
+</html>
