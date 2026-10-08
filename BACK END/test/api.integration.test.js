@@ -254,6 +254,9 @@ test('API bin monitoring and collection assignment workflow', async t => {
     assert.equal(sensorResult.body.data.sensorDeviceState, 'STOPPED_AFTER_FULL');
     assert.equal((await sensorReading(100, 'FULL', 6)).status, 409);
     assert.equal((await call(`/bins/${sensorBin._id}/simulated-reading`, 'POST', { fillLevel: 0 }, adminToken)).status, 409);
+    await Bin.updateOne({ _id: sensorBin._id }, { $set: { lastReadingAt: new Date(Date.now() - 121 * 60 * 1000) } });
+    const staleFullBin = await call(`/bins/${sensorBin._id}`);
+    assert.equal(staleFullBin.body.data.fillCondition, 'collection-needed');
     const fullDeviceState = await deviceCall('/bins/BIN-001/sensor-state');
     assert.equal(fullDeviceState.body.data.canTransmit, false);
     assert.equal(fullDeviceState.body.data.fillLevel, 100);

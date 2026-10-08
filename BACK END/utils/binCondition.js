@@ -26,10 +26,11 @@ function sensorDeviceState(bin, now = Date.now()) {
 function conditionFor(fillLevel, lastReadingAt, lastCollectionAt) {
   if (fillLevel == null || !Number.isFinite(Number(fillLevel))) return 'unavailable';
   const readAt = lastReadingAt ? new Date(lastReadingAt).getTime() : NaN;
+  const collectedAt = lastCollectionAt ? new Date(lastCollectionAt).getTime() : NaN;
+  if (Number.isFinite(collectedAt) && (!Number.isFinite(readAt) || readAt <= collectedAt)) return 'awaiting-reading';
+  if (Number(fillLevel) >= 100 && Number.isFinite(readAt)) return 'collection-needed';
   const stale = !Number.isFinite(readAt) || Date.now() - readAt > STALE_AFTER_MINUTES * 60000;
   if (stale) return 'stale';
-  const collectedAt = lastCollectionAt ? new Date(lastCollectionAt).getTime() : NaN;
-  if (Number.isFinite(collectedAt) && readAt <= collectedAt) return 'awaiting-reading';
   if (Number(fillLevel) >= COLLECTION_THRESHOLD) return 'collection-needed';
   if (Number(fillLevel) >= FILLING_THRESHOLD) return 'filling';
   return 'available';

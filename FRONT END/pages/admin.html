@@ -172,14 +172,36 @@
           <div class="tab" data-tab="bin-add">+ Add New Bin</div>
         </div>
         <div class="tab-panel active" id="tab-bin-list">
-          <div style="padding:14px 18px"><label for="binConditionFilter">Filter bins </label>
-            <select id="binConditionFilter" style="padding:8px;border:1px solid var(--border);border-radius:8px">
+
+          <!-- Legend + filter bar -->
+          <div class="bins-legend-bar">
+            <div class="bins-legend-items">
+              <span class="ss-badge ss-NORMAL">NORMAL</span>
+              <span class="ss-badge ss-ALMOST_FULL">ALMOST FULL</span>
+              <span class="ss-badge ss-HIGH">HIGH</span>
+              <span class="ss-badge ss-FULL">FULL</span>
+            </div>
+            <div class="bins-legend-device">
+              <span class="ds-badge ds-ONLINE"><i class="fas fa-circle"></i> Online</span>
+              <span class="ds-badge ds-OFFLINE"><i class="fas fa-circle"></i> Offline</span>
+              <span class="ds-badge ds-NOT_CONNECTED"><i class="fas fa-circle"></i> Not Connected</span>
+              <span class="ds-badge ds-STOPPED_AFTER_FULL"><i class="fas fa-stop-circle"></i> Stopped — awaiting collection</span>
+            </div>
+          </div>
+
+          <div class="bins-filter-bar">
+            <label for="binConditionFilter">Filter</label>
+            <select id="binConditionFilter" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px">
               <option value="all">All conditions</option><option value="available">Available</option><option value="filling">Filling (70–89%)</option><option value="collection-needed">Collection needed (90%+)</option><option value="awaiting-reading">Awaiting new reading after collection</option><option value="stale">Stale reading</option><option value="unavailable">Reading unavailable</option><option value="maintenance">Maintenance</option><option value="damaged">Damaged</option>
             </select>
+            <button class="btn-primary" onclick="loadBins()" id="binsRefreshBtn" style="padding:7px 14px;font-size:12px" title="Reload bin list from server"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <span id="binsLastRefresh" class="bins-last-refresh"></span>
+            <span id="binsCountdown" class="bins-countdown"></span>
           </div>
+
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Bin ID / Name</th><th>Zone / Coordinates</th><th>Operational</th><th>Fill condition / reading</th><th>Collection task</th><th>Last updated</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Bin ID / Name</th><th>Zone</th><th>Operational</th><th>Fill Level &amp; Sensor Status</th><th>Collection task</th><th>Sensor info</th><th>Actions</th></tr></thead>
               <tbody id="binsTbody"><tr><td colspan="7"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div></td></tr></tbody>
             </table>
           </div>
@@ -699,7 +721,7 @@ function loadBinsOnMap(silent) {
           '<td><strong>' + escapeHtml(b.binCode || b._id || b.id) + ' · ' + escapeHtml(b.name) + '</strong></td>' +
           '<td>' + escapeHtml(b.zone) + '</td>' +
           '<td>' + escapeHtml(b.operationalStatus || 'operational') + ' / ' + escapeHtml(b.fillCondition || 'unavailable') + '</td>' +
-          '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState) + '</td>' +
+          '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState, true) + '</td>' +
           '<td>' + escapeHtml(b.collectionState || 'none') +
             (b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask
               ? '<br><select data-bin-driver="' + escapeHtml(b._id || b.id) + '" aria-label="Select collection driver"><option value="">Select driver</option>' + drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') + '</select><button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(b._id || b.id) + '">Assign</button>'
@@ -740,6 +762,8 @@ function loadBins() {
       if (fillingOption) fillingOption.textContent = 'Filling (' + BIN_THRESHOLDS.filling + '–' + (BIN_THRESHOLDS.collectionNeeded - 1) + '%)';
       if (collectionOption) collectionOption.textContent = 'Collection needed (' + BIN_THRESHOLDS.collectionNeeded + '%+)';
     }
+    var refreshEl = document.getElementById('binsLastRefresh');
+    if (refreshEl) refreshEl.textContent = 'Updated ' + fmtDate(new Date().toISOString());
     if (!d.success || !d.data.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-trash-alt"></i><p>No bins found</p></div></td></tr>';
       return;
@@ -752,31 +776,110 @@ function loadBins() {
     }
     tbody.innerHTML = visibleBins.map(function (b) {
       var id = b._id || b.id;
-      var coordinates = b.lat == null || b.lng == null ? 'Coordinates unavailable' : b.lat + ', ' + b.lng;
-      var assignControls = b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask
-        ? '<select data-bin-driver="' + escapeHtml(id) + '" aria-label="Select collection driver"><option value="">Select driver</option>' + drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') + '</select> <button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Assign</button>'
-        : (b.activeCollectionTask ? 'Task active' : '—');
-      return '<tr>' +
-        '<td><strong>' + escapeHtml(b.binCode || id) + '</strong><br>' + escapeHtml(b.name) + '<br><small>' + escapeHtml(b.description || '') + '</small></td>' +
-        '<td>' + escapeHtml(b.zone || 'Unknown') + '<br><small>' + escapeHtml(coordinates) + '</small></td>' +
-        '<td><select aria-label="Operational status" onchange="setOperationalStatus(\'' + escapeHtml(id) + '\', this.value)"><option value="operational" ' + ((b.operationalStatus || 'operational') === 'operational' ? 'selected' : '') + '>Operational</option><option value="maintenance" ' + (b.operationalStatus === 'maintenance' ? 'selected' : '') + '>Maintenance</option><option value="damaged" ' + (b.operationalStatus === 'damaged' ? 'selected' : '') + '>Damaged</option></select></td>' +
-        '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState) + (b.type === 'bin' ? '<br><label style="font-size:10px">SIMULATED test reading <input type="number" min="0" max="100" step="1" placeholder="%" aria-label="Simulated fill percent" data-sim-reading="' + escapeHtml(id) + '" style="width:52px"></label> <button class="btn-action" onclick="saveSimulatedReading(this.dataset.bin)" data-bin="' + escapeHtml(id) + '">Set</button>' : '') + '</td>' +
-        '<td>' + escapeHtml(b.collectionState || 'none') + '<br>' + assignControls + '</td>' +
-        '<td style="font-size:12px;color:var(--text-light)">Reading: ' + escapeHtml(fmtDate(b.lastReadingAt)) + '<br>Created: ' + escapeHtml(fmtDate(b.createdAt)) + '</td>' +
-        '<td><button class="btn-action danger" onclick="deleteBin(this.dataset.bin, this.dataset.name)" data-bin="' + escapeHtml(id) + '" data-name="' + escapeHtml(b.name) + '"><i class="fas fa-trash"></i></button></td>' +
+      var coordinates = b.lat == null || b.lng == null ? '' : '<br><small style="color:var(--text-light)">' + b.lat + ', ' + b.lng + '</small>';
+      // Collection task cell
+      var collTaskBadge = '';
+      if (b.collectionState && b.collectionState !== 'none') {
+        var ctColors = { needed:'orange', assigned:'blue', 'in-progress':'blue', 'completed-awaiting-reading':'green' };
+        var ctColor = ctColors[b.collectionState] || 'blue';
+        collTaskBadge = '<span class="badge ' + ctColor + '" style="margin-bottom:6px;display:inline-block">' + escapeHtml(b.collectionState.replace(/-/g,' ')) + '</span><br>';
+      }
+      var assignControls = '';
+      if (b.fillCondition === 'collection-needed' && b.operationalStatus === 'operational' && !b.activeCollectionTask) {
+        assignControls = '<div class="assign-bin-wrap">' +
+          '<select data-bin-driver="' + escapeHtml(id) + '" class="assign-bin-select" aria-label="Select collection driver">' +
+          '<option value="">— Select driver —</option>' +
+          drivers.map(function (driver) { return '<option value="' + escapeHtml(driver.id) + '">' + escapeHtml(driver.displayName) + '</option>'; }).join('') +
+          '</select>' +
+          '<button class="btn-action success" onclick="assignBinCollection(this.dataset.bin)" data-bin="' + escapeHtml(id) + '"><i class="fas fa-user-check"></i> Assign</button>' +
+          '</div>';
+      } else if (b.activeCollectionTask) {
+        assignControls = '<span style="font-size:11px;color:var(--text-light)"><i class="fas fa-truck" style="color:var(--primary)"></i> Task in progress</span>';
+      }
+      // Sensor info column: reading source, last reading, created
+      var sensorInfoHtml = '<div style="font-size:11px;line-height:1.7;color:var(--text-light)">' +
+        '<div><strong>Source:</strong> ' + escapeHtml(b.readingSource || 'none') + '</div>' +
+        '<div><strong>Last reading:</strong><br>' + escapeHtml(fmtDate(b.lastReadingAt)) + '</div>' +
+        (b.lastCollectionAt ? '<div><strong>Last collected:</strong><br>' + escapeHtml(fmtDate(b.lastCollectionAt)) + '</div>' : '') +
+        '</div>';
+      // Simulated reading control (only for bin type, in actions column)
+      var simReadingHtml = b.type === 'bin'
+        ? '<div class="sim-reading-wrap" title="Manually set a test fill level (not from Wokwi)">' +
+          '<span style="font-size:10px;font-weight:600;color:var(--text-light);display:block;margin-bottom:3px">Test fill %</span>' +
+          '<div style="display:flex;gap:4px;align-items:center">' +
+          '<input type="number" min="0" max="100" step="1" placeholder="0–100" aria-label="Simulated fill percent" data-sim-reading="' + escapeHtml(id) + '" style="width:58px;padding:5px 6px;border:1px solid var(--border);border-radius:7px;font-size:12px">' +
+          '<button class="btn-action" onclick="saveSimulatedReading(this.dataset.bin)" data-bin="' + escapeHtml(id) + '" title="Apply test reading"><i class="fas fa-check"></i></button>' +
+          '</div></div>'
+        : '';
+      return '<tr class="bin-row' + (b.sensorStatus === 'FULL' ? ' bin-row-full' : '') + '">' +
+        '<td><strong style="font-size:13px">' + escapeHtml(b.binCode || id) + '</strong><br>' +
+          '<span style="font-size:12px">' + escapeHtml(b.name) + '</span>' +
+          (b.description ? '<br><small style="color:var(--text-light)">' + escapeHtml(b.description) + '</small>' : '') +
+        '</td>' +
+        '<td><span style="font-weight:600">' + escapeHtml(b.zone || 'Unknown') + '</span>' + coordinates + '</td>' +
+        '<td><select aria-label="Operational status" onchange="setOperationalStatus(\'' + escapeHtml(id) + '\', this.value)" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:8px">' +
+          '<option value="operational"' + ((b.operationalStatus||'operational')==='operational'?' selected':'') + '>Operational</option>' +
+          '<option value="maintenance"' + (b.operationalStatus==='maintenance'?' selected':'') + '>Maintenance</option>' +
+          '<option value="damaged"' + (b.operationalStatus==='damaged'?' selected':'') + '>Damaged</option>' +
+          '</select>' +
+        '</td>' +
+        '<td>' + fillBar(b.fillLevel, b.fillCondition, b.readingSource, b.lastReadingAt, b.sensorStatus, b.sensorDeviceState, false) + '</td>' +
+        '<td>' + collTaskBadge + assignControls + '</td>' +
+        '<td>' + sensorInfoHtml + '</td>' +
+        '<td style="white-space:nowrap">' +
+          simReadingHtml +
+          '<button class="btn-action danger" style="margin-top:6px" onclick="deleteBin(this.dataset.bin, this.dataset.name)" data-bin="' + escapeHtml(id) + '" data-name="' + escapeHtml(b.name) + '"><i class="fas fa-trash"></i></button>' +
+        '</td>' +
         '</tr>';
     }).join('');
   }).catch(function () { toast('Could not load bins.', 'error'); });
 }
 
-function fillBar(pct, condition, source, updatedAt, sensorStatus, sensorDeviceState) {
-  if (pct == null || !Number.isFinite(Number(pct))) return '<span>Reading unavailable</span>';
-  var label = condition || 'unknown';
-  var simulated = source === 'simulated' ? ' <strong>SIMULATED</strong>' : '';
-  var color = pct >= BIN_THRESHOLDS.collectionNeeded ? '#e74c3c' : pct >= BIN_THRESHOLDS.filling ? '#ff9f43' : '#00c896';
-  return '<div class="fill-bar-wrap">' +
-    '<div class="fill-bar-track"><div class="fill-bar-fill" style="width:' + Math.min(pct,100) + '%;background:' + color + '"></div></div>' +
-    '<span class="fill-num" style="color:' + color + '">' + pct + '% · ' + escapeHtml(label) + simulated + '<br>Sensor: ' + escapeHtml(sensorStatus || 'UNAVAILABLE') + ' · Device: ' + escapeHtml(sensorDeviceState || 'NOT_CONNECTED') + '<br>' + escapeHtml(fmtDate(updatedAt)) + '</span>' +
+function fillBar(pct, condition, source, updatedAt, sensorStatus, sensorDeviceState, compact) {
+  var ss = sensorStatus || 'UNAVAILABLE';
+  var ds = sensorDeviceState || 'NOT_CONNECTED';
+
+  /* ── compact variant: used by the GIS map attention table (unchanged look) ── */
+  if (compact) {
+    if (pct == null || !Number.isFinite(Number(pct))) return '<span>Reading unavailable</span>';
+    var label = condition || 'unknown';
+    var simulated = source === 'simulated' ? ' <strong>SIMULATED</strong>' : '';
+    var color = pct >= BIN_THRESHOLDS.collectionNeeded ? '#e74c3c' : pct >= BIN_THRESHOLDS.filling ? '#ff9f43' : '#00c896';
+    return '<div class="fill-bar-wrap">' +
+      '<div class="fill-bar-track"><div class="fill-bar-fill" style="width:' + Math.min(pct,100) + '%;background:' + color + '"></div></div>' +
+      '<span class="fill-num" style="color:' + color + '">' + pct + '% · ' + escapeHtml(label) + simulated + '<br>Sensor: ' + escapeHtml(ss) + ' · Device: ' + escapeHtml(ds) + '<br>' + escapeHtml(fmtDate(updatedAt)) + '</span>' +
+      '</div>';
+  }
+
+  /* ── expanded variant: used by the bins table ── */
+  if (pct == null || !Number.isFinite(Number(pct))) {
+    var dsBadge = '<span class="ds-badge ds-' + escapeHtml(ds) + '">' + escapeHtml(ds.replace(/_/g, ' ')) + '</span>';
+    return '<div class="fill-cell">' +
+      '<div class="fill-cell-top"><span class="fill-big-pct" style="color:var(--text-light);font-size:16px">—</span>' +
+      '<span class="ss-badge ss-UNAVAILABLE">NO READING</span></div>' +
+      '<div class="fill-track-lg"><div class="fill-fill-lg" style="width:0%"></div></div>' +
+      '<div class="fill-cell-meta">' + dsBadge + '</div>' +
+      '</div>';
+  }
+
+  var pctNum = Math.min(Number(pct), 100);
+  /* colour follows the sensor status, not the fill-condition thresholds, so FULL always shows red */
+  var barColor = ss === 'FULL' ? '#e74c3c'
+               : ss === 'HIGH' ? '#ff9f43'
+               : ss === 'ALMOST_FULL' ? '#f59e0b'
+               : '#00c896';
+  var simTag = source === 'simulated'
+    ? ' <span style="font-size:9px;font-weight:700;background:#f0f4ff;color:var(--primary);padding:1px 5px;border-radius:4px;vertical-align:middle">SIM</span>'
+    : '';
+  var ssBadge = '<span class="ss-badge ss-' + escapeHtml(ss) + '">' + escapeHtml(ss.replace(/_/g, ' ')) + '</span>';
+  var dsBadge = '<span class="ds-badge ds-' + escapeHtml(ds) + '">' + escapeHtml(ds.replace(/_/g, ' ')) + '</span>';
+  return '<div class="fill-cell">' +
+    '<div class="fill-cell-top">' +
+      '<span class="fill-big-pct" style="color:' + barColor + '">' + pctNum + '%</span>' + simTag +
+      ssBadge +
+    '</div>' +
+    '<div class="fill-track-lg"><div class="fill-fill-lg" style="width:' + pctNum + '%;background:' + barColor + '"></div></div>' +
+    '<div class="fill-cell-meta">' + dsBadge + ' <span>Updated ' + escapeHtml(fmtDate(updatedAt)) + '</span></div>' +
     '</div>';
 }
 
@@ -1067,17 +1170,25 @@ function fmtDate(iso) {
 function bootDashboard() {
   loadDashboard();
   loadPendingCollectionRequestCount();
-  // auto-refresh every 30 seconds
+
+  // auto-refresh every 15 seconds; also drives the bins countdown
+  var REFRESH_INTERVAL = 15;
+  var countdown = REFRESH_INTERVAL;
   setInterval(function () {
-    loadDashboard();
-    loadPendingCollectionRequestCount();
-    // also refresh reports if that view is active
-    if (document.getElementById('view-reports').style.display !== 'none') loadReports();
-    if (document.getElementById('view-bins').style.display !== 'none') loadBins();
-    if (document.getElementById('view-gismap').style.display !== 'none') loadBinsOnMap(true);
-    if (document.getElementById('view-collectionRequests').style.display !== 'none') loadCollectionRequests();
-    if (document.getElementById('view-drivers').style.display !== 'none') loadDrivers();
-  }, 30000);
+    countdown--;
+    var cdEl = document.getElementById('binsCountdown');
+    if (cdEl) cdEl.textContent = countdown > 0 ? 'Next refresh in ' + countdown + 's' : '';
+    if (countdown <= 0) {
+      countdown = REFRESH_INTERVAL;
+      loadDashboard();
+      loadPendingCollectionRequestCount();
+      if (document.getElementById('view-reports').style.display !== 'none') loadReports();
+      if (document.getElementById('view-bins').style.display !== 'none') loadBins();
+      if (document.getElementById('view-gismap').style.display !== 'none') loadBinsOnMap(true);
+      if (document.getElementById('view-collectionRequests').style.display !== 'none') loadCollectionRequests();
+      if (document.getElementById('view-drivers').style.display !== 'none') loadDrivers();
+    }
+  }, 1000);
 }
 
 /* ─── ADMIN ROLE GUARD ───────────────────────── */

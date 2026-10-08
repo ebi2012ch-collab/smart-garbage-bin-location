@@ -13,6 +13,8 @@ test('fill thresholds produce independent fill conditions', () => {
   assert.equal(conditionFor(89, now), 'filling');
   assert.equal(conditionFor(90, now), 'collection-needed');
   assert.equal(conditionFor(95, now, new Date(now.getTime() + 1000)), 'awaiting-reading');
+  assert.equal(conditionFor(100, new Date(Date.now() - 121 * 60 * 1000)), 'collection-needed');
+  assert.equal(conditionFor(100, new Date(Date.now() - 121 * 60 * 1000), new Date()), 'awaiting-reading');
   assert.equal(conditionFor(null, now), 'unavailable');
   assert.equal(conditionFor(95, new Date(Date.now() - 121 * 60 * 1000)), 'stale');
 });
