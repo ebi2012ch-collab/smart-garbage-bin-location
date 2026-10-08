@@ -1,6 +1,8 @@
 # BIN-001 Wokwi Simulation
 
-This is a simulation, not a deployed physical bin. It uses one ESP32 and one HC-SR04 ultrasonic sensor, and sends readings to the existing SmartBin API.
+This is a simulation, not a deployed physical bin. This Wokwi project uses one ESP32 and one HC-SR04 ultrasonic sensor and sends readings for `BIN-001` to the existing SmartBin API. It does not connect the other bins.
+
+To simulate readings for every registered garbage bin, use the backend's multi-bin software simulator instead. With the backend running, open a second terminal in `BACK END` and run `npm run simulate`. Stop the Wokwi simulator first so both simulators do not send competing readings for `BIN-001`. The software simulator includes all records with `type: bin`; it does not simulate recycling or collection-point records.
 
 ## Configure the backend
 
@@ -27,5 +29,6 @@ The circuit starts with the HC-SR04 distance at 180 cm (empty). Click the sensor
 - At 100%, sensor uploads stop. The simulator only polls for backend state; no timer empties the bin.
 - Admin assigns collection using the existing bin task workflow. The assigned Driver starts and completes it using the existing Driver dashboard.
 - On successful Driver completion, the backend resets the bin to 0%, rotates the cycle ID, and resets the sequence. The simulator observes that backend change and resumes. Delayed readings from the previous cycle are rejected.
+- Once a bin reports 100%, its sensor uploads stop by design. That recorded full reading remains collection-needed until a Driver completes collection, even if the reading becomes older than the normal stale-reading window.
 
 The Admin dashboard refreshes through its existing polling and shows sensor fill/status, last reading, and device communication state. Sensor state and collection-task state remain separate.
