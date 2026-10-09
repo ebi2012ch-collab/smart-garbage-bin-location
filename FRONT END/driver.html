@@ -12,156 +12,182 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
-    /* ══════════════════════════════════════════════════════════
-       BRAND TOKENS (Matched to Home Page)
-       ══════════════════════════════════════════════════════════ */
+    /* ── TOKENS ─────────────────────────────────────────────── */
     :root {
       color-scheme: light;
-      --primary: var(--ds-indigo);
+      --primary:    var(--ds-indigo);
       --primary-dk: var(--ds-navy);
       --primary-lt: var(--ds-indigo-soft);
-      --accent: var(--ds-indigo);
-      --orange: var(--ds-warning);
-      --red: var(--ds-danger);
-      --green: var(--ds-success);
-      --text: var(--ds-text);
+      --accent:     var(--ds-indigo);
+      --orange:     var(--ds-warning);
+      --red:        var(--ds-danger);
+      --green:      var(--ds-success);
+      --text:       var(--ds-text);
       --text-light: var(--ds-muted);
-      --bg: var(--ds-page);
-      --white: var(--ds-surface);
-      --border: var(--ds-border);
-      --shadow: var(--ds-shadow-card);
-      --shadow-lg: 0 24px 60px rgba(10,4,60,.30);
-      --radius: var(--ds-radius-md);
+      --bg:         var(--ds-page);
+      --white:      var(--ds-surface);
+      --border:     var(--ds-border);
+      --shadow:     var(--ds-shadow-card);
+      --shadow-lg:  0 24px 60px rgba(10,4,60,.28);
+      --radius:     var(--ds-radius-md);
+      --sidebar-w:  260px;
+      --topbar-h:   66px;
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0A043C 0%, #2a1f6e 100%);
+      font: 14px/1.55 "Poppins", Arial, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      font: 14px/1.5 "Poppins", Arial, sans-serif;
+      display: flex;
+      overflow: hidden;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ── SIDEBAR ─────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--primary-dk);
+      color: #fff;
       display: flex;
       flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 300;
+      transition: transform .3s ease;
+      box-shadow: 4px 0 24px rgba(0,0,0,.18);
     }
-    button, input, select { font: inherit; }
-    button, a { -webkit-tap-highlight-color: transparent; }
-    a { color: inherit; text-decoration: none; }
-
-    /* ══════════════════════════════════════════════════════════
-       TOPBAR
-       ══════════════════════════════════════════════════════════ */
-    .topbar {
-      height: 72px;
-      background: rgba(10, 4, 60, 0.8);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      flex-shrink: 0;
-    }
-    .topbar-inner {
-      width: min(1160px, calc(100% - 48px));
-      height: 100%;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 11px;
-      color: #fff;
-      font: 800 17px "Poppins", sans-serif;
-      letter-spacing: -.5px;
-    }
-    .brand-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      background: linear-gradient(145deg, #5E5CE6, #7c3aed);
-      box-shadow: 0 5px 12px rgba(94,92,230,.4);
-    }
-    .brand small {
-      display: block;
-      margin-top: -3px;
-      color: rgba(255,255,255,0.6);
-      font: 600 10px "Poppins", sans-serif;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .account {
+    .sidebar-brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      color: #fff;
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
     }
-    .avatar {
-      width: 38px;
-      height: 38px;
+    .brand-mark {
+      width: 42px; height: 42px;
+      border-radius: 13px;
+      display: grid; place-items: center;
+      background: linear-gradient(145deg, #5E5CE6, #7c3aed);
+      color: #fff; font-size: 19px;
+      flex-shrink: 0;
+      box-shadow: 0 6px 14px rgba(94,92,230,.4);
+    }
+    .brand-text { min-width: 0; }
+    .brand-title { font-size: 17px; font-weight: 800; letter-spacing: -.3px; display: block; }
+    .brand-sub { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+    .nav-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .12em;
+      color: rgba(255,255,255,.3); padding: 14px 20px 5px;
+      text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 20px; cursor: pointer;
+      font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,.68);
+      transition: .2s; position: relative;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,.13); color: #fff; border-right: 3px solid var(--primary); }
+    .nav-item i { width: 18px; text-align: center; font-size: 15px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red); color: #fff;
+      border-radius: 20px; padding: 2px 7px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .driver-mini {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .driver-avatar-sm {
+      width: 36px; height: 36px;
       border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: var(--primary);
-      background: rgba(255,255,255,0.1);
-      font-size: 15px;
+      background: rgba(255,255,255,.12);
+      display: grid; place-items: center;
+      font-size: 15px; color: rgba(255,255,255,.8);
+      flex-shrink: 0;
     }
-    .account-name {
-      max-width: 190px;
-      overflow: hidden;
-      color: #fff;
-      font-weight: 700;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .driver-mini-name {
+      font-size: 13px; font-weight: 700; color: #fff;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .account-role {
-      display: block;
-      color: rgba(255,255,255,0.6);
-      font-size: 11px;
-      font-weight: 500;
+    .driver-mini-role { font-size: 10px; color: rgba(255,255,255,.5); }
+    .btn-logout {
+      width: 100%; padding: 9px 0;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.8);
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: .2s;
     }
-    .logout {
-      min-height: 38px;
-      padding: 0 16px;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 50px;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
-      transition: .2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .logout:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    .logout i { font-size: 12px; }
+    .btn-logout:hover { background: rgba(255,255,255,.15); color: #fff; }
 
-    /* ══════════════════════════════════════════════════════════
-       MAIN
-       ══════════════════════════════════════════════════════════ */
-    main {
-      width: min(1160px, calc(100% - 48px));
-      margin: 30px auto 56px;
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 26px;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .menu-btn {
+      background: none; border: none; font-size: 18px;
+      color: var(--text-light); padding: 7px; border-radius: 8px;
+      display: none; transition: .2s;
+    }
+    .menu-btn:hover { background: var(--bg); color: var(--primary); }
+    .topbar-title { font-size: 18px; font-weight: 800; color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .status-dot-wrap { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-light); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+    .status-dot.online { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
+    .topbar-date { font-size: 12px; color: var(--text-light); font-weight: 500; }
+
+    /* ── MAIN SHELL ──────────────────────────────────────────── */
+    .shell {
+      margin-left: var(--sidebar-w);
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 30px 56px;
     }
 
-    /* ══════════════════════════════════════════════════════════
-       WELCOME PANEL
-       ══════════════════════════════════════════════════════════ */
+    /* ── VIEWS ───────────────────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── WELCOME BANNER ──────────────────────────────────────── */
     .welcome {
       position: relative;
       overflow: hidden;
-      min-height: 176px;
-      padding: 29px 34px;
-      border-radius: var(--radius);
+      padding: 32px 36px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -170,639 +196,727 @@
       background: radial-gradient(ellipse at 88% 10%, #5E5CE6 0, transparent 36%),
                   linear-gradient(110deg, #0A043C 0%, #2a1f6e 100%);
       box-shadow: var(--shadow-lg);
+      margin-bottom: 26px;
     }
-    .welcome:after {
+    .welcome::after {
       content: "";
       position: absolute;
-      width: 250px;
-      height: 250px;
-      right: 7%;
-      top: -130px;
-      border: 1px solid #ffffff18;
+      width: 280px; height: 280px;
+      right: 6%; top: -145px;
+      border: 1px solid #ffffff15;
       border-radius: 50%;
-      box-shadow: 0 0 0 30px #ffffff08, 0 0 0 60px #ffffff06;
+      box-shadow: 0 0 0 35px #ffffff07, 0 0 0 70px #ffffff05;
       pointer-events: none;
     }
     .welcome-copy { position: relative; z-index: 1; }
     .eyebrow {
-      margin: 0 0 7px;
-      color: #b8b6ff;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .13em;
-      text-transform: uppercase;
+      margin: 0 0 8px;
+      color: #b8b6ff; font-size: 11px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
     }
-    h1, h2, h3, p { margin-top: 0; }
-    h1 {
-      margin-bottom: 7px;
-      font: 800 clamp(24px, 3vw, 31px)/1.2 "Poppins", sans-serif;
+    .welcome-copy h1 {
+      margin-bottom: 8px;
+      font: 800 clamp(22px, 3vw, 30px)/1.2 "Poppins", sans-serif;
       letter-spacing: -.8px;
     }
     .welcome-text {
-      max-width: 520px;
-      margin: 0;
-      color: rgba(255,255,255,0.8);
-      font-size: 13px;
+      max-width: 520px; margin: 0;
+      color: rgba(255,255,255,.78); font-size: 13px; line-height: 1.6;
     }
     .welcome-note {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 15px;
-      border: 1px solid #ffffff25;
-      border-radius: 11px;
-      background: #ffffff0d;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 600;
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 18px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 14px;
+      background: rgba(255,255,255,.09);
+      color: #fff; font-size: 13px; font-weight: 600;
       white-space: nowrap;
     }
     .welcome-note i { color: #b8b6ff; }
 
-    /* ══════════════════════════════════════════════════════════
-       STATS
-       ══════════════════════════════════════════════════════════ */
+    /* ── STATS ───────────────────────────────────────────────── */
     .stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 15px;
-      margin: 20px 0 30px;
+      gap: 16px;
+      margin-bottom: 28px;
     }
     .stat {
-      min-height: 91px;
-      padding: 17px 19px;
-      border: none;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 20px 22px;
+      border-radius: 16px;
       background: var(--white);
-      box-shadow: 0 12px 30px rgba(0,0,0,.2);
-    }
-    .stat-label {
-      margin-bottom: 3px;
-      color: var(--text-light);
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .stat-value {
-      color: var(--primary-dk);
-      font: 800 25px/1.2 "Poppins", sans-serif;
-    }
-    .stat-icon {
-      width: 41px;
-      height: 41px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      color: var(--primary);
-      background: var(--primary-lt);
-    }
-    .stat:nth-child(2) .stat-icon {
-      color: var(--orange);
-      background: #fff4ee;
-    }
-    .stat:nth-child(3) .stat-icon {
-      color: var(--green);
-      background: #e6faf5;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       SECTION HEAD & TOOLS
-       ══════════════════════════════════════════════════════════ */
-    .section-head {
-      display: flex;
-      align-items: end;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex; align-items: center;
       justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 15px;
+      gap: 12px;
+      transition: .2s;
     }
-    h2 {
-      margin-bottom: 3px;
-      color: #fff;
-      font: 800 20px "Poppins", sans-serif;
-      letter-spacing: -.4px;
+    .stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 4px; }
+    .stat-value { font: 800 28px/1.1 "Poppins", sans-serif; color: var(--primary-dk); }
+    .stat-icon {
+      width: 46px; height: 46px;
+      border-radius: 13px; display: grid; place-items: center;
+      font-size: 18px; flex-shrink: 0;
     }
-    .section-subtitle {
-      margin: 0;
-      color: rgba(255,255,255,0.7);
-      font-size: 12px;
+    .stat-icon.blue  { color: var(--primary);  background: var(--primary-lt); }
+    .stat-icon.amber { color: var(--orange);   background: #fff4ee; }
+    .stat-icon.green { color: var(--green);    background: #e6faf5; }
+
+    /* ── SECTION CARD ────────────────────────────────────────── */
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 26px;
+      overflow: hidden;
     }
+    .section-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: 1px solid var(--border); gap: 14px;
+    }
+    .section-card-header h2 {
+      font-size: 16px; font-weight: 800;
+      color: var(--text); letter-spacing: -.3px;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .section-card-header h2 i { color: var(--primary); font-size: 16px; }
+    .section-card-header p {
+      font-size: 12px; color: var(--text-light); margin-top: 2px;
+    }
+    .section-card-body { padding: 20px 24px; }
+
+    /* ── TOOLS ───────────────────────────────────────────────── */
     .tools {
-      display: flex;
-      align-items: center;
-      gap: 9px;
+      display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
     }
     .search-wrap { position: relative; }
     .search-wrap i {
-      position: absolute;
-      top: 50%;
-      left: 14px;
-      color: var(--text-light);
-      transform: translateY(-50%);
-      font-size: 12px;
+      position: absolute; top: 50%; left: 13px;
+      color: var(--text-light); transform: translateY(-50%); font-size: 12px;
+      pointer-events: none;
     }
     .search, .filter {
-      height: 39px;
+      height: 38px;
       border: 1.5px solid var(--border);
       border-radius: 50px;
       outline: 0;
-      background: white;
+      background: var(--white);
       color: var(--text);
       font-size: 12px;
       transition: .2s;
     }
-    .search {
-      width: 220px;
-      padding: 0 14px 0 36px;
-    }
+    .search { width: 210px; padding: 0 13px 0 34px; }
     .filter {
-      min-width: 140px;
-      padding: 0 34px 0 14px;
-      cursor: pointer;
+      min-width: 140px; padding: 0 32px 0 13px;
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 14px center;
+      background-position: right 13px center;
     }
     .search:focus, .filter:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(94,92,230,.1);
     }
     .refresh {
-      width: 39px;
-      height: 39px;
+      width: 38px; height: 38px;
       border: 1.5px solid var(--border);
       border-radius: 50%;
-      background: #fff;
-      color: var(--primary);
-      cursor: pointer;
-      transition: .2s;
-      display: grid;
-      place-items: center;
+      background: var(--white);
+      color: var(--primary); transition: .2s;
+      display: grid; place-items: center;
     }
-    .refresh:hover {
-      background: var(--primary-lt);
-      border-color: var(--primary);
-    }
+    .refresh:hover { background: var(--primary-lt); border-color: var(--primary); }
     .refresh:disabled { cursor: wait; opacity: .6; }
 
-    /* ══════════════════════════════════════════════════════════
-       TASK CARDS
-       ══════════════════════════════════════════════════════════ */
+    /* ── TASK GRID ────────────────────────────────────────────── */
     .tasks {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 15px;
+      gap: 16px;
     }
     .card {
       min-width: 0;
-      padding: 24px;
-      border: none;
-      border-radius: var(--radius);
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       background: var(--white);
-      box-shadow: 0 24px 60px rgba(0,0,0,.3);
-      transition: transform .18s ease;
-      display: flex;
-      flex-direction: column;
+      box-shadow: var(--shadow);
+      transition: transform .18s ease, box-shadow .18s ease;
+      display: flex; flex-direction: column;
     }
-    .card:hover {
-      transform: translateY(-3px);
-    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(10,4,60,.1); }
     .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px; margin-bottom: 4px;
     }
-    .task-ref {
-      color: var(--primary);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .045em;
-    }
+    .task-ref { color: var(--primary); font-size: 11px; font-weight: 800; letter-spacing: .05em; }
     .task-title {
-      margin: 3px 0 0;
-      color: var(--primary-dk);
-      font: 700 15px "Poppins", sans-serif;
-      overflow-wrap: anywhere;
+      margin: 3px 0 0; color: var(--primary-dk);
+      font: 700 14px "Poppins", sans-serif; overflow-wrap: anywhere;
     }
     .badge {
-      flex: 0 0 auto;
-      padding: 6px 12px;
-      border-radius: 50px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      text-transform: uppercase;
+      flex: 0 0 auto; padding: 5px 12px;
+      border-radius: 50px; font-size: 10px;
+      font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
     }
-    .badge.assigned {
-      color: #c05621;
-      background: #fff4ee;
-    }
-    .badge.in-progress {
-      color: var(--primary);
-      background: var(--primary-lt);
-    }
-    .badge.completed {
-      color: #00875a;
-      background: #e6faf5;
-    }
+    .badge.assigned   { color: #c05621; background: #fff4ee; }
+    .badge.in-progress { color: var(--primary); background: var(--primary-lt); }
+    .badge.completed  { color: #00875a; background: #e6faf5; }
+    .badge.pending    { color: #c05621; background: #fff4ee; }
 
-    /* ══════════════════════════════════════════════════════════
-       LOCATION BLOCK
-       ══════════════════════════════════════════════════════════ */
+    /* ── LOCATION BLOCK ──────────────────────────────────────── */
     .location-block {
-      margin: 16px 0 13px;
-      padding: 12px 13px;
+      margin: 14px 0 12px;
+      padding: 11px 13px;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 11px;
+      border-radius: 11px;
+      display: flex; align-items: flex-start; gap: 11px;
       background: var(--bg);
     }
     .location-icon {
-      width: 30px;
-      height: 30px;
-      flex: 0 0 auto;
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
-      color: var(--primary);
-      background: var(--primary-lt);
+      width: 30px; height: 30px; flex: 0 0 auto;
+      border-radius: 9px; display: grid; place-items: center;
+      color: var(--primary); background: var(--primary-lt);
     }
     .location-label {
-      display: block;
-      margin-bottom: 2px;
-      color: var(--text-light);
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+      display: block; margin-bottom: 2px;
+      color: var(--text-light); font-size: 10px;
+      font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
     }
-    .location-value {
-      color: var(--primary-dk);
-      font-size: 12px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-    .coordinates {
-      display: block;
-      margin-top: 3px;
-      color: var(--text-light);
-      font-size: 10px;
-      font-weight: 500;
-    }
+    .location-value { color: var(--primary-dk); font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
+    .coordinates { display: block; margin-top: 3px; color: var(--text-light); font-size: 10px; font-weight: 500; }
 
-    /* ══════════════════════════════════════════════════════════
-       DETAILS
-       ══════════════════════════════════════════════════════════ */
+    /* ── DETAIL GRID ──────────────────────────────────────────── */
     .details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 11px 15px;
-      margin-bottom: 16px;
-      flex-grow: 1;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px 14px; margin-bottom: 15px; flex-grow: 1;
     }
     .detail { min-width: 0; }
     .detail-label {
-      display: block;
-      margin-bottom: 3px;
-      color: var(--text-light);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
+      display: block; margin-bottom: 3px;
+      color: var(--text-light); font-size: 10px;
+      font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
     }
-    .detail-value {
-      color: var(--primary-dk);
-      font-size: 12px;
-      font-weight: 600;
-      overflow-wrap: anywhere;
-    }
-    .detail-value a:hover {
-      color: var(--primary);
-      text-decoration: underline;
-    }
+    .detail-value { color: var(--primary-dk); font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+    .detail-value a:hover { color: var(--primary); text-decoration: underline; }
     .description { grid-column: 1 / -1; }
-    .description .detail-value {
-      line-height: 1.55;
-      font-weight: 500;
-    }
-    .report-work-form { display:grid; gap:10px; width:100%; }
-    .report-work-form label { display:grid; gap:6px; width:100%; color:var(--text-light); font-size:11px; font-weight:700; }
-    .report-work-form textarea { min-height:80px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-family:inherit; font-size:12px; resize:vertical; }
-    .report-work-form input[type=file] { max-width:100%; font-size:12px; }
+    .description .detail-value { line-height: 1.55; font-weight: 500; }
+    .report-work-form { display: grid; gap: 10px; width: 100%; }
+    .report-work-form label { display: grid; gap: 6px; width: 100%; color: var(--text-light); font-size: 11px; font-weight: 700; }
+    .report-work-form textarea { min-height: 80px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 12px; resize: vertical; }
+    .report-work-form input[type=file] { max-width: 100%; font-size: 12px; }
 
-    /* ══════════════════════════════════════════════════════════
-       ACTIONS
-       ══════════════════════════════════════════════════════════ */
+    /* ── CARD ACTIONS ─────────────────────────────────────────── */
     .actions {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 9px;
+      padding-top: 15px; border-top: 1px solid var(--border);
+      flex-wrap: wrap; margin-top: auto;
     }
     .action {
-      min-height: 40px;
-      padding: 0 20px;
+      min-height: 38px; padding: 0 18px;
       border: 1px solid transparent;
       border-radius: 50px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
-      transition: .18s ease;
-      text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      font-size: 12px; font-weight: 700; transition: .18s ease; text-decoration: none;
     }
     .action:disabled { cursor: wait; opacity: .6; }
-    .start {
-      color: white;
-      background: var(--primary);
-      flex: 1;
-      box-shadow: 0 4px 15px rgba(94,92,230,.3);
-    }
-    .start:hover:not(:disabled) {
-      background: var(--primary-dk);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 25px rgba(94,92,230,.4);
-    }
-    .complete {
-      color: white;
-      background: var(--green);
-      flex: 1;
-      box-shadow: 0 4px 15px rgba(16,185,129,.3);
-    }
-    .complete:hover:not(:disabled) {
-      background: #059669;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 25px rgba(16,185,129,.4);
-    }
-    .map {
-      border: 1px solid var(--border);
-      color: var(--primary-dk);
-      background: var(--bg);
-    }
-    .map:hover {
-      background: var(--primary-lt);
-      color: var(--primary);
-      border-color: var(--primary);
-    }
+    .start  { color: #fff; background: var(--primary); flex: 1; box-shadow: 0 4px 14px rgba(94,92,230,.28); }
+    .start:hover:not(:disabled)  { background: var(--primary-dk); transform: translateY(-1px); }
+    .complete { color: #fff; background: #16a34a; flex: 1; box-shadow: 0 4px 14px rgba(22,163,74,.28); }
+    .complete:hover:not(:disabled) { background: #15803d; transform: translateY(-1px); }
+    .map  { border: 1.5px solid var(--border); color: var(--primary-dk); background: var(--bg); }
+    .map:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
     .completed-note {
-      color: #00875a;
-      font-size: 12px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 0;
+      color: #16a34a; font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px; padding: 10px 0;
     }
 
-    /* ══════════════════════════════════════════════════════════
-       STATE PANEL (Empty / Error)
-       ══════════════════════════════════════════════════════════ */
+    /* ── STATE PANEL ──────────────────────────────────────────── */
     .state-panel {
       grid-column: 1 / -1;
-      min-height: 200px;
-      padding: 44px 20px;
-      border: none;
-      border-radius: var(--radius);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      background: rgba(255,255,255,0.95);
-      color: var(--text-light);
-      box-shadow: 0 24px 60px rgba(0,0,0,.3);
+      min-height: 180px; padding: 40px 20px;
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      display: grid; place-items: center;
+      text-align: center; color: var(--text-light);
+      background: var(--bg);
     }
     .state-icon {
-      width: 50px;
-      height: 50px;
-      margin: 0 auto 12px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      color: var(--primary);
-      background: var(--primary-lt);
-      font-size: 20px;
+      width: 48px; height: 48px;
+      margin: 0 auto 12px; border-radius: 14px;
+      display: grid; place-items: center;
+      color: var(--primary); background: var(--primary-lt); font-size: 20px;
     }
-    .state-panel h3 {
-      margin-bottom: 4px;
-      color: var(--primary-dk);
-      font: 700 16px "Poppins", sans-serif;
-    }
-    .state-panel p {
-      max-width: 430px;
-      margin: 0;
-      font-size: 12px;
-    }
-    .state-panel.error { color: var(--red); }
-    .state-panel.error .state-icon {
-      color: var(--red);
-      background: #fdecea;
-    }
+    .state-panel h3 { margin-bottom: 5px; color: var(--primary-dk); font: 700 15px "Poppins", sans-serif; }
+    .state-panel p  { max-width: 400px; margin: 0; font-size: 12px; }
+    .state-panel.error { border-color: #fca5a5; background: #fff5f5; }
+    .state-panel.error .state-icon { color: var(--red); background: #fdecea; }
     .state-panel.error h3 { color: var(--red); }
 
-    /* ══════════════════════════════════════════════════════════
-       TOAST NOTICE
-       ══════════════════════════════════════════════════════════ */
+    /* ── PROFILE VIEW ─────────────────────────────────────────── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .profile-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      display: grid; place-items: center;
+      font-size: 32px; font-weight: 800; color: #fff;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 24px rgba(94,92,230,.3);
+    }
+    .profile-name { font-size: 20px; font-weight: 800; color: var(--primary-dk); margin-bottom: 4px; }
+    .profile-role {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      background: var(--primary-lt); color: var(--primary);
+      font-size: 11px; font-weight: 700; margin-bottom: 20px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .profile-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .profile-stat-row { display: flex; justify-content: space-around; gap: 10px; }
+    .profile-stat { text-align: center; }
+    .profile-stat-num { font-size: 24px; font-weight: 800; color: var(--primary-dk); }
+    .profile-stat-lbl { font-size: 11px; color: var(--text-light); font-weight: 600; }
+
+    .profile-info-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .profile-info-header {
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      font-size: 14px; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .profile-info-header i { color: var(--primary); }
+    .profile-info-body { padding: 20px 24px; display: grid; gap: 18px; }
+    .profile-field label {
+      font-size: 11px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 4px;
+    }
+    .profile-field-value {
+      font-size: 14px; font-weight: 600; color: var(--primary-dk);
+      padding: 10px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 9px;
+    }
+    .profile-status-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px; background: #e6faf5;
+      border: 1px solid #bbf7d0; border-radius: 9px;
+      font-size: 13px; font-weight: 700; color: #15803d;
+    }
+    .profile-status-row i { font-size: 15px; }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
     .notice {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 9999;
-      max-width: min(420px, calc(100% - 32px));
-      padding: 14px 24px;
-      border: none;
-      border-radius: 50px;
+      position: fixed; right: 22px; bottom: 22px; z-index: 9999;
+      max-width: min(400px, calc(100% - 32px));
+      padding: 13px 22px; border-radius: 50px;
       display: none;
-      background: var(--primary-dk);
-      color: #fff;
-      box-shadow: 0 12px 30px rgba(10,4,60,.4);
-      font-size: 13px;
-      font-weight: 500;
+      background: var(--primary-dk); color: #fff;
+      box-shadow: 0 10px 30px rgba(10,4,60,.35);
+      font-size: 13px; font-weight: 600;
       animation: toastIn .3s ease;
     }
     .notice.error { background: var(--red); }
     @keyframes toastIn {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from { transform: translateY(18px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
     }
+
+    /* ── MAP DIALOG ───────────────────────────────────────────── */
     .map-dialog {
       width: min(1120px, calc(100% - 36px));
       max-width: none;
       height: min(790px, calc(100dvh - 36px));
       max-height: none;
       padding: 0;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 22px;
       overflow: hidden;
-      background: #f4f4f8;
-      color: var(--text);
+      background: #f4f4f8; color: var(--text);
       box-shadow: 0 28px 90px rgba(10,4,60,.42);
     }
     .map-dialog::backdrop { background: rgba(8,5,38,.72); backdrop-filter: blur(5px); }
     .map-dialog-content { height: 100%; display: flex; flex-direction: column; }
     .map-dialog-header {
-      min-height: 66px;
-      padding: 12px 18px 12px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      min-height: 64px; padding: 12px 18px 12px 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
       color: #fff;
       background: linear-gradient(110deg, #0A043C, #2a1f6e);
     }
-    .map-dialog-title { min-width: 0; }
     .map-dialog-title strong { display: block; font: 700 15px "Poppins", sans-serif; }
-    .map-dialog-title span { display: block; margin-top: 2px; color: rgba(255,255,255,.68); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .map-dialog-title span  { display: block; margin-top: 2px; color: rgba(255,255,255,.65); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .map-close {
-      width: 38px;
-      height: 38px;
-      flex: 0 0 auto;
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 12px;
-      background: rgba(255,255,255,.1);
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background .2s ease;
+      width: 38px; height: 38px; flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.22); border-radius: 11px;
+      background: rgba(255,255,255,.1); color: #fff;
+      font-size: 14px; transition: .2s;
     }
-    .map-close:hover { background: rgba(255,255,255,.2); }
-    .map-frame { width: 100%; height: 100%; min-height: 0; flex: 1; border: 0; background: #f4f4f8; }
+    .map-close:hover { background: rgba(255,255,255,.22); }
+    .map-frame { width: 100%; height: 100%; min-height: 0; flex: 1; border: 0; }
     body.dialog-open { overflow: hidden; }
 
-    /* ══════════════════════════════════════════════════════════
-       RESPONSIVE
-       ══════════════════════════════════════════════════════════ */
-    @media (max-width: 760px) {
-      main, .topbar-inner { width: min(100% - 32px, 560px); }
-      .welcome { min-height: 166px; padding: 24px; }
-      .welcome-note { display: none; }
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .shell { margin-left: 0; }
+      .menu-btn { display: flex !important; }
       .tasks { grid-template-columns: 1fr; }
-      .section-head { align-items: flex-start; flex-direction: column; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .content { padding: 20px 16px 48px; }
+      .stats { grid-template-columns: 1fr; }
+      .welcome { padding: 24px 22px; }
+      .welcome-note { display: none; }
       .tools { width: 100%; }
       .search-wrap { flex: 1; }
       .search { width: 100%; }
     }
-    @media (max-width: 500px) {
-      .topbar { height: 64px; }
-      main, .topbar-inner { width: calc(100% - 28px); }
-      main { margin-top: 18px; }
-      .brand { gap: 8px; font-size: 14px; }
-      .brand-mark { width: 34px; height: 34px; }
-      .account { gap: 8px; }
-      .avatar { width: 33px; height: 33px; }
-      .account-name { max-width: 95px; font-size: 11px; }
-      .account-role { font-size: 10px; }
-      .logout { width: 36px; height: 36px; min-height: 36px; padding: 0; font-size: 0; }
-      .logout i { margin: 0; font-size: 13px; }
-      .welcome { min-height: 150px; padding: 21px; border-radius: 18px; }
-      .welcome-text { max-width: 300px; font-size: 12px; }
-      .stats { gap: 8px; margin: 13px 0 25px; grid-template-columns: 1fr; }
-      .stat { min-height: 78px; padding: 11px; }
-      .stat-label { font-size: 10px; line-height: 1.3; }
-      .stat-value { font-size: 21px; }
-      .stat-icon { width: 31px; height: 31px; border-radius: 9px; font-size: 12px; }
-      .filter { min-width: 110px; }
-      .card { padding: 15px; }
-      .actions { flex-direction: column; }
-      .action { width: 100%; }
-      .map-dialog { width: calc(100% - 16px); height: calc(100dvh - 16px); border-radius: 17px; }
-      .map-dialog-header { min-height: 58px; padding: 9px 12px 9px 16px; }
-    }
-    @media (max-width: 380px) {
-      .map-dialog-title strong { font-size: 13px; }
-      .map-dialog-title span { max-width: 230px; font-size: 10px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *:before, *:after {
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
-    }
   </style>
 </head>
 <body class="municipal-driver">
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="brand" href="driver.html" aria-label="SmartBin Driver dashboard">
-        <span class="brand-mark"><i class="fas fa-recycle" aria-hidden="true"></i></span>
-        <span>SmartBin<small>Adama City • Driver</small></span>
-      </a>
-      <div class="account">
-        <span class="avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
-        <span class="account-name"><span id="driverName">Driver</span><span class="account-role">Collection driver</span></span>
-        <button class="logout" id="logout" type="button" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button>
-      </div>
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark"><i class="fas fa-recycle"></i></span>
+      <span class="brand-text">
+        <span class="brand-title">SmartBin</span>
+        <span class="brand-sub">Driver Portal</span>
+      </span>
     </div>
-  </header>
-  <main>
-    <section class="welcome" aria-labelledby="welcomeTitle">
-      <div class="welcome-copy">
-        <p class="eyebrow">Driver workspace</p>
-        <h1 id="welcomeTitle">Your collection route</h1>
-        <p class="welcome-text">Review your assigned requests, navigate to each location, and keep your collection progress up to date.</p>
-      </div>
-      <div class="welcome-note"><i class="fas fa-location-dot" aria-hidden="true"></i> Your tasks, all in one place</div>
-    </section>
-    <section class="stats" aria-label="Task summary">
-      <article class="stat"><div><div class="stat-label">Awaiting pickup</div><div class="stat-value" id="assignedCount">—</div></div><span class="stat-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span></article>
-      <article class="stat"><div><div class="stat-label">In progress</div><div class="stat-value" id="progressCount">—</div></div><span class="stat-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span></article>
-      <article class="stat"><div><div class="stat-label">Completed</div><div class="stat-value" id="completedCount">—</div></div><span class="stat-icon"><i class="fas fa-circle-check" aria-hidden="true"></i></span></article>
-    </section>
-    <section aria-labelledby="tasksHeading">
-      <div class="section-head">
-        <div><h2 id="tasksHeading">My collection tasks</h2><p class="section-subtitle" id="taskSummary">Tasks assigned to your driver account</p></div>
-        <div class="tools">
-          <label class="search-wrap"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><input class="search" id="taskSearch" type="search" placeholder="Search tasks or locations" aria-label="Search tasks or locations"></label>
-          <select class="filter" id="statusFilter" aria-label="Filter tasks by status">
-            <option value="all">All statuses</option>
-            <option value="assigned">Assigned</option>
-            <option value="in-progress">In progress</option>
-            <option value="completed">Completed</option>
-          </select>
-          <button class="refresh" id="refresh" type="button" aria-label="Refresh collection tasks" title="Refresh tasks"><i class="fas fa-rotate" aria-hidden="true"></i></button>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <button class="nav-item active" data-view="dashboard">
+        <i class="fas fa-gauge-high"></i><span>Dashboard</span>
+      </button>
+
+      <div class="nav-label">Work</div>
+      <button class="nav-item" data-view="bin-collections">
+        <i class="fas fa-trash-can"></i><span>Bin Collections</span>
+        <span class="nav-badge" id="binCollectionsBadge" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-view="citizen-reports">
+        <i class="fas fa-flag"></i><span>Citizen Reports</span>
+        <span class="nav-badge" id="reportsBadge" style="display:none">0</span>
+      </button>
+
+      <div class="nav-label">Account</div>
+      <button class="nav-item" data-view="profile">
+        <i class="fas fa-user-circle"></i><span>Profile</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="driver-mini">
+        <span class="driver-avatar-sm"><i class="fas fa-user"></i></span>
+        <div style="min-width:0">
+          <div class="driver-mini-name" id="sidebarDriverName">Driver</div>
+          <div class="driver-mini-role">Collection Driver</div>
         </div>
       </div>
-      <div id="tasks" class="tasks" aria-live="polite" aria-busy="true">
-        <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div><h3>Loading your tasks</h3><p>Your assigned collection requests will appear here.</p></div></div>
+      <button class="btn-logout" id="logout" type="button">
+        <i class="fas fa-arrow-right-from-bracket"></i> Log out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN SHELL ──────────────────────────────────────── -->
+  <div class="shell">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
       </div>
-    </section>
-    <section aria-labelledby="reportsHeading" style="margin-top:30px">
-      <div class="section-head"><div><h2 id="reportsHeading">Assigned citizen reports</h2><p class="section-subtitle" id="reportSummary">Reports assigned to your driver account</p></div></div>
-      <div id="citizenReports" class="tasks" aria-live="polite"><div class="state-panel"><div><h3>Loading assigned reports</h3></div></div></div>
-    </section>
-  </main>
+      <div class="topbar-right">
+        <div class="status-dot-wrap">
+          <span class="status-dot online"></span>
+          <span id="topbarDriverName">Driver</span>
+        </div>
+        <div class="topbar-date" id="topbarDate"></div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ══ DASHBOARD VIEW ══════════════════════════════ -->
+      <div class="view active" id="view-dashboard">
+
+        <!-- Welcome banner -->
+        <section class="welcome" aria-labelledby="welcomeTitle">
+          <div class="welcome-copy">
+            <p class="eyebrow">Driver workspace</p>
+            <h1 id="welcomeTitle">Your collection route</h1>
+            <p class="welcome-text">Review your assigned bin collections and citizen reports, navigate to each location, and keep your progress up to date.</p>
+          </div>
+          <div class="welcome-note">
+            <i class="fas fa-location-dot"></i> All your tasks in one place
+          </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats" aria-label="Task summary">
+          <article class="stat">
+            <div>
+              <div class="stat-label">Awaiting pickup</div>
+              <div class="stat-value" id="assignedCount">—</div>
+            </div>
+            <span class="stat-icon blue"><i class="fas fa-clipboard-list"></i></span>
+          </article>
+          <article class="stat">
+            <div>
+              <div class="stat-label">In progress</div>
+              <div class="stat-value" id="progressCount">—</div>
+            </div>
+            <span class="stat-icon amber"><i class="fas fa-truck-fast"></i></span>
+          </article>
+          <article class="stat">
+            <div>
+              <div class="stat-label">Completed</div>
+              <div class="stat-value" id="completedCount">—</div>
+            </div>
+            <span class="stat-icon green"><i class="fas fa-circle-check"></i></span>
+          </article>
+        </section>
+
+        <!-- Quick bins preview -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <div>
+              <h2><i class="fas fa-trash-can"></i> Recent bin collections</h2>
+              <p id="dashBinSummary">Your active bin collection tasks</p>
+            </div>
+            <button class="nav-item" data-view="bin-collections" style="border-radius:50px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-lt);border:none;width:auto">
+              View all <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="section-card-body">
+            <div id="dashBinTasks" class="tasks" aria-live="polite">
+              <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin"></i></div><h3>Loading…</h3></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick reports preview -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <div>
+              <h2><i class="fas fa-flag"></i> Recent citizen reports</h2>
+              <p id="dashReportSummary">Your active citizen report tasks</p>
+            </div>
+            <button class="nav-item" data-view="citizen-reports" style="border-radius:50px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-lt);border:none;width:auto">
+              View all <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="section-card-body">
+            <div id="dashReportTasks" class="tasks" aria-live="polite">
+              <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin"></i></div><h3>Loading…</h3></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dashboard -->
+
+      <!-- ══ BIN COLLECTIONS VIEW ════════════════════════ -->
+      <div class="view" id="view-bin-collections">
+        <div class="section-card">
+          <div class="section-card-header">
+            <div>
+              <h2><i class="fas fa-trash-can"></i> My bin collection tasks</h2>
+              <p id="taskSummary">Tasks assigned to your driver account</p>
+            </div>
+            <div class="tools">
+              <label class="search-wrap">
+                <i class="fas fa-magnifying-glass"></i>
+                <input class="search" id="taskSearch" type="search" placeholder="Search tasks or locations" aria-label="Search tasks">
+              </label>
+              <select class="filter" id="statusFilter" aria-label="Filter by status">
+                <option value="all">All statuses</option>
+                <option value="assigned">Assigned</option>
+                <option value="in-progress">In progress</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button class="refresh" id="refresh" type="button" aria-label="Refresh tasks" title="Refresh"><i class="fas fa-rotate"></i></button>
+            </div>
+          </div>
+          <div class="section-card-body" style="padding:20px">
+            <div id="tasks" class="tasks" aria-live="polite" aria-busy="true">
+              <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin"></i></div><h3>Loading your tasks</h3><p>Your assigned collection requests will appear here.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /bin-collections -->
+
+      <!-- ══ CITIZEN REPORTS VIEW ════════════════════════ -->
+      <div class="view" id="view-citizen-reports">
+        <div class="section-card">
+          <div class="section-card-header">
+            <div>
+              <h2><i class="fas fa-flag"></i> Assigned citizen reports</h2>
+              <p id="reportSummary">Reports assigned to your driver account</p>
+            </div>
+          </div>
+          <div class="section-card-body" style="padding:20px">
+            <div id="citizenReports" class="tasks" aria-live="polite">
+              <div class="state-panel"><div><div class="state-icon"><i class="fas fa-spinner fa-spin"></i></div><h3>Loading assigned reports</h3></div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /citizen-reports -->
+
+      <!-- ══ PROFILE VIEW ════════════════════════════════ -->
+      <div class="view" id="view-profile">
+        <div class="profile-grid">
+
+          <!-- Left: avatar card -->
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileInitial">D</div>
+            <div class="profile-name" id="profileName">Driver</div>
+            <div class="profile-role"><i class="fas fa-id-badge"></i> Collection Driver</div>
+            <hr class="profile-divider">
+            <div class="profile-stat-row">
+              <div class="profile-stat">
+                <div class="profile-stat-num" id="profileAssigned">—</div>
+                <div class="profile-stat-lbl">Assigned</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-num" id="profileProgress">—</div>
+                <div class="profile-stat-lbl">In Progress</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-num" id="profileCompleted">—</div>
+                <div class="profile-stat-lbl">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: info fields -->
+          <div class="profile-info-card">
+            <div class="profile-info-header"><i class="fas fa-circle-info"></i> Account Information</div>
+            <div class="profile-info-body">
+              <div class="profile-status-row">
+                <i class="fas fa-circle-check"></i> Account active — SmartBin Adama City Driver
+              </div>
+              <div class="profile-field">
+                <label>Display name</label>
+                <div class="profile-field-value" id="profileDisplayName">—</div>
+              </div>
+              <div class="profile-field">
+                <label>Username</label>
+                <div class="profile-field-value" id="profileUsername">—</div>
+              </div>
+              <div class="profile-field">
+                <label>Role</label>
+                <div class="profile-field-value">Collection Driver</div>
+              </div>
+              <div class="profile-field">
+                <label>Organisation</label>
+                <div class="profile-field-value">Adama City Sanitation Department</div>
+              </div>
+              <div class="profile-field">
+                <label>Session status</label>
+                <div class="profile-field-value" style="color:#16a34a;font-weight:700">✓ Active — you are logged in</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /profile -->
+
+    </div><!-- /content -->
+  </div><!-- /shell -->
+
+  <!-- Toast -->
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+  <!-- Map dialog -->
   <dialog class="map-dialog" id="mapDialog" aria-labelledby="mapDialogTitle">
     <div class="map-dialog-content">
       <div class="map-dialog-header">
         <div class="map-dialog-title">
-          <strong id="mapDialogTitle"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Collection location &amp; navigation</strong>
+          <strong id="mapDialogTitle"><i class="fas fa-map-location-dot"></i> Collection location &amp; navigation</strong>
           <span id="mapDialogTask"></span>
         </div>
-        <button class="map-close" id="closeMap" type="button" aria-label="Close map"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        <button class="map-close" id="closeMap" type="button" aria-label="Close map"><i class="fas fa-xmark"></i></button>
       </div>
       <iframe class="map-frame" id="mapFrame" title="Interactive collection location map" loading="lazy"></iframe>
     </div>
   </dialog>
+
   <script>
+    /* ── SIDEBAR NAVIGATION ──────────────────────────────── */
+    (function () {
+      var menuBtn  = document.getElementById('menuBtn');
+      var sidebar  = document.getElementById('sidebar');
+      var topTitle = document.getElementById('topbarTitle');
+      var viewLabels = {
+        'dashboard':       'Dashboard',
+        'bin-collections': 'Bin Collections',
+        'citizen-reports': 'Citizen Reports',
+        'profile':         'Profile',
+      };
+
+      function switchView(name) {
+        document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+        var target = document.getElementById('view-' + name);
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-view') === name);
+        });
+        topTitle.textContent = viewLabels[name] || name;
+        sidebar.classList.remove('open');
+      }
+
+      document.querySelectorAll('[data-view]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          switchView(btn.getAttribute('data-view'));
+        });
+      });
+
+      menuBtn.addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+      });
+
+      // Set today's date in topbar
+      var d = new Date();
+      document.getElementById('topbarDate').textContent = d.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+    }());
+
+    /* ── DRIVER LOGIC (unchanged) ────────────────────────── */
     (function () {
       var token = localStorage.getItem('sb_internal_token') || localStorage.getItem('sb_driver_token');
       var tasks = document.getElementById('tasks');
-      var allTasks = [];
+      var allTasks   = [];
       var allReports = [];
       var noticeTimer;
       var mapDialog = document.getElementById('mapDialog');
-      var mapFrame = document.getElementById('mapFrame');
+      var mapFrame  = document.getElementById('mapFrame');
 
       function signOut(reason) {
         localStorage.removeItem('sb_internal_token');
@@ -814,10 +928,7 @@
         options = options || {};
         options.headers = Object.assign({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, options.headers || {});
         return fetch('http://localhost:3000/api' + path, options).then(function (response) {
-          if (response.status === 401) {
-            signOut(false);
-            throw new Error('Session expired. Please sign in again.');
-          }
+          if (response.status === 401) { signOut(false); throw new Error('Session expired. Please sign in again.'); }
           return response.json().then(function (data) {
             if (!response.ok) throw new Error(data.message || 'Request failed.');
             return data;
@@ -825,8 +936,8 @@
         });
       }
       function escapeHtml(value) {
-        return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
-          return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char];
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+          return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
         });
       }
       function notify(message, isError) {
@@ -840,15 +951,26 @@
       function statePanel(title, message, isError) {
         return '<div class="state-panel' + (isError ? ' error' : '') + '"><div><div class="state-icon"><i class="fas ' +
           (isError ? 'fa-triangle-exclamation' : 'fa-clipboard-check') +
-          '" aria-hidden="true"></i></div><h3>' + escapeHtml(title) + '</h3><p>' + escapeHtml(message) + '</p></div></div>';
+          '"></i></div><h3>' + escapeHtml(title) + '</h3><p>' + escapeHtml(message) + '</p></div></div>';
       }
       function updateStats() {
-        var assigned = allTasks.filter(function (task) { return task.status === 'assigned'; }).length;
-        var inProgress = allTasks.filter(function (task) { return task.status === 'in-progress'; }).length;
-        var completed = allTasks.filter(function (task) { return task.status === 'completed'; }).length;
-        document.getElementById('assignedCount').textContent = assigned;
-        document.getElementById('progressCount').textContent = inProgress;
+        var assigned   = allTasks.filter(function (t) { return t.status === 'assigned'; }).length;
+        var inProgress = allTasks.filter(function (t) { return t.status === 'in-progress'; }).length;
+        var completed  = allTasks.filter(function (t) { return t.status === 'completed'; }).length;
+        document.getElementById('assignedCount').textContent  = assigned;
+        document.getElementById('progressCount').textContent  = inProgress;
         document.getElementById('completedCount').textContent = completed;
+        // profile stats mirror
+        document.getElementById('profileAssigned').textContent  = assigned;
+        document.getElementById('profileProgress').textContent  = inProgress;
+        document.getElementById('profileCompleted').textContent = completed;
+        // sidebar badges
+        var binBadge  = document.getElementById('binCollectionsBadge');
+        var repBadge  = document.getElementById('reportsBadge');
+        var activeBin = allTasks.filter(function (t) { return t.status !== 'completed'; }).length;
+        var activeRep = allReports.filter(function (r) { return r.status !== 'resolved' && r.status !== 'dismissed' && !r.workSubmittedAt; }).length;
+        binBadge.textContent = activeBin; binBadge.style.display = activeBin ? 'inline' : 'none';
+        repBadge.textContent = activeRep; repBadge.style.display = activeRep ? 'inline' : 'none';
       }
       function openTaskMap(task) {
         var label = [task.binCode || task.refId || task._id, task.binName || task.location || 'Collection location'].join(' · ');
@@ -860,83 +982,99 @@
       function openReportMap(report) {
         document.getElementById('mapDialogTask').textContent = [report.refId || report._id, report.location || 'Reported location'].join(' · ');
         mapFrame.src = 'map.html?reportId=' + encodeURIComponent(report._id) + '&embed=1';
-        document.body.classList.add('dialog-open'); mapDialog.showModal();
+        document.body.classList.add('dialog-open');
+        mapDialog.showModal();
       }
-      function closeTaskMap() {
-        if (mapDialog.open) mapDialog.close();
+      function closeTaskMap() { if (mapDialog.open) mapDialog.close(); }
+
+      /* Build a single task card HTML string */
+      function taskCardHtml(task) {
+        var id = task._id;
+        var taskStatus = ['assigned','in-progress','completed'].indexOf(task.status) !== -1 ? task.status : 'assigned';
+        var hasCoords  = task.latitude != null && task.longitude != null &&
+          Number.isFinite(Number(task.latitude)) && Number.isFinite(Number(task.longitude));
+        var coords = hasCoords
+          ? '<span class="coordinates"><i class="fas fa-crosshairs"></i> ' + escapeHtml(task.latitude) + ', ' + escapeHtml(task.longitude) + '</span>'
+          : '';
+        var actions = taskStatus === 'assigned'
+          ? '<button class="action start" type="button" data-task="' + escapeHtml(id) + '" data-status="in-progress"><i class="fas fa-play"></i> Start collection</button>'
+          : taskStatus === 'in-progress'
+            ? '<button class="action complete" type="button" data-task="' + escapeHtml(id) + '" data-status="completed"><i class="fas fa-check"></i> Complete collection</button>'
+            : '<span class="completed-note"><i class="fas fa-circle-check"></i> Collection completed</span>';
+        actions += '<button class="action map" type="button" data-map-task="' + escapeHtml(id) + '"><i class="fas fa-map-location-dot"></i> Open GIS map</button>';
+
+        return '<article class="card">' +
+          '<div class="card-top"><div><div class="task-ref">' + escapeHtml(task.binCode || task.refId || task._id) + '</div>' +
+          '<h3 class="task-title">' + (task.source === 'bin' ? 'Bin collection · ' + escapeHtml(task.binName || 'Garbage bin') : 'Collection request') + '</h3></div>' +
+          '<span class="badge ' + taskStatus + '">' + escapeHtml(taskStatus.replace(/-/g,' ')) + '</span></div>' +
+          '<div class="location-block"><span class="location-icon"><i class="fas fa-location-dot"></i></span>' +
+          '<div><span class="location-label">Collection location</span>' +
+          '<span class="location-value">' + escapeHtml(task.location || 'Location not provided') + '</span>' + coords + '</div></div>' +
+          '<div class="details">' +
+          '<div class="detail"><span class="detail-label">Requester</span><span class="detail-value">' + escapeHtml(task.fullName || 'Not provided') + '</span></div>' +
+          '<div class="detail"><span class="detail-label">Contact</span><span class="detail-value">' + (task.phone ? '<a href="tel:' + escapeHtml(encodeURIComponent(task.phone)) + '">' + escapeHtml(task.phone) + '</a>' : 'Not provided') + '</span></div>' +
+          (task.source === 'bin' ? '<div class="detail"><span class="detail-label">Fill at assignment</span><span class="detail-value">' + (task.fillLevelAtAssignment == null ? 'Unavailable' : escapeHtml(task.fillLevelAtAssignment) + '% · ' + escapeHtml(task.readingSourceAtAssignment || 'unknown') + ' · ' + escapeHtml(task.readingAtAssignment ? new Date(task.readingAtAssignment).toLocaleString() : 'time unavailable')) + '</span></div>' : '') +
+          '<div class="detail description"><span class="detail-label">Collection details</span><span class="detail-value">' + escapeHtml(task.description || 'No additional details provided.') + '</span></div>' +
+          '</div><div class="actions">' + actions + '</div></article>';
       }
-      function render(items) {
-        var query = document.getElementById('taskSearch').value.trim().toLowerCase();
-        var status = document.getElementById('statusFilter').value;
-        var visible = items.filter(function (task) {
-          var searchable = [task.refId, task.fullName, task.phone, task.location, task.description].join(' ').toLowerCase();
-          return (status === 'all' || task.status === status) && (!query || searchable.indexOf(query) !== -1);
-        });
-        document.getElementById('taskSummary').textContent = visible.length + ' of ' + items.length + ' assigned ' + (items.length === 1 ? 'task' : 'tasks');
-        if (!visible.length) {
-          tasks.innerHTML = items.length
-            ? statePanel('No matching tasks', 'Try a different search term or status filter.', false)
-            : statePanel('You’re all caught up', 'There are no collection tasks assigned to you right now. New assignments will appear here.', false);
-          return;
-        }
-        tasks.innerHTML = visible.map(function (task) {
-          var id = task._id;
-          var taskStatus = ['assigned', 'in-progress', 'completed'].indexOf(task.status) !== -1 ? task.status : 'assigned';
-          var hasCoordinates = task.latitude != null && task.longitude != null &&
-            Number.isFinite(Number(task.latitude)) && Number.isFinite(Number(task.longitude));
-          var coordinates = hasCoordinates
-            ? '<span class="coordinates"><i class="fas fa-crosshairs" aria-hidden="true"></i> ' + escapeHtml(task.latitude) + ', ' + escapeHtml(task.longitude) + '</span>'
-            : '';
-          var actions = taskStatus === 'assigned'
-            ? '<button class="action start" type="button" data-task="' + escapeHtml(id) + '" data-status="in-progress"><i class="fas fa-play" aria-hidden="true"></i> Start collection</button>'
-            : taskStatus === 'in-progress'
-              ? '<button class="action complete" type="button" data-task="' + escapeHtml(id) + '" data-status="completed"><i class="fas fa-check" aria-hidden="true"></i> Complete collection</button>'
-              : '<span class="completed-note"><i class="fas fa-circle-check" aria-hidden="true"></i> Collection completed</span>';
-          actions += '<button class="action map" type="button" data-map-task="' + escapeHtml(id) + '"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Open GIS map</button>';
-          return '<article class="card"><div class="card-top"><div><div class="task-ref">' + escapeHtml(task.binCode || task.refId || task._id) + '</div><h3 class="task-title">' + (task.source === 'bin' ? 'Bin collection · ' + escapeHtml(task.binName || 'Garbage bin') : 'Collection request') + '</h3></div>' +
-            '<span class="badge ' + taskStatus + '">' + escapeHtml(taskStatus.replace(/-/g, ' ')) + '</span></div>' +
-            '<div class="location-block"><span class="location-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span><div><span class="location-label">Collection location</span>' +
-            '<span class="location-value">' + escapeHtml(task.location || 'Location not provided') + '</span>' + coordinates + '</div></div>' +
-            '<div class="details"><div class="detail"><span class="detail-label">Requester</span><span class="detail-value">' + escapeHtml(task.fullName || 'Not provided') + '</span></div>' +
-            '<div class="detail"><span class="detail-label">Contact</span><span class="detail-value">' +
-            (task.phone ? '<a href="tel:' + escapeHtml(encodeURIComponent(task.phone)) + '">' + escapeHtml(task.phone) + '</a>' : 'Not provided') + '</span></div>' +
-            (task.source === 'bin' ? '<div class="detail"><span class="detail-label">Fill at assignment</span><span class="detail-value">' + (task.fillLevelAtAssignment == null ? 'Unavailable' : escapeHtml(task.fillLevelAtAssignment) + '% · ' + escapeHtml(task.readingSourceAtAssignment || 'unknown reading source') + ' · ' + escapeHtml(task.readingAtAssignment ? new Date(task.readingAtAssignment).toLocaleString() : 'time unavailable')) + '</span></div>' : '') +
-            '<div class="detail description"><span class="detail-label">Collection details</span><span class="detail-value">' + escapeHtml(task.description || 'No additional details provided.') + '</span></div></div>' +
-            '<div class="actions">' + actions + '</div></article>';
-        }).join('');
-        tasks.querySelectorAll('[data-task]').forEach(function (button) {
+
+      function bindTaskButtons(container) {
+        container.querySelectorAll('[data-task]').forEach(function (button) {
           button.addEventListener('click', function () {
             var taskId = button.getAttribute('data-task');
             var nextStatus = button.getAttribute('data-status');
             button.disabled = true;
             api('/driver/tasks/' + encodeURIComponent(taskId) + '/status', {
-              method: 'PATCH',
-              body: JSON.stringify({ status: nextStatus })
+              method: 'PATCH', body: JSON.stringify({ status: nextStatus })
             }).then(function () {
               notify(nextStatus === 'completed' ? 'Collection marked as completed.' : 'Collection started. Good luck on your route.');
               return loadTasks();
-            }).catch(function (err) {
-              notify(err.message, true);
-              button.disabled = false;
-            });
+            }).catch(function (err) { notify(err.message, true); button.disabled = false; });
           });
         });
-        tasks.querySelectorAll('[data-map-task]').forEach(function (button) {
+        container.querySelectorAll('[data-map-task]').forEach(function (button) {
           button.addEventListener('click', function () {
-            var selectedTask = allTasks.find(function (task) {
-              return String(task._id) === button.getAttribute('data-map-task');
-            });
-            if (selectedTask) openTaskMap(selectedTask);
+            var sel = allTasks.find(function (t) { return String(t._id) === button.getAttribute('data-map-task'); });
+            if (sel) openTaskMap(sel);
           });
         });
       }
+
+      function render(items) {
+        var query  = document.getElementById('taskSearch').value.trim().toLowerCase();
+        var status = document.getElementById('statusFilter').value;
+        var visible = items.filter(function (t) {
+          var s = [t.refId, t.fullName, t.phone, t.location, t.description].join(' ').toLowerCase();
+          return (status === 'all' || t.status === status) && (!query || s.indexOf(query) !== -1);
+        });
+        document.getElementById('taskSummary').textContent = visible.length + ' of ' + items.length + ' assigned ' + (items.length === 1 ? 'task' : 'tasks');
+        if (!visible.length) {
+          tasks.innerHTML = items.length
+            ? statePanel('No matching tasks', 'Try a different search term or status filter.', false)
+            : statePanel('You\'re all caught up', 'There are no collection tasks assigned to you right now.', false);
+          return;
+        }
+        tasks.innerHTML = visible.map(taskCardHtml).join('');
+        bindTaskButtons(tasks);
+
+        // Also populate dashboard preview (first 2 active tasks)
+        var dashBin = document.getElementById('dashBinTasks');
+        var active  = items.filter(function (t) { return t.status !== 'completed'; }).slice(0, 2);
+        document.getElementById('dashBinSummary').textContent = active.length
+          ? active.length + ' active bin task(s)' : 'No active bin tasks';
+        dashBin.innerHTML = active.length
+          ? active.map(taskCardHtml).join('')
+          : statePanel('No active bin tasks', 'All bin collections are complete or none assigned.', false);
+        bindTaskButtons(dashBin);
+      }
+
       function loadTasks() {
         var refresh = document.getElementById('refresh');
         refresh.disabled = true;
         tasks.setAttribute('aria-busy', 'true');
         loadCitizenReports();
         return api('/driver/tasks').then(function (result) {
-          if (!result || !Array.isArray(result.data)) throw new Error('The task list could not be loaded. Please try again.');
+          if (!result || !Array.isArray(result.data)) throw new Error('The task list could not be loaded.');
           allTasks = result.data;
           updateStats();
           render(allTasks);
@@ -949,67 +1087,140 @@
           refresh.disabled = false;
         });
       }
+
+      /* Build a single report card HTML string */
+      function reportCardHtml(r) {
+        var waiting = Boolean(r.workSubmittedAt);
+        var state   = waiting ? 'awaiting verification' : String(r.status).replace(/-/g, ' ');
+        var actions = r.status === 'pending'
+          ? '<button class="action start" data-report-start="' + escapeHtml(r._id) + '"><i class="fas fa-play"></i> Start work</button>'
+          : '';
+        actions += (!waiting && r.status === 'in-progress')
+          ? '<div class="report-work-form"><label>Work notes <textarea data-report-notes="' + escapeHtml(r._id) + '" maxlength="2000" placeholder="Describe the investigation, cleanup, or maintenance performed"></textarea></label>' +
+            '<label>Completion photo (optional) <input type="file" accept="image/*" data-report-evidence="' + escapeHtml(r._id) + '"></label>' +
+            '<button class="action complete" data-report-submit="' + escapeHtml(r._id) + '"><i class="fas fa-paper-plane"></i> Submit for verification</button></div>'
+          : '';
+        actions += waiting ? '<span class="completed-note"><i class="fas fa-clock"></i> Work submitted · awaiting Admin verification</span>' : '';
+        actions += '<button class="action map" data-report-map="' + escapeHtml(r._id) + '"><i class="fas fa-map-location-dot"></i> View on Map</button>';
+        var photo = r.photoUrl ? '<a target="_blank" rel="noopener noreferrer" href="' + escapeHtml(new URL(r.photoUrl, 'http://localhost:3000').href) + '">View citizen evidence</a>' : '';
+        var coords = r.latitude != null && r.longitude != null
+          ? '<span class="coordinates">' + escapeHtml(r.latitude) + ', ' + escapeHtml(r.longitude) + '</span>'
+          : '<span class="coordinates">Map coordinates not provided</span>';
+        return '<article class="card">' +
+          '<div class="card-top"><div><div class="task-ref">' + escapeHtml(r.refId || r._id) + '</div>' +
+          '<h3 class="task-title">' + escapeHtml(r.problemType || 'other') + ' report · ' + escapeHtml(r.priority || 'medium') + '</h3></div>' +
+          '<span class="badge ' + escapeHtml(r.status) + '">' + escapeHtml(state) + '</span></div>' +
+          '<div class="location-block"><span class="location-icon"><i class="fas fa-location-dot"></i></span>' +
+          '<div><span class="location-label">Reported location</span>' +
+          '<span class="location-value">' + escapeHtml(r.location || 'Location not provided') + '</span>' + coords + '</div></div>' +
+          '<div class="details"><div class="detail description"><span class="detail-label">Report details</span><span class="detail-value">' + escapeHtml(r.description || 'No description provided.') + '</span></div>' +
+          (r.workNotes ? '<div class="detail description"><span class="detail-label">Submitted work</span><span class="detail-value">' + escapeHtml(r.workNotes) + '</span></div>' : '') +
+          '<div class="detail">' + photo + '</div></div>' +
+          '<div class="actions">' + actions + '</div></article>';
+      }
+
+      function bindReportButtons(container) {
+        container.querySelectorAll('[data-report-start]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            button.disabled = true;
+            api('/driver/tasks/reports/' + encodeURIComponent(button.dataset.reportStart) + '/start', { method:'PATCH', body:'{}' })
+              .then(loadCitizenReports).catch(function (e) { notify(e.message, true); button.disabled = false; });
+          });
+        });
+        container.querySelectorAll('[data-report-submit]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var id    = button.dataset.reportSubmit;
+            var notes = container.querySelector('[data-report-notes="' + id + '"]');
+            var file  = container.querySelector('[data-report-evidence="' + id + '"]');
+            if (!notes || !notes.value.trim()) { notify('Enter work notes before submitting.', true); return; }
+            var form = new FormData();
+            form.append('notes', notes.value.trim());
+            if (file && file.files[0]) form.append('evidence', file.files[0]);
+            button.disabled = true;
+            fetch('http://localhost:3000/api/driver/tasks/reports/' + encodeURIComponent(id) + '/work', {
+              method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form
+            }).then(function (response) { return response.json().then(function (data) { if (!response.ok) throw new Error(data.message || 'Could not submit work.'); return data; }); })
+              .then(function () { notify('Work submitted for Admin verification.'); return loadCitizenReports(); })
+              .catch(function (e) { notify(e.message, true); button.disabled = false; });
+          });
+        });
+        container.querySelectorAll('[data-report-map]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var rep = allReports.find(function (x) { return String(x._id) === button.dataset.reportMap; });
+            if (rep) openReportMap(rep);
+          });
+        });
+      }
+
       function renderCitizenReports() {
         var target = document.getElementById('citizenReports');
         document.getElementById('reportSummary').textContent = allReports.length + ' assigned ' + (allReports.length === 1 ? 'report' : 'reports');
-        if (!allReports.length) { target.innerHTML = statePanel('No assigned reports', 'New citizen report assignments will appear here.', false); return; }
-        target.innerHTML = allReports.map(function (r) {
-          var waiting = Boolean(r.workSubmittedAt), state = waiting ? 'awaiting verification' : String(r.status).replace(/-/g, ' ');
-          var actions = r.status === 'pending' ? '<button class="action start" data-report-start="' + escapeHtml(r._id) + '"><i class="fas fa-play"></i> Start work</button>' : '';
-          actions += !waiting && r.status === 'in-progress' ? '<div class="report-work-form"><label>Work notes <textarea data-report-notes="' + escapeHtml(r._id) + '" maxlength="2000" placeholder="Describe the investigation, cleanup, or maintenance performed"></textarea></label><label>Completion photo (optional) <input type="file" accept="image/*" data-report-evidence="' + escapeHtml(r._id) + '"></label><button class="action complete" data-report-submit="' + escapeHtml(r._id) + '"><i class="fas fa-paper-plane"></i> Submit for verification</button></div>' : '';
-          actions += waiting ? '<span class="completed-note"><i class="fas fa-clock"></i> Work submitted · awaiting Admin verification</span>' : '';
-          actions += '<button class="action map" data-report-map="' + escapeHtml(r._id) + '"><i class="fas fa-map-location-dot"></i> View on Map</button>';
-          var photo = r.photoUrl ? '<a target="_blank" rel="noopener noreferrer" href="' + escapeHtml(new URL(r.photoUrl, 'http://localhost:3000').href) + '">View citizen evidence</a>' : '';
-          var coords = r.latitude != null && r.longitude != null ? '<span class="coordinates">' + escapeHtml(r.latitude) + ', ' + escapeHtml(r.longitude) + '</span>' : '<span class="coordinates">Map coordinates not provided</span>';
-          return '<article class="card"><div class="card-top"><div><div class="task-ref">' + escapeHtml(r.refId || r._id) + '</div><h3 class="task-title">' + escapeHtml(r.problemType || 'other') + ' report · ' + escapeHtml(r.priority || 'medium') + '</h3></div><span class="badge ' + escapeHtml(r.status) + '">' + escapeHtml(state) + '</span></div><div class="location-block"><span class="location-icon"><i class="fas fa-location-dot"></i></span><div><span class="location-label">Reported location</span><span class="location-value">' + escapeHtml(r.location || 'Location not provided') + '</span>' + coords + '</div></div><div class="details"><div class="detail description"><span class="detail-label">Report details</span><span class="detail-value">' + escapeHtml(r.description || 'No description provided.') + '</span></div>' + (r.workNotes ? '<div class="detail description"><span class="detail-label">Submitted work</span><span class="detail-value">' + escapeHtml(r.workNotes) + '</span></div>' : '') + '<div class="detail">' + photo + '</div></div><div class="actions">' + actions + '</div></article>';
-        }).join('');
-        target.querySelectorAll('[data-report-start]').forEach(function (button) { button.addEventListener('click', function () { button.disabled=true; api('/driver/tasks/reports/'+encodeURIComponent(button.dataset.reportStart)+'/start',{method:'PATCH',body:'{}'}).then(loadCitizenReports).catch(function(e){notify(e.message,true);button.disabled=false;}); }); });
-        target.querySelectorAll('[data-report-submit]').forEach(function (button) { button.addEventListener('click', function () {
-          var id=button.dataset.reportSubmit, notes=target.querySelector('[data-report-notes="'+id+'"]'), file=target.querySelector('[data-report-evidence="'+id+'"]');
-          if(!notes||!notes.value.trim()){notify('Enter work notes before submitting.',true);return;}
-          var form=new FormData();form.append('notes',notes.value.trim());if(file&&file.files[0])form.append('evidence',file.files[0]);button.disabled=true;
-          fetch('http://localhost:3000/api/driver/tasks/reports/'+encodeURIComponent(id)+'/work',{method:'POST',headers:{Authorization:'Bearer '+token},body:form}).then(function(response){return response.json().then(function(data){if(!response.ok)throw new Error(data.message||'Could not submit work.');return data;});}).then(function(){notify('Work submitted for Admin verification.');return loadCitizenReports();}).catch(function(e){notify(e.message,true);button.disabled=false;});
-        }); });
-        target.querySelectorAll('[data-report-map]').forEach(function (button) { button.addEventListener('click', function () { var report=allReports.find(function(x){return String(x._id)===button.dataset.reportMap;});if(report)openReportMap(report); }); });
+        if (!allReports.length) {
+          target.innerHTML = statePanel('No assigned reports', 'New citizen report assignments will appear here.', false);
+        } else {
+          target.innerHTML = allReports.map(reportCardHtml).join('');
+          bindReportButtons(target);
+        }
+        // Dashboard preview
+        var dashRep = document.getElementById('dashReportTasks');
+        var activeRep = allReports.filter(function (r) { return !r.workSubmittedAt && r.status !== 'resolved' && r.status !== 'dismissed'; }).slice(0, 2);
+        document.getElementById('dashReportSummary').textContent = activeRep.length
+          ? activeRep.length + ' active report(s)' : 'No active reports';
+        dashRep.innerHTML = activeRep.length
+          ? activeRep.map(reportCardHtml).join('')
+          : statePanel('No active reports', 'All assigned citizen reports are complete or none assigned.', false);
+        bindReportButtons(dashRep);
+        updateStats();
       }
+
       function loadCitizenReports() {
-        return api('/driver/tasks/reports').then(function (result) { if(!result.success||!Array.isArray(result.data))throw new Error('Assigned reports could not be loaded.');allReports=result.data;renderCitizenReports(); }).catch(function(error){document.getElementById('citizenReports').innerHTML=statePanel('Unable to load assigned reports',error.message,true);});
+        return api('/driver/tasks/reports').then(function (result) {
+          if (!result.success || !Array.isArray(result.data)) throw new Error('Assigned reports could not be loaded.');
+          allReports = result.data;
+          renderCitizenReports();
+        }).catch(function (error) {
+          document.getElementById('citizenReports').innerHTML = statePanel('Unable to load assigned reports', error.message, true);
+        });
       }
-      document.getElementById('logout').addEventListener('click', function () { signOut(false); });
-      document.getElementById('closeMap').addEventListener('click', closeTaskMap);
+
+      /* Event bindings */
+      document.getElementById('logout').addEventListener('click',    function () { signOut(false); });
+      document.getElementById('closeMap').addEventListener('click',  closeTaskMap);
       mapDialog.addEventListener('close', function () {
         document.body.classList.remove('dialog-open');
         mapFrame.src = 'about:blank';
       });
-      mapDialog.addEventListener('click', function (event) {
-        if (event.target === mapDialog) closeTaskMap();
-      });
-      window.addEventListener('message', function (event) {
-        if (event.origin !== window.location.origin || event.source !== mapFrame.contentWindow) return;
-        if (event.data && event.data.type === 'smartbin-task-updated') loadTasks();
+      mapDialog.addEventListener('click', function (e) { if (e.target === mapDialog) closeTaskMap(); });
+      window.addEventListener('message', function (e) {
+        if (e.origin !== window.location.origin || e.source !== mapFrame.contentWindow) return;
+        if (e.data && e.data.type === 'smartbin-task-updated') loadTasks();
       });
       document.getElementById('refresh').addEventListener('click', loadTasks);
-      document.getElementById('taskSearch').addEventListener('input', function () { render(allTasks); });
+      document.getElementById('taskSearch').addEventListener('input',  function () { render(allTasks); });
       document.getElementById('statusFilter').addEventListener('change', function () { render(allTasks); });
 
-      if (!token) {
-        signOut(false);
-        return;
-      }
+      /* Boot */
+      if (!token) { signOut(false); return; }
       api('/auth/me').then(function (result) {
-        if (!result.success || !result.user || result.user.role !== 'driver') {
-          signOut(true);
-          return;
-        }
+        if (!result.success || !result.user || result.user.role !== 'driver') { signOut(true); return; }
         localStorage.setItem('sb_internal_token', token);
         localStorage.removeItem('sb_driver_token');
-        document.getElementById('driverName').textContent = result.user.displayName || result.user.username || 'Driver';
+        var name = result.user.displayName || result.user.username || 'Driver';
+        // Populate name in all places
+        document.getElementById('driverName')         && (document.getElementById('driverName').textContent = name);
+        document.getElementById('sidebarDriverName').textContent  = name;
+        document.getElementById('topbarDriverName').textContent   = name;
+        document.getElementById('profileName').textContent        = name;
+        document.getElementById('profileInitial').textContent     = name.charAt(0).toUpperCase();
+        document.getElementById('profileDisplayName').textContent = name;
+        document.getElementById('profileUsername').textContent    = result.user.username || '—';
         return loadTasks();
       }).catch(function (err) {
         tasks.setAttribute('aria-busy', 'false');
         tasks.innerHTML = statePanel('Unable to verify your session', err.message, true);
         notify(err.message, true);
       });
+
       window.setInterval(loadTasks, 30000);
     }());
   </script>

@@ -2,11 +2,11 @@
    SmartBin Adama City — Express API Server (MongoDB)
    ================================================================ */
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express    = require('express');
 const cors       = require('cors');
-const path       = require('path');
 const connectDB  = require('./db/connect');
 
 const authRoutes    = require('./routes/auth');
@@ -16,6 +16,7 @@ const collectionRequestsRoutes = require('./routes/collectionRequests');
 const driversRoutes = require('./routes/drivers');
 const driverTasksRoutes = require('./routes/driverTasks');
 const statsRoutes   = require('./routes/stats');
+const telegramBot = require('./utils/telegramBot');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -80,6 +81,10 @@ app.use((err, req, res, _next) => {
 /* ── START: connect to MongoDB then listen ────────────────── */
 connectDB().then(() => {
   app.listen(PORT, () => {
+    if (telegramBot.isConfigured()) {
+      void telegramBot.startPolling();
+      console.log('  Telegram driver bot polling enabled.');
+    }
     console.log('');
     console.log('  ┌─────────────────────────────────────────────┐');
     console.log('  │   SmartBin Adama City — API Server          │');

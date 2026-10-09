@@ -66,6 +66,17 @@ test('API bin monitoring and collection assignment workflow', async t => {
     const adminToken = token(admin);
     const driver1Token = token(driver1);
     const driver2Token = token(driver2);
+    assert.equal((await call('/driver/tasks/telegram/link', 'POST', {}, undefined)).status, 401);
+    assert.equal((await call('/driver/tasks/telegram/link', 'POST', {}, adminToken)).status, 403);
+    if (process.env.TELEGRAM_BOT_TOKEN) {
+      const telegramLink = await call('/driver/tasks/telegram/link', 'POST', {}, driver1Token);
+      assert.equal(telegramLink.status, 200);
+      assert.equal(telegramLink.body.success, true);
+      assert.equal(telegramLink.body.data.code.length, 43);
+      assert.equal((await User.findById(driver1._id).select('+telegramLinkTokenHash')).telegramLinkTokenHash.length, 64);
+    } else {
+      assert.equal((await call('/driver/tasks/telegram/link', 'POST', {}, driver1Token)).status, 503);
+    }
     const deviceCall = async (route, method = 'GET', body, deviceKey = process.env.DEVICE_KEY) => {
       const response = await fetch(base + route, {
         method,

@@ -6,6 +6,9 @@ const userSchema = new mongoose.Schema({
   displayName:  { type: String, trim: true, maxlength: 120 },
   passwordHash: { type: String, required: true },
   role:         { type: String, enum: ['admin', 'staff', 'driver'], default: 'admin' },
+  telegramChatId: { type: String, unique: true, sparse: true },
+  telegramLinkTokenHash: { type: String, select: false },
+  telegramLinkExpiresAt: { type: Date, select: false },
 }, { timestamps: true });
 
 // Compare password helper

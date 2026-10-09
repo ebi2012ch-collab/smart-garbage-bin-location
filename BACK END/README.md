@@ -95,6 +95,40 @@ Admins can create a bin-linked task with `POST /api/collection-requests/from-bin
 | GET | `/api/driver/tasks/reports` | List only the authenticated Driver's assigned open citizen reports | JWT (driver) |
 | PATCH | `/api/driver/tasks/reports/:id/start` | Start work on an owned report | JWT (driver) |
 | POST | `/api/driver/tasks/reports/:id/work` | Submit required work notes and optional `evidence` image for Admin verification | JWT (driver) |
+| POST | `/api/driver/tasks/telegram/link` | Create a one-time code to link the signed-in Driver's Telegram account | JWT (driver) |
+
+#### Telegram assignment notifications
+
+The bot runs from the backend using long polling. Configure these optional values in `BACK END/.env`, then restart the backend:
+
+```env
+TELEGRAM_BOT_TOKEN=<token from BotFather>
+TELEGRAM_BOT_USERNAME=<bot username without @>
+DRIVER_DASHBOARD_URL=<URL drivers can open for FRONT END/driver.html>
+```
+
+Never put the bot token in frontend files or share it in logs. `TELEGRAM_BOT_USERNAME` enables the link response to include a direct `t.me` URL. `DRIVER_DASHBOARD_URL` should be the full URL reachable by the drivers' devices; without it, the backend uses this workspace's local Live Server path. Set this value to the deployed frontend URL before drivers use the link. Long polling requires that no webhook is currently configured for the bot and should run in only one backend process.
+
+After starting the bot, each Driver must sign in to the existing Driver account and request a pairing code with the existing JWT:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://localhost:3000/api/driver/tasks/telegram/link" `
+  -Headers @{ Authorization = "Bearer <DRIVER_JWT>" }
+```
+
+The response gives the one-time code, bot URL (if configured), and expiry. The Driver opens that bot in Telegram, sends `/start`, then sends `/link <code>` in a private chat. The code is random, stored only as a hash, expires after 10 minutes, and is consumed once. It is issued only for the authenticated Driver, so Telegram usernames are never used to identify or select Driver accounts. A Telegram chat ID can link to only one Driver account.
+
+When an Admin assigns a collection request, bin collection task, or waste report, the backend sends a best-effort message to only that assigned Driver's linked chat. The message includes task type, location, bin ID when available, priority, and the configured Driver dashboard link. Collection tasks currently have no priority field, so their notification says `Standard`. Missing links are skipped. Telegram/API failures are recorded and logged without undoing the database assignment. A unique assignment-event record suppresses duplicate sends; failed sends are not automatically retried for that same assignment.
+
+Run the mocked Telegram API tests with:
+
+```powershell
+cd "BACK END"
+node --test test/telegramBot.test.js
+```
+
+These tests use a mocked API and do not contact Telegram. `npm test` runs them with the backend suite; the database-backed API integration test additionally checks that only an authenticated Driver can request a link code when local MongoDB is available.
 
 ### Citizen report workflow
 | Method | Endpoint | Description | Auth |
@@ -141,7 +175,11 @@ BACK END/
 │   └── auth.js         # JWT verification and role guards
 ├── models/
 │   ├── CollectionRequest.js # Collection request and assignment schema
+│   ├── TelegramNotification.js # Assignment notification idempotency records
 │   └── User.js         # Admin and Driver account schema
+├── utils/
+│   ├── notifyAssignedDriver.js # Non-blocking assignment notification dispatch
+│   └── telegramBot.js  # Bot polling, account linking, and message delivery
 ├── routes/
 │   ├── auth.js         # Role-selecting login / logout
 │   ├── bins.js         # Public bin reads and Admin bin management

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const CollectionRequest = require('../models/CollectionRequest');
 const Bin = require('../models/Bin');
 const Report = require('../models/Report');
+const telegramBot = require('../utils/telegramBot');
 const reportUpload = require('../middleware/reportUpload');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -13,6 +14,34 @@ function requestFilter(id) {
 }
 
 router.use(requireAuth, requireRole('driver'));
+
+router.post('/telegram/link', async (req, res) => {
+  try {
+    if (!telegramBot.isConfigured()) {
+      return res.status(503).json({ success: false, message: 'Telegram notifications are not configured on the server.' });
+    }
+    const link = await telegramBot.startLink(req.user.id);
+    if (!link) return res.status(404).json({ success: false, message: 'Driver account not found.' });
+    const botUsername = process.env.TELEGRAM_BOT_USERNAME;
+    res.json({
+      success: true,
+      message: 'Open your SmartBin Telegram bot, send /start, then send /link followed by the one-time code below.',
+      data: {
+        code: link.code,
+        expiresAt: link.expiresAt,
+        botUrl: botUsername ? `https://t.me/${botUsername.replace(/^@/, '')}` : null,
+        instructions: [
+          'Open the SmartBin driver notification bot in Telegram and send /start.',
+          'Send /link followed by the one-time code in this response.',
+          'The code expires in 10 minutes. Do not share it.',
+        ],
+      },
+    });
+  } catch (_) {
+    console.error('[Telegram] Could not create a Driver link code.');
+    res.status(500).json({ success: false, message: 'Could not start Telegram account linking.' });
+  }
+});
 
 router.get('/reports', async (req, res) => {
   try {

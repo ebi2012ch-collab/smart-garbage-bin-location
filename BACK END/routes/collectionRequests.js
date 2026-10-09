@@ -1,8 +1,10 @@
 const express = require('express');
 const CollectionRequest = require('../models/CollectionRequest');
 const Bin = require('../models/Bin');
+const User = require('../models/User');
 const { conditionFor } = require('../utils/binCondition');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const notifyAssignedDriver = require('../utils/notifyAssignedDriver');
 
 const router = express.Router();
 const REQUEST_STATUSES = ['pending', 'accepted', 'rejected', 'assigned', 'in-progress', 'completed'];
@@ -21,7 +23,7 @@ router.post('/from-bin', requireAuth, requireRole('admin'), async (req, res) => 
     }
     const [bin, driver] = await Promise.all([
       Bin.findById(binId),
-      require('../models/User').findOne({ _id: driverId, role: 'driver' }).select('_id username displayName'),
+      User.findOne({ _id: driverId, role: 'driver' }).select('_id username displayName telegramChatId'),
     ]);
     if (!bin) return res.status(404).json({ success: false, message: 'Bin not found.' });
     if (!driver) return res.status(404).json({ success: false, message: 'Eligible driver not found.' });
@@ -43,6 +45,14 @@ router.post('/from-bin', requireAuth, requireRole('admin'), async (req, res) => 
     });
     await Bin.updateOne({ _id: bin._id }, { $set: { activeCollectionTask: task._id, collectionState: 'assigned' } });
     const result = await CollectionRequest.findById(task._id).populate('assignedDriver', 'username displayName');
+    notifyAssignedDriver(driver, {
+      taskType: 'collection',
+      taskId: task._id,
+      assignedAt: task.assignedAt,
+      location: task.location,
+      binId: task.binCode || task.binId,
+      priority: 'Standard',
+    });
     res.status(201).json({ success: true, message: 'Bin collection task assigned.', data: result });
   } catch (err) {
     if (err.code === 11000) return res.status(409).json({ success: false, message: 'This bin already has an active collection task.' });
@@ -169,8 +179,7 @@ router.patch('/:id/assign', requireAuth, requireRole('admin'), async (req, res) 
       return res.status(400).json({ success: false, message: 'A valid driver must be selected.' });
     }
 
-    const User = require('../models/User');
-    const driver = await User.findOne({ _id: driverId, role: 'driver' }).select('_id username displayName');
+    const driver = await User.findOne({ _id: driverId, role: 'driver' }).select('_id username displayName telegramChatId');
     if (!driver) {
       return res.status(404).json({ success: false, message: 'Driver not found.' });
     }
@@ -182,6 +191,14 @@ router.patch('/:id/assign', requireAuth, requireRole('admin'), async (req, res) 
     ).populate('assignedDriver', 'username displayName');
 
     if (request) {
+      notifyAssignedDriver(driver, {
+        taskType: 'collection',
+        taskId: request._id,
+        assignedAt: request.assignedAt,
+        location: request.location,
+        binId: request.binCode || request.binId,
+        priority: 'Standard',
+      });
       return res.json({ success: true, message: 'Driver assigned.', data: request });
     }
 

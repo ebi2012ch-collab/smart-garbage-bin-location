@@ -1,0 +1,151 @@
+/* Shared readability and interaction layer for every SmartBin page. */
+html {
+  font-size: 100% !important;
+  overflow-x: clip;
+  scroll-padding-top: 5rem;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-size: clamp(1rem, 1rem + .2vw, 1.125rem) !important;
+  line-height: 1.6;
+}
+
+body p,
+body li,
+body label,
+body input:not([type="checkbox"]):not([type="radio"]),
+body select,
+body textarea,
+body button {
+  font-size: 1rem !important;
+  line-height: 1.5;
+}
+
+body h1 {
+  font-size: clamp(2rem, 4vw, 3.25rem) !important;
+  line-height: 1.12;
+}
+
+body h2 {
+  font-size: clamp(1.5rem, 2.8vw, 2rem) !important;
+  line-height: 1.2;
+}
+
+body h3 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem) !important;
+  line-height: 1.25;
+}
+
+body h4 {
+  font-size: 1.125rem !important;
+  line-height: 1.35;
+}
+
+.municipal-login h1 {
+  font-size: 1.875rem !important;
+}
+
+.municipal-map h1 {
+  font-size: clamp(1.75rem, 4vw, 2rem) !important;
+}
+
+.municipal-driver h1 {
+  font-size: clamp(1.625rem, 3vw, 2rem) !important;
+}
+
+.municipal-admin .topbar-title {
+  font-size: clamp(1.625rem, 2.2vw, 1.875rem) !important;
+}
+
+body small,
+body .small,
+body .subtitle,
+body .section-subtitle,
+body .helper-text,
+body .form-hint,
+body .brand-sub,
+body .nav-label,
+body .task-ref,
+body .coordinates,
+body .location-label,
+body .detail-label {
+  font-size: .875rem !important;
+  line-height: 1.5;
+}
+
+#header .nav-link,
+#header .nav-cta,
+body .brand-city,
+body .brand-name {
+  font-size: .9375rem !important;
+}
+
+body table {
+  font-size: .9375rem !important;
+}
+
+body th {
+  font-size: .875rem !important;
+  line-height: 1.4;
+}
+
+body td {
+  font-size: .9375rem !important;
+  line-height: 1.5;
+}
+
+body button,
+body input:not([type="checkbox"]):not([type="radio"]),
+body select,
+body textarea,
+body .btn,
+body .button,
+body .ui-button,
+body .action,
+body .btn-action,
+body .btn-primary,
+body .btn-login,
+body .nav-cta {
+  min-height: 44px;
+}
+
+body :focus-visible {
+  outline: 3px solid #4f46e5;
+  outline-offset: 3px;
+}
+
+body button,
+body input,
+body select,
+body textarea {
+  font-family: inherit;
+}
+
+@media (max-width: 480px) {
+  body h1 {
+    font-size: clamp(1.875rem, 8vw, 2.5rem) !important;
+  }
+
+  body th,
+  body td {
+    padding-left: .625rem;
+    padding-right: .625rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

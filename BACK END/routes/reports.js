@@ -1,6 +1,7 @@
 ﻿const express = require('express');
 const Report = require('../models/Report');
 const User = require('../models/User');
+const notifyAssignedDriver = require('../utils/notifyAssignedDriver');
 const upload = require('../middleware/reportUpload');
 const { requireAuth, requireRole, optionalAuth } = require('../middleware/auth');
 
@@ -84,7 +85,7 @@ router.patch('/:id/assign', requireAuth, requireRole('admin'), async (req, res) 
     const driverId = req.body && req.body.driverId;
     const reason = typeof req.body.reason === 'string' ? req.body.reason.trim() : '';
     if (!driverId || !/^[0-9a-fA-F]{24}$/.test(driverId)) return res.status(400).json({ success: false, message: 'A valid driverId is required.' });
-    const driver = await User.findOne({ _id: driverId, role: 'driver' }).select('username displayName');
+    const driver = await User.findOne({ _id: driverId, role: 'driver' }).select('username displayName telegramChatId');
     if (!driver) return res.status(404).json({ success: false, message: 'Eligible Driver not found.' });
     const report = await Report.findOne({ ...reportFilter(req.params.id), archivedAt: null });
     if (!report) return res.status(404).json({ success: false, message: 'Report not found.' });
@@ -95,6 +96,13 @@ router.patch('/:id/assign', requireAuth, requireRole('admin'), async (req, res) 
     report.assignedAt = new Date();
     await report.save();
     await report.populate('assignedDriver', 'username displayName');
+    notifyAssignedDriver(driver, {
+      taskType: 'report',
+      taskId: report._id,
+      assignedAt: report.assignedAt,
+      location: report.location,
+      priority: report.priority,
+    });
     res.json({ success: true, message: 'Driver assigned.', data: report });
   } catch (err) { res.status(500).json({ success: false, message: 'Could not assign Driver.' }); }
 });
