@@ -167,11 +167,26 @@ test('API bin monitoring and collection assignment workflow', async t => {
       assert.equal(failedList.body.message, 'Could not load reports.');
     } finally { Report.find = originalFind; }
 
-    const created = await call('/bins', 'POST', { name: 'Workflow bin', zone: 'Test', lat: null, lng: null }, adminToken);
+    const created = await call('/bins', 'POST', { name: 'Workflow bin', zone: 'Test', lat: 8.54, lng: 39.27 }, adminToken);
     assert.equal(created.status, 201);
     const bin = created.body.data;
+    assert.equal(bin.type, 'bin');
+    assert.equal(bin.lat, 8.54);
+    assert.equal(bin.lng, 39.27);
     assert.equal(bin.fillCondition, 'unavailable');
-    assert.equal(bin.lat, null);
+    assert.equal(bin.sensorDeviceState, 'NOT_CONNECTED');
+    const initialSensorState = await deviceCall(`/bins/${bin.binCode}/sensor-state`);
+    assert.equal(initialSensorState.status, 200);
+    assert.ok(initialSensorState.body.data.cycleId);
+    const firstSensorReading = await deviceCall(`/bins/${bin.binCode}/sensor`, 'POST', {
+      binId: bin.binCode,
+      fillLevel: 10,
+      status: 'NORMAL',
+      cycleId: initialSensorState.body.data.cycleId,
+      sequence: 1,
+    });
+    assert.equal(firstSensorReading.status, 200);
+    assert.equal(firstSensorReading.body.data.sensorDeviceState, 'ONLINE');
     assert.equal((await call(`/bins/${bin._id}/simulated-reading`, 'POST', { fillLevel: 101 }, adminToken)).status, 400);
     assert.equal((await call(`/bins/${bin._id}/simulated-reading`, 'POST', { fillLevel: 69 }, driver1Token)).status, 403);
     assert.equal((await call(`/bins/${bin._id}/simulated-reading`, 'POST', { fillLevel: 69 })).status, 401);
@@ -183,11 +198,26 @@ test('API bin monitoring and collection assignment workflow', async t => {
       assert.equal(reading.body.data.readingSource, 'simulated');
       assert.match(reading.body.message, /SIMULATED/);
     }
-    assert.equal((await call('/stats')).body.data.bins.collectionNeeded, 1);
+    const statsWithSimulatedBin = (await call('/stats')).body.data;
+    assert.equal(statsWithSimulatedBin.bins.collectionNeeded, 1);
+    assert.equal(statsWithSimulatedBin.bins.monitored, 0);
+    assert.equal(statsWithSimulatedBin.bins.zones, 1);
+    assert.equal(statsWithSimulatedBin.collectionRequests.total, 1);
+    await Bin.create({
+      name: 'Online sensor bin',
+      zone: 'Sensor zone',
+      readingSource: 'sensor',
+      fillLevel: 25,
+      lastReadingAt: new Date(),
+    });
+    const statsWithOnlineSensor = (await call('/stats')).body.data;
+    assert.equal(statsWithOnlineSensor.bins.monitored, 1);
+    assert.equal(statsWithOnlineSensor.bins.zones, 2);
     assert.equal((await call('/collection-requests/from-bin', 'POST', { binId: bin._id, driverId: driver1._id }, driver1Token)).status, 403);
 
     const assignment = await call('/collection-requests/from-bin', 'POST', { binId: bin._id, driverId: driver1._id }, adminToken);
     assert.equal(assignment.status, 201);
+    assert.equal((await call('/stats')).body.data.collectionRequests.total, 2);
     const task = assignment.body.data;
     assert.equal(task.binCode, bin.binCode);
     assert.equal(task.fillLevelAtAssignment, 90);

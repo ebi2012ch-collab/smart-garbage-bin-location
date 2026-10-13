@@ -212,8 +212,8 @@
             <div class="form-grid">
               <div class="form-field-sm"><label>Bin Name *</label><input type="text" id="nb-name" placeholder="e.g. Central Park Bin" required></div>
               <div class="form-field-sm"><label>Zone *</label><input type="text" id="nb-zone" placeholder="e.g. Central" required></div>
-              <div class="form-field-sm"><label>Latitude (optional)</label><input type="number" id="nb-lat" placeholder="8.5400" step="any" min="-90" max="90"></div>
-              <div class="form-field-sm"><label>Longitude (optional)</label><input type="number" id="nb-lng" placeholder="39.2700" step="any" min="-180" max="180"></div>
+              <div class="form-field-sm"><label for="nb-lat">Latitude *</label><input type="number" id="nb-lat" placeholder="8.5400" step="any" min="-90" max="90" required></div>
+              <div class="form-field-sm"><label for="nb-lng">Longitude *</label><input type="number" id="nb-lng" placeholder="39.2700" step="any" min="-180" max="180" required></div>
               <div class="form-field-sm"><label>Type</label>
                 <select id="nb-type">
                   <option value="bin">Garbage Bin</option>
@@ -224,6 +224,9 @@
               <div class="form-field-sm"><label>Capacity (Litres)</label><input type="number" id="nb-cap" placeholder="300" min="50"></div>
               <div class="form-field-sm full"><label>Description</label><input type="text" id="nb-desc" placeholder="Short description of this bin location…"></div>
             </div>
+            <p style="margin-top:12px;color:var(--text-light);font-size:12px;line-height:1.6">
+              Coordinates place the bin on the GIS map. A garbage bin appears online after its sensor sends a reading; the software simulator discovers new bins automatically.
+            </p>
             <button type="submit" class="btn-primary" style="margin-top:18px"><i class="fas fa-plus"></i> Add Bin</button>
           </form>
         </div>
@@ -378,6 +381,7 @@ var API   = 'http://localhost:3000/api';
 var TOKEN = localStorage.getItem('sb_internal_token') || localStorage.getItem('sb_admin_token');
 var adminMap = null;
 var mapMarkers = [];
+var pendingMapFocusBinId = null;
 var drivers = [];
 var notifications = [];
 var prevBinStates = {};
@@ -498,7 +502,12 @@ document.querySelectorAll('.nav-item[data-view]').forEach(function (item) {
       document.getElementById('view-' + v).style.display = v === view ? 'block' : 'none';
     });
     if (view === 'dashboard') loadDashboard();
-    if (view === 'gismap')    { initMap(); loadBinsOnMap(); }
+    if (view === 'gismap')    {
+      initMap();
+      requestAnimationFrame(function () { adminMap.invalidateSize(); });
+      loadBinsOnMap(false, pendingMapFocusBinId);
+      pendingMapFocusBinId = null;
+    }
     if (view === 'bins')      loadDrivers().then(loadBins);
     if (view === 'reports')   loadReports();
     if (view === 'collectionRequests') loadDrivers().then(loadCollectionRequests);
@@ -630,7 +639,7 @@ function makeMapIcon(color) {
   });
 }
 
-function loadBinsOnMap(silent) {
+function loadBinsOnMap(silent, focusBinId) {
   if (!adminMap) initMap();
   apiFetch('/bins').then(function (d) {
     if (!d.success) return;
@@ -641,20 +650,24 @@ function loadBinsOnMap(silent) {
     mapMarkers = [];
 
     var attentionBins = [];
+    var focusMarker = null;
 
     d.data.forEach(function (b) {
-      if (!Number.isFinite(Number(b.lat)) || !Number.isFinite(Number(b.lng))) return;
+      if (b.lat == null || b.lng == null || b.lat === '' || b.lng === '' ||
+          !Number.isFinite(Number(b.lat)) || !Number.isFinite(Number(b.lng)) ||
+          Number(b.lat) < -90 || Number(b.lat) > 90 ||
+          Number(b.lng) < -180 || Number(b.lng) > 180) return;
       var color  = binColor(b);
       var marker = L.marker([b.lat, b.lng], { icon: makeMapIcon(color) });
 
       var popupHtml =
         '<div style="font-family:Inter;min-width:200px;padding:4px">' +
-        '<strong style="font-size:14px">' + b.name + '</strong>' +
-        '<p style="font-size:12px;color:#666;margin:5px 0">' + (b.description || '') + '</p>' +
+        '<strong style="font-size:14px">' + escapeHtml(b.name) + '</strong>' +
+        '<p style="font-size:12px;color:#666;margin:5px 0">' + escapeHtml(b.description || '') + '</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">' +
         '<span style="background:' + color + ';color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.fillCondition || 'unavailable') + '</span>' +
         '<span style="background:#f0f4ff;color:#333;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.operationalStatus || 'operational') + '</span>' +
-        '<span style="background:#f0f4ff;color:#0057b8;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + b.type + '</span>' +
+        '<span style="background:#f0f4ff;color:#0057b8;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.type) + '</span>' +
         '</div>' +
         '<p style="font-size:11px;color:#888">Sensor: <strong>' + escapeHtml(b.sensorStatus || 'UNAVAILABLE') + '</strong> · Device: <strong>' + escapeHtml(b.sensorDeviceState || 'NOT_CONNECTED') + '</strong></p>' +
         '<p style="font-size:11px;color:#888">Fill: <strong>' + (b.fillLevel == null ? 'Unavailable' : b.fillLevel + '% (' + escapeHtml(b.readingSource || 'unknown') + ')') + '</strong> | Updated: ' + escapeHtml(fmtDate(b.lastReadingAt)) + ' | Zone: ' + escapeHtml(b.zone) + '</p>' +
@@ -666,6 +679,7 @@ function loadBinsOnMap(silent) {
       marker.bindPopup(popupHtml);
       marker.addTo(adminMap);
       mapMarkers.push({ marker: marker, binData: b });
+      if (focusBinId && String(b._id || b.id) === String(focusBinId)) focusMarker = marker;
 
       // collect bins needing attention
       if (b.fillCondition === 'collection-needed' || b.fillCondition === 'stale' || b.operationalStatus !== 'operational') {
@@ -733,6 +747,10 @@ function loadBinsOnMap(silent) {
     }
 
     if (!silent) toast('Map updated — ' + d.data.length + ' bins loaded.', 'success');
+    if (focusMarker) {
+      adminMap.setView(focusMarker.getLatLng(), Math.max(adminMap.getZoom(), 16));
+      focusMarker.openPopup();
+    }
   }).catch(function () { toast('Could not load bins for map.', 'error'); });
 }
 
@@ -930,25 +948,34 @@ function deleteBin(id, name) {
 
 document.getElementById('addBinForm').addEventListener('submit', function (e) {
   e.preventDefault();
+  var latitude = document.getElementById('nb-lat').value.trim();
+  var longitude = document.getElementById('nb-lng').value.trim();
+  if (!latitude || !longitude || !Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude)) ||
+      Number(latitude) < -90 || Number(latitude) > 90 || Number(longitude) < -180 || Number(longitude) > 180) {
+    toast('Enter valid latitude and longitude so the bin can be placed on the map.', 'error');
+    return;
+  }
   var body = {
     name:        document.getElementById('nb-name').value.trim(),
     zone:        document.getElementById('nb-zone').value.trim(),
-    lat:         document.getElementById('nb-lat').value || null,
-    lng:         document.getElementById('nb-lng').value || null,
+    lat:         Number(latitude),
+    lng:         Number(longitude),
     type:        document.getElementById('nb-type').value,
     capacity:    document.getElementById('nb-cap').value || 300,
     description: document.getElementById('nb-desc').value.trim(),
   };
   apiFetch('/bins', { method:'POST', body: JSON.stringify(body) })
     .then(function (d) {
-      if (d.success) {
-        toast('Bin added!', 'success');
+      if (d.success && d.data) {
+        pendingMapFocusBinId = d.data._id || d.data.id;
+        toast('Bin added. Opening its GIS location; sensor status updates after the first reading.', 'success');
         document.getElementById('addBinForm').reset();
         document.querySelector('.tab[data-tab="bin-list"]').click();
         loadBins();
         loadDashboard();
-      } else toast(d.message, 'error');
-    }).catch(function () { toast('Could not add bin.', 'error'); });
+        document.querySelector('.nav-item[data-view="gismap"]').click();
+      } else toast(d.message || 'Could not add bin.', 'error');
+    }).catch(function (error) { toast(error.message || 'Could not add bin.', 'error'); });
 });
 
 /* ─── REPORTS TABLE ──────────────────────────── */

@@ -31,6 +31,7 @@ const FILL_STEP       = Number(process.env.SIM_FILL_STEP)       || 5;   // % per
 const SENSOR_INTERVAL = Number(process.env.SIM_SENSOR_INTERVAL) || 8000; // ms between readings
 const POLL_INTERVAL   = Number(process.env.SIM_POLL_INTERVAL)   || 6000; // ms between state polls when paused
 const STAGGER_MS      = Number(process.env.SIM_STAGGER_MS)      || 1500; // ms between bin startup
+const DISCOVERY_INTERVAL = Number(process.env.SIM_DISCOVERY_INTERVAL) || 15000;
 
 /* ── VALIDATION ─────────────────────────────────────────────── */
 if (!DEVICE_KEY) {
@@ -265,15 +266,48 @@ async function main() {
   console.log('[Simulator] Starting simulators with staggered startup…');
   console.log('');
 
-  const simulators = bins.map((bin, i) => {
+  const simulators = [];
+  const knownBinCodes = new Set();
+  function startSimulator(bin, index) {
+    const binCode = String(bin.binCode || bin._id);
+    if (knownBinCodes.has(binCode)) return;
+    knownBinCodes.add(binCode);
     const sim = new BinSimulator(bin);
-    sim.start(i * STAGGER_MS); // stagger starts so they don't all hit the API at once
+    sim.start(index * STAGGER_MS); // stagger starts so they don't all hit the API at once
     return sim;
+  }
+  bins.forEach((bin, index) => {
+    const sim = startSimulator(bin, index);
+    if (sim) simulators.push(sim);
   });
+
+  let discovering = false;
+  const discoveryTimer = setInterval(async () => {
+    if (discovering) return;
+    discovering = true;
+    try {
+      const currentBins = await fetchBins();
+      let newCount = 0;
+      currentBins.forEach(bin => {
+        const sim = startSimulator(bin, newCount);
+        if (!sim) return;
+        simulators.push(sim);
+        newCount++;
+      });
+      if (newCount) {
+        console.log(`[Simulator] Discovered ${newCount} new bin(s); starting their readings.`);
+      }
+    } catch (err) {
+      console.error(`[Simulator] Could not discover new bins: ${err.message}`);
+    } finally {
+      discovering = false;
+    }
+  }, DISCOVERY_INTERVAL);
 
   // Graceful shutdown
   function shutdown() {
     console.log('\n[Simulator] Shutting down…');
+    clearInterval(discoveryTimer);
     simulators.forEach(s => s.stop());
     process.exit(0);
   }

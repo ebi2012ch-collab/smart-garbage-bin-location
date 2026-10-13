@@ -2,7 +2,9 @@
 
 This is a simulation, not a deployed physical bin. This Wokwi project uses one ESP32 and one HC-SR04 ultrasonic sensor and sends readings for `BIN-001` to the existing SmartBin API. It does not connect the other bins.
 
-To simulate readings for every registered garbage bin, use the backend's multi-bin software simulator instead. With the backend running, open a second terminal in `BACK END` and run `npm run simulate`. Stop the Wokwi simulator first so both simulators do not send competing readings for `BIN-001`. The software simulator includes all records with `type: bin`; it does not simulate recycling or collection-point records.
+To simulate readings for every registered garbage bin, use the backend's multi-bin software simulator instead. With the backend running, open a second terminal in `BACK END` and run `npm run simulate`. It discovers newly added garbage bins while it runs. Stop the Wokwi simulator first so both simulators do not send competing readings for `BIN-001`. The software simulator includes all records with `type: bin`; it does not simulate recycling or collection-point records.
+
+New bins added from the Admin page appear on the GIS map when valid coordinates are supplied. A physical device must be configured with that bin's generated ID and the shared device key; adding a database record alone cannot make a physical sensor online.
 
 ## Configure the backend
 

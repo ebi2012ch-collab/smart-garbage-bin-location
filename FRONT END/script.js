@@ -114,6 +114,51 @@
   counters.forEach(function (c) { observer.observe(c); });
 })();
 
+/* ── 4A. LIVE HOMEPAGE STATISTICS ────────────────────────── */
+(function () {
+  var stats = document.getElementById('homeStats');
+  var status = document.getElementById('homeStatsStatus');
+  if (!stats || !status) return;
+
+  fetch('http://localhost:3000/api/stats', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) throw new Error('Statistics request failed with HTTP ' + response.status);
+      return response.json();
+    })
+    .then(function (payload) {
+      if (!payload || payload.success !== true || !payload.data) {
+        throw new Error('Statistics response did not include service data.');
+      }
+
+      var bins = payload.data.bins;
+      var reports = payload.data.reports;
+      var collectionRequests = payload.data.collectionRequests;
+      var values = {
+        monitored: bins && bins.monitored,
+        requests: reports && reports.total,
+        collectionRequests: collectionRequests && collectionRequests.total,
+        zones: bins && bins.zones,
+      };
+      Object.keys(values).forEach(function (key) {
+        if (!Number.isSafeInteger(values[key]) || values[key] < 0) {
+          throw new Error('Statistics response contains an invalid ' + key + ' count.');
+        }
+      });
+
+      stats.querySelector('[data-stat="monitored"]').textContent = values.monitored.toLocaleString();
+      stats.querySelector('[data-stat="requests"]').textContent =
+        (values.requests + values.collectionRequests).toLocaleString();
+      stats.querySelector('[data-stat="zones"]').textContent = values.zones.toLocaleString();
+      status.textContent = 'Live counts from the service database.';
+      stats.setAttribute('aria-busy', 'false');
+    })
+    .catch(function (error) {
+      console.error('Could not load homepage statistics:', error);
+      status.textContent = 'Live statistics are unavailable right now. Please try again later.';
+      stats.setAttribute('aria-busy', 'false');
+    });
+})();
+
 /* ── 5. HERO PARTICLES (index page only) ────────────────── */
 (function () {
   var container = document.getElementById('particles');

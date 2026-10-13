@@ -7,7 +7,7 @@ const express = require('express');
 const Bin     = require('../models/Bin');
 const Report  = require('../models/Report');
 const CollectionRequest = require('../models/CollectionRequest');
-const { COLLECTION_THRESHOLD, conditionFor } = require('../utils/binCondition');
+const { COLLECTION_THRESHOLD, conditionFor, sensorDeviceState } = require('../utils/binCondition');
 
 const router = express.Router();
 
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
         { $match: { type: 'bin' } },
         { $group: { _id: null, avg: { $avg: '$fillLevel' } } },
       ]),
-      Bin.find({ type: 'bin' }).select('fillLevel lastReadingAt lastCollectionAt operationalStatus'),
+      Bin.find({ type: 'bin' }).select('fillLevel lastReadingAt lastCollectionAt operationalStatus readingSource'),
     ]);
 
     const byType = { bin: 0, recycle: 0, collection: 0 };
@@ -80,7 +80,8 @@ router.get('/', async (req, res) => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    const [pendingRequests, unassignedRequests, collectionsInProgress, completedToday] = await Promise.all([
+    const [totalRequests, pendingRequests, unassignedRequests, collectionsInProgress, completedToday] = await Promise.all([
+      CollectionRequest.countDocuments(),
       CollectionRequest.countDocuments({ status: 'pending' }),
       CollectionRequest.countDocuments({ status: 'accepted', assignedDriver: null }),
       CollectionRequest.countDocuments({ status: 'in-progress' }),
@@ -90,6 +91,9 @@ router.get('/', async (req, res) => {
       }),
     ]);
 
+    const monitoredBins = binReadings.filter(bin =>
+      bin.operationalStatus === 'operational' && sensorDeviceState(bin) === 'ONLINE'
+    ).length;
     const collectionNeeded = binReadings.filter(bin => bin.operationalStatus === 'operational' && conditionFor(bin.fillLevel, bin.lastReadingAt, bin.lastCollectionAt) === 'collection-needed').length;
     const staleReadings = binReadings.filter(bin => conditionFor(bin.fillLevel, bin.lastReadingAt, bin.lastCollectionAt) === 'stale').length;
     res.json({
@@ -107,6 +111,7 @@ router.get('/', async (req, res) => {
           collectionThreshold: COLLECTION_THRESHOLD,
           avgFillLevel: fillAgg[0] ? Math.round(fillAgg[0].avg) : 0,
           zones:        zones.length,
+          monitored:    monitoredBins,
           byType,
         },
         reports: {
@@ -121,6 +126,7 @@ router.get('/', async (req, res) => {
           recent,
         },
         collectionRequests: {
+          total: totalRequests,
           pending: pendingRequests,
           unassigned: unassignedRequests,
           inProgress: collectionsInProgress,

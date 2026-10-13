@@ -28,6 +28,8 @@ The API will be running at **http://localhost:3000** unless `PORT` is set.
 
 Run the monitoring and assignment checks with `npm test`. The API integration test uses a separate `smartbin_workflow_test_*` database only when `MONGO_URI` points to local MongoDB; it skips rather than writing to a remote database.
 
+To simulate sensor readings for registered bins, run `node db/simulateAllBins.js` from `BACK END` while the API is running. The simulator discovers bins added while it remains running; it is development simulation, not a physical sensor connection.
+
 ---
 
 ## API Endpoints

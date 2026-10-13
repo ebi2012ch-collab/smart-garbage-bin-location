@@ -90,7 +90,18 @@ router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
     if (type && !VALID_TYPES.includes(type)) return res.status(400).json({ success: false, message: 'Invalid type.' });
     if (operationalStatus && !OPERATIONAL_STATUSES.includes(operationalStatus)) return res.status(400).json({ success: false, message: 'Invalid operational status.' });
     if (lat != null && (!Number.isFinite(Number(lat)) || Number(lat) < -90 || Number(lat) > 90 || !Number.isFinite(Number(lng)) || Number(lng) < -180 || Number(lng) > 180)) return res.status(400).json({ success: false, message: 'Coordinates are out of range.' });
-    const bin = await Bin.create({ name: name.trim(), type, lat: lat == null || lat === '' ? null : Number(lat), lng: lng == null || lng === '' ? null : Number(lng), description, zone, capacity, operationalStatus });
+    const binType = type || 'bin';
+    const bin = await Bin.create({
+      name: name.trim(),
+      type: binType,
+      lat: lat == null || lat === '' ? null : Number(lat),
+      lng: lng == null || lng === '' ? null : Number(lng),
+      description,
+      zone,
+      capacity,
+      operationalStatus,
+      ...(binType === 'bin' ? { sensorCycleId: crypto.randomUUID(), sensorSequence: 0 } : {}),
+    });
     res.status(201).json({ success: true, message: 'Bin created.', data: withCondition(bin) });
   } catch (err) { res.status(400).json({ success: false, message: err.message }); }
 });

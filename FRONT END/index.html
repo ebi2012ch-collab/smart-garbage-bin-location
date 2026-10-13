@@ -100,10 +100,108 @@
   <!-- ========== ANNOUNCEMENT ========== -->
   <div class="announcement-bar">
     <p>
-      New Feature: Report waste anonymously – your identity is protected.
-      <a href="report.html">Report Now</a>
+      Reports ask for your contact details and location so the team can respond.
+      <a href="privacy.html">Read our privacy policy</a>
     </p>
   </div>
+
+  <!-- ========== LIVE SERVICE STATISTICS ========== -->
+  <section class="home-stats-section" aria-labelledby="homeStatsTitle">
+    <div class="home-section-inner">
+      <div class="home-section-heading" data-aos="fade-up">
+        <span class="home-section-kicker">Adama City service at a glance</span>
+        <h2 id="homeStatsTitle">A clearer view of city services</h2>
+      </div>
+      <div class="home-stats-grid" aria-live="polite" aria-busy="true" id="homeStats">
+        <article class="home-stat-card">
+          <span class="home-stat-icon"><i class="fas fa-satellite-dish" aria-hidden="true"></i></span>
+          <strong class="home-stat-value" data-stat="monitored">—</strong>
+          <span class="home-stat-label">Bins monitored</span>
+          <span class="home-stat-note">Sensor-connected and currently online</span>
+        </article>
+        <article class="home-stat-card">
+          <span class="home-stat-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span>
+          <strong class="home-stat-value" data-stat="requests">—</strong>
+          <span class="home-stat-label">Requests received</span>
+          <span class="home-stat-note">Reports not archived and all collection requests</span>
+        </article>
+        <article class="home-stat-card">
+          <span class="home-stat-icon"><i class="fas fa-map-marked-alt" aria-hidden="true"></i></span>
+          <strong class="home-stat-value" data-stat="zones">—</strong>
+          <span class="home-stat-label">Zones covered</span>
+          <span class="home-stat-note">Zones represented in the bin records</span>
+        </article>
+      </div>
+      <p class="home-stats-status" id="homeStatsStatus" role="status">Loading live service statistics…</p>
+    </div>
+  </section>
+
+  <!-- ========== HOW IT WORKS ========== -->
+  <section class="home-process-section" aria-labelledby="homeProcessTitle">
+    <div class="home-section-inner">
+      <div class="home-section-heading" data-aos="fade-up">
+        <span class="home-section-kicker">Simple, coordinated service</span>
+        <h2 id="homeProcessTitle">How It Works</h2>
+        <p>From your report to a collection update, each step has a clear role.</p>
+      </div>
+      <div class="home-process-grid">
+        <article class="home-process-card" data-aos="fade-up">
+          <span class="home-process-number">01</span>
+          <span class="home-process-icon"><i class="fas fa-file-circle-exclamation" aria-hidden="true"></i></span>
+          <h3>Report</h3>
+          <p>Share the issue, its location, and optional photo evidence through the report form.</p>
+          <a href="report.html">Submit a report <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+        <article class="home-process-card" data-aos="fade-up" data-aos-delay="100">
+          <span class="home-process-number">02</span>
+          <span class="home-process-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
+          <h3>Admin Assigns</h3>
+          <p>The sanitation team reviews the report and assigns it to a driver for follow-up.</p>
+        </article>
+        <article class="home-process-card" data-aos="fade-up" data-aos-delay="200">
+          <span class="home-process-number">03</span>
+          <span class="home-process-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+          <h3>Driver Collects</h3>
+          <p>The driver works on the assigned task and updates its status for the team.</p>
+          <a href="collection.html">Request collection <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SERVICE FEATURES ========== -->
+  <section class="home-features-section" aria-labelledby="homeFeaturesTitle">
+    <div class="home-section-inner">
+      <div class="home-section-heading" data-aos="fade-up">
+        <span class="home-section-kicker">Tools for cleaner neighborhoods</span>
+        <h2 id="homeFeaturesTitle">Designed to connect people and city teams</h2>
+      </div>
+      <div class="home-features-grid">
+        <article class="home-feature-card" data-aos="fade-up">
+          <span class="home-feature-icon"><i class="fas fa-satellite-dish" aria-hidden="true"></i></span>
+          <h3>IoT Bin Monitoring</h3>
+          <p>Sensor readings can report fill levels for connected bins; readings may be unavailable when a device is offline or stale.</p>
+        </article>
+        <article class="home-feature-card" data-aos="fade-up" data-aos-delay="75">
+          <span class="home-feature-icon"><i class="fas fa-map-location-dot" aria-hidden="true"></i></span>
+          <h3>GIS Location Support</h3>
+          <p>Location coordinates help the sanitation team and drivers find reported issues and assigned collection tasks.</p>
+        </article>
+        <article class="home-feature-card" data-aos="fade-up" data-aos-delay="150">
+          <span class="home-feature-icon"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></span>
+          <h3>Waste Reporting</h3>
+          <p>Report overflowing, damaged, missing, or other problem bins and share details with the sanitation team.</p>
+          <a href="report.html">Report an issue <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+        <article class="home-feature-card" data-aos="fade-up" data-aos-delay="225">
+          <span class="home-feature-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span>
+          <h3>Collection Tracking</h3>
+          <p>Admins assign work and drivers update task status, helping the team follow each request through its workflow.</p>
+          <a href="collection.html">Request collection <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+    </div>
+  </section>
 
   <!-- ========== HOW CAN WE HELP ========== -->
   <section class="help-section" id="services">
@@ -220,22 +318,67 @@
     </div>
   </section>
 
+  <!-- ========== TRUST & FAQ ========== -->
+  <section class="home-trust-section" aria-labelledby="homeTrustTitle">
+    <div class="home-section-inner home-trust-grid">
+      <div class="home-trust-card" data-aos="fade-right">
+        <span class="home-section-kicker">Your information matters</span>
+        <h2 id="homeTrustTitle">Know what happens when you report</h2>
+        <p>Reports are not anonymous: the form requests your name, phone number, location, and issue details. Photos are optional. The privacy policy explains how submitted information is used.</p>
+        <a class="home-policy-link" href="privacy.html">Read the Privacy Policy <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      <div class="home-faq" aria-labelledby="homeFaqTitle">
+        <span class="home-section-kicker">Quick answers</span>
+        <h2 id="homeFaqTitle">Frequently asked questions</h2>
+        <details>
+          <summary>Do I need an account to submit a request?</summary>
+          <p>No account is required to submit a waste report or collection request.</p>
+        </details>
+        <details>
+          <summary>Can I submit a report anonymously?</summary>
+          <p>No. The report form requires your name, phone number, and location. A photo is optional.</p>
+        </details>
+        <details>
+          <summary>What happens after I submit a report?</summary>
+          <p>The sanitation team reviews the report. An administrator can assign it to a driver, who updates the task as work progresses.</p>
+        </details>
+        <details>
+          <summary>Are bin sensor readings always live?</summary>
+          <p>No. Only connected sensors can provide readings, and a reading may be marked stale or unavailable if the device is offline.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <!-- ========== FOOTER ========== -->
-  <footer>
-    <div class="footer-inner">
-      <a href="index.html" class="footer-brand">
-        <span class="brand-city">Adama City</span>
-        <span class="brand-name">Smart Bin</span>
-      </a>
-
-      <ul class="footer-links">
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="privacy.html">Terms of Service</a></li>
-        <li><a href="about.html">FAQ</a></li>
-        <li><a href="contact.html">Contact Us</a></li>
-      </ul>
-
-      <p class="footer-copy">&copy; 2024 Adama City Administration. All Rights Reserved.</p>
+  <footer id="homeFooter">
+    <div class="home-footer-inner">
+      <div class="home-footer-brand">
+        <a href="index.html" class="brand">
+          <span class="brand-city">Adama City</span>
+          <span class="brand-name">Smart Bin</span>
+        </a>
+        <p>Waste reports and collection requests for Adama City.</p>
+      </div>
+      <nav class="home-footer-links" aria-label="Footer quick links">
+        <h2>Quick Links</h2>
+        <a href="index.html">Home</a>
+        <a href="collection.html">Request Collection</a>
+        <a href="report.html">Report an Issue</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </nav>
+      <div class="home-footer-contact">
+        <h2>Contact</h2>
+        <p><i class="fas fa-location-dot" aria-hidden="true"></i> Adama City Hall, Adama (Nazret), Oromia Region, Ethiopia</p>
+        <p><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+251221100000">+251 22 110 0000</a></p>
+        <p><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:smartbinadamacity@gmail.com">smartbinadamacity@gmail.com</a></p>
+      </div>
+    </div>
+    <div class="home-footer-bottom">
+      <p>&copy; 2026 Adama City Administration. All Rights Reserved.</p>
+      <a href="privacy.html">Privacy Policy</a>
     </div>
   </footer>
 
