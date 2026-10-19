@@ -9,210 +9,361 @@
   <link rel="stylesheet" href="design-system.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    *{box-sizing:border-box}
-    
-    /* UPDATED: Matched the dark navy background from the Home Page hero */
-    body{
-      margin:0;
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:20px;
-      background:linear-gradient(135deg, #0A043C 0%, #2a1f6e 100%);
-      font-family:'Poppins',Arial,sans-serif;
-      color:#0A043C;
-    }
-    
-    .card{
-      width:min(100%,420px);
-      padding:34px;
-      background:#fff;
-      border-radius:24px; /* Matched the softer rounded corners */
-      box-shadow:0 24px 60px rgba(0,0,0,.3); /* Matched deeper shadow */
-    }
-    
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:24px;
-    }
-    
-    /* UPDATED: Matched the purple brand gradient from the Home Page */
-    .icon{
-      width:46px;
-      height:46px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      color:white;
-      background:linear-gradient(135deg, #5E5CE6, #7c3aed); 
-      font-size:22px;
-    }
-    
-    h1{
-      font-size:22px;
-      margin:0;
-      color:#0A043C; /* Brand dark color */
-    }
-    
-    .sub{
-      font-size:13px;
-      color:#6b6b80;
-      margin-top:3px;
-    }
-    
-    .intro{
-      font-size:14px;
-      color:#6b6b80;
-      margin:0 0 22px;
-    }
-    
-    label{
-      display:block;
-      font-size:13px;
-      font-weight:600;
-      margin:14px 0 6px;
-      color:#0A043C;
-    }
-    
-    input,select{
-      width:100%;
-      height:44px;
-      border:1.5px solid #e5e4f0; /* Matched border color */
-      border-radius:11px;
-      padding:0 12px;
-      font:inherit;
-      font-size:14px;
-      background:white;
-      transition: .2s;
-      outline: none;
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      margin: 0;
+      padding: 32px;
+      color: #172033;
+      background:
+        radial-gradient(ellipse at 8% 90%, rgba(100, 80, 220, .24), transparent 35%),
+        linear-gradient(135deg, #10094b, #24166e 58%, #120947);
+      font-family: 'Poppins', Arial, sans-serif;
     }
 
-    .role-options{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    .login-layout {
+      display: grid;
+      grid-template-columns: minmax(360px, .82fr) minmax(0, 1.18fr);
+      width: min(100%, 1080px);
+      min-height: 620px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .28);
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 28px 80px rgba(4, 2, 31, .4);
     }
 
-    .role-option{
-      min-height:44px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-      padding:8px 10px;
-      border:1.5px solid #e5e4f0;
-      border-radius:11px;
-      color:#6b6b80;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-      transition:.2s;
-    }
-
-    .role-option:has(input:checked){
-      border-color:#5E5CE6;
-      background:#f5f4ff;
-      color:#0A043C;
-      box-shadow:0 0 0 3px rgba(94,92,230,.1);
-    }
-
-    .role-option input{
-      position:absolute;
-      width:1px;
-      height:1px;
-      opacity:0;
-    }
-
-    .role-option:focus-within{
-      outline:2px solid #5E5CE6;
-      outline-offset:2px;
-    }
-    
-    /* UPDATED: Focus state matches brand purple */
-    input:focus, select:focus {
-      border-color: #5E5CE6;
-      box-shadow: 0 0 0 3px rgba(94,92,230,.1);
-    }
-    
-    /* UPDATED: Button matches the Home Page CTA pill shape and color */
-    button{
-      width:100%;
-      height:46px;
-      margin-top:22px;
-      border:0;
-      border-radius:50px; /* Pill shape */
-      background:#5E5CE6; /* Brand purple */
-      color:white;
-      font:600 14px Poppins,Arial,sans-serif;
-      cursor:pointer;
+    .login-panel {
       display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(32px, 5vw, 64px);
+      background: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 44px;
+    }
+
+    .icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, #5144d6, #7764ec);
+      font-size: 19px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #161044;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .sub {
+      margin-top: 3px;
+      color: #74758a;
+      font-size: 12px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #5b4cda;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .welcome-title {
+      margin: 0;
+      color: #17133b;
+      font-size: clamp(25px, 3vw, 31px);
+      letter-spacing: -.04em;
+      line-height: 1.2;
+    }
+
+    .intro {
+      margin: 9px 0 25px;
+      color: #737488;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .field-label {
+      display: block;
+      margin: 17px 0 7px;
+      color: #25233f;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .role-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .role-option {
+      display: flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin: 0;
+      padding: 8px;
+      border: 1px solid #e3e3ec;
+      border-radius: 4px;
+      color: #66677a;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: border-color .2s, background .2s, color .2s;
+    }
+
+    .role-option:has(input:checked) {
+      border-color: #5549d7;
+      background: #f5f4ff;
+      color: #211a68;
+    }
+
+    .role-option input {
+      width: 14px;
+      height: 14px;
+      min-height: 0;
+      margin: 0;
+      accent-color: #5549d7;
+    }
+
+    #username,
+    #password {
+      width: 100%;
+      height: 43px;
+      padding: 0 12px;
+      border: 1px solid #dcdde5;
+      border-radius: 4px;
+      outline: none;
+      background: #fff;
+      color: #25233f;
+      font: 400 13px 'Poppins', Arial, sans-serif;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    #username:focus,
+    #password:focus {
+      border-color: #5549d7;
+      box-shadow: 0 0 0 3px rgba(85, 73, 215, .12);
+    }
+
+    #submitButton {
+      display: flex;
+      width: 100%;
+      min-height: 44px;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 15px rgba(94,92,230,.3);
-      transition: .2s;
+      margin-top: 21px;
+      border: 0;
+      border-radius: 4px;
+      color: #fff;
+      background: #29166f;
+      box-shadow: 0 6px 15px rgba(41, 22, 111, .16);
+      cursor: pointer;
+      font: 600 13px 'Poppins', Arial, sans-serif;
+      transition: background .2s, transform .2s, box-shadow .2s;
     }
-    
-    button:hover {
-      background: #0A043C; /* Darker navy on hover */
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(94,92,230,.4);
+
+    #submitButton:hover {
+      transform: translateY(-1px);
+      background: #4939bd;
+      box-shadow: 0 9px 20px rgba(41, 22, 111, .22);
     }
-    
-    button:disabled{
-      opacity:.65;
-      cursor:wait;
+
+    #submitButton:disabled {
+      opacity: .65;
+      cursor: wait;
       transform: none;
       box-shadow: none;
     }
-    
-    .error{
-      min-height:20px;
-      margin-top:12px;
-      color:#e74c3c;
-      font-size:13px;
+
+    .error {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #b42318;
+      font-size: 12px;
       text-align: center;
-      font-weight: 500;
     }
-    
-    .public{
-      display:block;
-      text-align:center;
-      margin-top:20px;
-      color:#5E5CE6; /* Matched brand purple */
-      font-size:13px;
-      text-decoration:none;
+
+    .public {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      align-self: center;
+      margin-top: 18px;
+      color: #5549d7;
+      font-size: 12px;
       font-weight: 500;
-      transition: .2s;
+      text-decoration: none;
+      transition: color .2s;
     }
-    
+
     .public:hover {
-      color: #0A043C;
+      color: #211a68;
       text-decoration: underline;
+    }
+
+    .visual-panel {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: clamp(30px, 5vw, 58px);
+      color: #fff;
+      background: #1a1250;
+    }
+
+    .visual-image,
+    .visual-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .visual-image {
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .visual-overlay {
+      background:
+        linear-gradient(180deg, rgba(19, 10, 72, .76), rgba(24, 12, 83, .48) 48%, rgba(14, 8, 54, .82)),
+        linear-gradient(90deg, rgba(22, 10, 80, .42), transparent 75%);
+    }
+
+    .visual-copy,
+    .visual-caption {
+      position: relative;
+      z-index: 1;
+    }
+
+    .visual-copy {
+      max-width: 400px;
+      margin-top: 12px;
+    }
+
+    .visual-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      color: rgba(255, 255, 255, .84);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .visual-kicker i { color: #c3bbff; }
+
+    .visual-copy h2 {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 500;
+      letter-spacing: -.045em;
+      line-height: 1.15;
+    }
+
+    .visual-copy p {
+      max-width: 340px;
+      margin: 17px 0 0;
+      color: rgba(255, 255, 255, .8);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .visual-caption {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: rgba(255, 255, 255, .8);
+      font-size: 11px;
+    }
+
+    .visual-caption i { color: #c3bbff; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px; }
+      .login-layout {
+        grid-template-columns: 1fr;
+        width: min(100%, 520px);
+        min-height: 0;
+      }
+      .login-panel { padding: 34px clamp(24px, 8vw, 44px); }
+      .brand { margin-bottom: 32px; }
+      .visual-panel { min-height: 270px; padding: 26px; }
+      .visual-copy { margin-top: 0; }
+      .visual-copy h2 { max-width: 380px; font-size: clamp(27px, 8vw, 38px); }
+      .visual-copy p { max-width: 430px; margin-top: 10px; font-size: 12px; }
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 12px; }
+      .role-options { grid-template-columns: 1fr; }
+      .role-option { justify-content: flex-start; padding-left: 12px; }
     }
   </style>
   <link rel="stylesheet" href="readability.css">
 </head>
 <body class="municipal-login">
-  <main class="card">
-    <div class="brand"><div class="icon"><i class="fas fa-recycle"></i></div><div><h1>SmartBin Staff</h1><div class="sub">Adama City GIS Dashboard</div></div></div>
-    <p class="intro">Sign in to your Admin or Driver workspace.</p>
-    <form id="loginForm">
-      <label>Sign in as</label>
-      <div class="role-options" role="radiogroup" aria-label="Choose staff role">
-        <label class="role-option"><input type="radio" name="role" value="admin" checked> Login as Admin</label>
-        <label class="role-option"><input type="radio" name="role" value="driver"> Login as Driver</label>
+  <main class="login-layout">
+    <section class="login-panel" aria-labelledby="welcomeTitle">
+      <div class="brand">
+        <div class="icon"><i class="fas fa-recycle" aria-hidden="true"></i></div>
+        <div><h1>SmartBin Staff</h1><div class="sub">Adama City GIS Dashboard</div></div>
       </div>
-      <label for="username">Username</label>
-      <input id="username" name="username" required autocomplete="username">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required autocomplete="current-password">
-      <button id="submitButton" type="submit"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-      <div id="loginError" class="error" role="alert"></div>
-    </form>
-    <a class="public" href="index.html">Return to public website</a>
+      <p class="eyebrow">Staff portal</p>
+      <h2 class="welcome-title" id="welcomeTitle">Welcome back</h2>
+      <p class="intro">Sign in to continue to your Admin or Driver workspace.</p>
+      <form id="loginForm">
+        <label class="field-label">Sign in as</label>
+        <div class="role-options" role="radiogroup" aria-label="Choose staff role">
+          <label class="role-option"><input type="radio" name="role" value="admin" checked> Admin</label>
+          <label class="role-option"><input type="radio" name="role" value="driver"> Driver</label>
+        </div>
+        <label class="field-label" for="username">Username</label>
+        <input id="username" name="username" required autocomplete="username">
+        <label class="field-label" for="password">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password">
+        <button id="submitButton" type="submit"><i class="fas fa-sign-in-alt" aria-hidden="true"></i> Sign In</button>
+        <div id="loginError" class="error" role="alert"></div>
+      </form>
+      <a class="public" href="index.html"><i class="fas fa-arrow-left" aria-hidden="true"></i> Return to public website</a>
+    </section>
+    <aside class="visual-panel" aria-label="Adama City sanitation team">
+      <img class="visual-image" src="images/loginpageimage.jpg" alt="Sanitation workers collecting waste in Adama City">
+      <div class="visual-overlay" aria-hidden="true"></div>
+      <div class="visual-copy">
+        <span class="visual-kicker"><i class="fas fa-leaf" aria-hidden="true"></i> Adama City sanitation</span>
+        <h2>Working together for a cleaner Adama.</h2>
+        <p>Keep our city moving forward with smarter collection and reliable service for every community.</p>
+      </div>
+      <div class="visual-caption"><i class="fas fa-location-dot" aria-hidden="true"></i> Adama City, Ethiopia</div>
+    </aside>
   </main>
   <script>
     (function () {
