@@ -525,6 +525,25 @@
       font-size: 13px; font-weight: 700; color: #15803d;
     }
     .profile-status-row i { font-size: 15px; }
+    .telegram-link-card { padding: 17px; border: 1px solid #dce5f2; border-radius: 12px; background: #f8faff; }
+    .telegram-link-heading { display: flex; align-items: flex-start; gap: 11px; }
+    .telegram-link-heading > i { margin-top: 3px; color: #229ed9; font-size: 22px; }
+    .telegram-link-heading h3 { margin: 0; color: var(--primary-dk); font-size: 14px; }
+    .telegram-link-heading p { margin: 3px 0 0; color: var(--text-light); font-size: 12px; line-height: 1.5; }
+    .telegram-link-status { margin: 12px 0; padding: 9px 11px; border-radius: 8px; background: #eef2f7; color: #536174; font-size: 12px; font-weight: 700; }
+    .telegram-link-status.is-linked { background: #e6faf0; color: #167342; }
+    .telegram-link-status.is-unlinked { background: #fff6df; color: #8b6410; }
+    .telegram-link-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .telegram-link-actions .action { flex: 0 1 auto; cursor: pointer; }
+    .telegram-code-panel { margin-top: 14px; padding-top: 13px; border-top: 1px solid #dce5f2; }
+    .telegram-code-panel[hidden] { display: none; }
+    .telegram-code-panel > label { display: block; margin-bottom: 5px; color: var(--text-light); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .telegram-code-row { display: flex; gap: 8px; }
+    .telegram-code-row input { min-width: 0; flex: 1; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--primary-dk); font: 700 13px ui-monospace, monospace; }
+    .telegram-code-panel > p { margin: 9px 0; color: var(--text-light); font-size: 11px; line-height: 1.55; }
+    .telegram-code-panel code { color: var(--primary-dk); font-weight: 700; }
+    .telegram-bot-link { display: inline-flex; align-items: center; gap: 7px; color: #1689bf; font-size: 12px; font-weight: 700; text-decoration: none; }
+    .telegram-bot-link:hover { text-decoration: underline; }
 
     /* ── TOAST ────────────────────────────────────────────────── */
     .notice {
@@ -843,6 +862,20 @@
                 <label>Session status</label>
                 <div class="profile-field-value" style="color:#16a34a;font-weight:700">✓ Active — you are logged in</div>
               </div>
+              <section class="telegram-link-card" aria-labelledby="telegramLinkTitle">
+                <div class="telegram-link-heading"><i class="fab fa-telegram"></i><div><h3 id="telegramLinkTitle">Telegram task notifications</h3><p>Link your own Telegram chat to receive tasks assigned to your driver account.</p></div></div>
+                <p class="telegram-link-status" id="telegramLinkStatus" role="status" aria-live="polite">Checking Telegram connection…</p>
+                <div class="telegram-link-actions">
+                  <button class="action start" id="generateTelegramCode" type="button"><i class="fas fa-link"></i> Generate link code</button>
+                  <button class="action map" id="refreshTelegramStatus" type="button"><i class="fas fa-rotate"></i> Check status</button>
+                </div>
+                <div class="telegram-code-panel" id="telegramCodePanel" hidden>
+                  <label for="telegramLinkCode">One-time link code</label>
+                  <div class="telegram-code-row"><input id="telegramLinkCode" type="text" readonly aria-describedby="telegramCodeHelp"><button class="action map" id="copyTelegramCode" type="button"><i class="far fa-copy"></i> Copy</button></div>
+                  <p id="telegramCodeHelp">In Telegram, open the bot in a private chat, press Start, then send <code id="telegramCommandPreview">/link YOUR_CODE</code>. This code expires in 10 minutes; do not share it.</p>
+                  <a class="telegram-bot-link" id="openTelegramBot" href="#" target="_blank" rel="noopener noreferrer" hidden><i class="fab fa-telegram"></i> Open SmartBin bot in Telegram</a>
+                </div>
+              </section>
             </div>
           </div>
 
@@ -947,6 +980,40 @@
         notice.classList.toggle('error', Boolean(isError));
         notice.style.display = 'block';
         noticeTimer = window.setTimeout(function () { notice.style.display = 'none'; }, 3200);
+      }
+      function refreshTelegramLinkStatus() {
+        var status = document.getElementById('telegramLinkStatus');
+        status.classList.remove('is-linked', 'is-unlinked');
+        status.textContent = 'Checking Telegram connection…';
+        return api('/driver/tasks/telegram/status').then(function (result) {
+          var linked = Boolean(result.data && result.data.linked);
+          status.textContent = linked
+            ? 'Telegram is linked. Tasks assigned to your account will be sent to that private chat.'
+            : 'Telegram is not linked yet. Generate a code below to connect your private chat.';
+          status.classList.add(linked ? 'is-linked' : 'is-unlinked');
+          return linked;
+        }).catch(function (error) {
+          status.textContent = error.message || 'Could not check Telegram link status.';
+          return false;
+        });
+      }
+      function generateTelegramLinkCode() {
+        var button = document.getElementById('generateTelegramCode');
+        var panel = document.getElementById('telegramCodePanel');
+        button.disabled = true;
+        panel.hidden = true;
+        api('/driver/tasks/telegram/link', { method: 'POST', body: '{}' }).then(function (result) {
+          var data = result.data || {};
+          document.getElementById('telegramLinkCode').value = data.code || '';
+          document.getElementById('telegramCommandPreview').textContent = '/link ' + (data.code || 'YOUR_CODE');
+          var botLink = document.getElementById('openTelegramBot');
+          if (data.botUrl) { botLink.href = data.botUrl; botLink.hidden = false; }
+          else { botLink.hidden = true; }
+          panel.hidden = false;
+          notify('Link code generated. It expires in 10 minutes.');
+        }).catch(function (error) {
+          notify(error.message || 'Could not generate a Telegram link code.', true);
+        }).finally(function () { button.disabled = false; });
       }
       function statePanel(title, message, isError) {
         return '<div class="state-panel' + (isError ? ' error' : '') + '"><div><div class="state-icon"><i class="fas ' +
@@ -1196,6 +1263,16 @@
         if (e.data && e.data.type === 'smartbin-task-updated') loadTasks();
       });
       document.getElementById('refresh').addEventListener('click', loadTasks);
+      document.getElementById('generateTelegramCode').addEventListener('click', generateTelegramLinkCode);
+      document.getElementById('refreshTelegramStatus').addEventListener('click', function () {
+        refreshTelegramLinkStatus().then(function (linked) { notify(linked ? 'Telegram account is linked.' : 'Telegram account is not linked yet.', !linked); });
+      });
+      document.getElementById('copyTelegramCode').addEventListener('click', function () {
+        var code = document.getElementById('telegramLinkCode').value;
+        if (!code) return;
+        if (!navigator.clipboard) { window.prompt('Copy this one-time Telegram link code:', code); return; }
+        navigator.clipboard.writeText(code).then(function () { notify('Link code copied.'); }).catch(function () { window.prompt('Copy this one-time Telegram link code:', code); });
+      });
       document.getElementById('taskSearch').addEventListener('input',  function () { render(allTasks); });
       document.getElementById('statusFilter').addEventListener('change', function () { render(allTasks); });
 
@@ -1214,6 +1291,7 @@
         document.getElementById('profileInitial').textContent     = name.charAt(0).toUpperCase();
         document.getElementById('profileDisplayName').textContent = name;
         document.getElementById('profileUsername').textContent    = result.user.username || '—';
+        refreshTelegramLinkStatus();
         return loadTasks();
       }).catch(function (err) {
         tasks.setAttribute('aria-busy', 'false');

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const CollectionRequest = require('../models/CollectionRequest');
 const Bin = require('../models/Bin');
 const Report = require('../models/Report');
+const User = require('../models/User');
 const telegramBot = require('../utils/telegramBot');
 const reportUpload = require('../middleware/reportUpload');
 const { requireAuth, requireRole } = require('../middleware/auth');
@@ -14,6 +15,16 @@ function requestFilter(id) {
 }
 
 router.use(requireAuth, requireRole('driver'));
+
+router.get('/telegram/status', async (req, res) => {
+  try {
+    const driver = await User.findOne({ _id: req.user.id, role: 'driver' }).select('telegramChatId');
+    if (!driver) return res.status(404).json({ success: false, message: 'Driver account not found.' });
+    res.json({ success: true, data: { linked: Boolean(driver.telegramChatId) } });
+  } catch (_) {
+    res.status(500).json({ success: false, message: 'Could not check Telegram link status.' });
+  }
+});
 
 router.post('/telegram/link', async (req, res) => {
   try {

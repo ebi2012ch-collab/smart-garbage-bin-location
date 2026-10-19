@@ -144,6 +144,15 @@ These tests use a mocked API and do not contact Telegram. `npm test` runs them w
 
 Report status stays `pending`, `in-progress`, `resolved`, or `dismissed`. Driver work submission records `workSubmittedAt` and is displayed as **Awaiting verification** while retaining the compatible `in-progress` status. Assignment history is stored on the report. The Admin can resolve only after work submission and must enter a verification note; Drivers can only start and submit work for reports currently assigned to their account. Citizen reports remain separate from collection requests because a report may require investigation, cleanup, or maintenance rather than waste pickup.
 
+### Citizen collection requests
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/collection-requests` | Submit a collection request with contact, pickup location, coordinates, and waste details | Public |
+| POST | `/api/collection-requests/lookup` | Verify a ticket reference and phone number, then return up to 20 recent requests for that phone | Public; limited to 10 attempts per IP per 15 minutes |
+| GET | `/api/collection-requests` | List and filter requests by status | JWT (admin) |
+
+Citizen lookup returns request status and pickup details only. New ticket references use 64 random bits; the rate limit is held in server memory and resets on restart.
+
 ### Stats
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|

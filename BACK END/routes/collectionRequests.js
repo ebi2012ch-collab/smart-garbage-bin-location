@@ -8,6 +8,68 @@ const notifyAssignedDriver = require('../utils/notifyAssignedDriver');
 
 const router = express.Router();
 const REQUEST_STATUSES = ['pending', 'accepted', 'rejected', 'assigned', 'in-progress', 'completed'];
+const lookupAttempts = new Map();
+
+function normalizePhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('2510')) return '251' + digits.slice(4);
+  if (digits.startsWith('251')) return digits;
+  if (digits.startsWith('0')) return '251' + digits.slice(1);
+  if (digits.length === 9) return '251' + digits;
+  return digits;
+}
+
+function publicRequest(request) {
+  return {
+    refId: request.refId,
+    status: request.status,
+    location: request.location,
+    description: request.description,
+    createdAt: request.createdAt,
+    assignedAt: request.assignedAt,
+    completedAt: request.completedAt,
+  };
+}
+
+// A ticket reference plus its submitting phone number lets residents retrieve
+// their requests without exposing the admin-only request listing endpoint.
+router.post('/lookup', async (req, res) => {
+  const now = Date.now();
+  const key = req.ip || req.socket.remoteAddress || 'unknown';
+  const attempt = lookupAttempts.get(key) || { count: 0, resetAt: now + 15 * 60 * 1000 };
+  if (now > attempt.resetAt) { attempt.count = 0; attempt.resetAt = now + 15 * 60 * 1000; }
+  if (attempt.count >= 10) return res.status(429).json({ success: false, message: 'Too many lookup attempts. Please try again in 15 minutes.' });
+  attempt.count += 1;
+  lookupAttempts.set(key, attempt);
+  if (lookupAttempts.size > 5000) {
+    for (const [ip, entry] of lookupAttempts) if (now > entry.resetAt) lookupAttempts.delete(ip);
+  }
+
+  try {
+    const refId = typeof req.body?.refId === 'string' ? req.body.refId.trim().toUpperCase() : '';
+    const phone = normalizePhone(req.body?.phone);
+    if (!/^CRQ-\d{4}-[A-F0-9]{8,16}$/.test(refId) || phone.length < 9 || phone.length > 15) {
+      return res.status(400).json({ success: false, message: 'Enter the ticket reference and phone number used for the request.' });
+    }
+    const request = await CollectionRequest.findOne({ refId }).select('+phoneNormalized');
+    if (!request || normalizePhone(request.phoneNormalized || request.phone) !== phone || request.source === 'bin') {
+      return res.status(404).json({ success: false, message: 'We could not find a request matching those details.' });
+    }
+
+    const requests = await CollectionRequest.find({ phoneNormalized: phone }).sort({ createdAt: -1 }).limit(20);
+    const legacyRequests = await CollectionRequest.find({ source: 'citizen', phoneNormalized: null })
+      .sort({ createdAt: -1 }).limit(500).select('refId status location description createdAt assignedAt completedAt phone');
+    const matchingRequests = requests.concat(legacyRequests.filter(item => normalizePhone(item.phone) === phone));
+    if (!matchingRequests.some(item => item.refId === request.refId)) matchingRequests.push(request);
+    const uniqueRequests = Array.from(new Map(matchingRequests.map(item => [item.refId, item])).values())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20);
+    const history = uniqueRequests.map(publicRequest);
+    res.json({ success: true, count: history.length, data: history });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Could not retrieve request history.' });
+  }
+});
 
 function requestFilter(id) {
   return /^[0-9a-fA-F]{24}$/.test(id) ? { _id: id } : { refId: id };
@@ -101,6 +163,7 @@ router.post('/', async (req, res) => {
     const collectionRequest = await CollectionRequest.create({
       fullName: fullName.trim(),
       phone: phone.trim(),
+      phoneNormalized: normalizePhone(phone),
       location: location.trim(),
       ...coordinates,
       description: description.trim(),

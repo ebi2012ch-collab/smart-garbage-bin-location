@@ -13,16 +13,29 @@ function createTelegramBot({
   now = () => new Date(),
   randomBytes = crypto.randomBytes,
 } = {}) {
+  const botToken = typeof token === 'string' ? token.trim() : '';
   let stopped = false;
   let pollingStarted = false;
   let offset = 0;
+  let pollingPrepared = false;
+
+  function safeDescription(error) {
+    let message = error && (error.description || error.message) || 'Unknown Telegram error';
+    if (botToken) message = message.split(botToken).join('[token redacted]');
+    return String(message).replace(/bot\d+:[A-Za-z0-9_-]+/g, '[bot token redacted]').slice(0, 500);
+  }
+
+  function logApiError(action, error) {
+    const code = error && error.code ? ` (${error.code})` : '';
+    console.error(`[Telegram] ${action} failed${code}: ${safeDescription(error)}`);
+  }
 
   async function request(method, payload) {
-    if (!token) throw new Error('Telegram bot is not configured.');
+    if (!botToken) throw new Error('Telegram bot is not configured.');
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), method === 'getUpdates' ? 25000 : 10000);
     try {
-      const response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
+      const response = await fetchImpl(`https://api.telegram.org/bot${botToken}/${method}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -35,15 +48,19 @@ function createTelegramBot({
         throw new Error('Telegram returned an invalid response.');
       }
       if (!response.ok || !result.ok) {
-        const error = new Error('Telegram API request failed.');
+        const error = new Error(result.description || `Telegram API returned HTTP ${response.status}.`);
         error.code = result.error_code || response.status;
+        error.description = result.description || error.message;
+        error.method = method;
+        error.retryAfter = result.parameters && result.parameters.retry_after;
         throw error;
       }
       return result.result;
     } catch (error) {
-      if (error.code) throw error;
-      const safeError = new Error('Telegram API request failed.');
-      safeError.code = 'NETWORK_ERROR';
+      if (error.method) throw error;
+      const safeError = new Error(error.name === 'AbortError' ? 'Telegram API request timed out.' : (error.message || 'Telegram network request failed.'));
+      safeError.code = error.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR';
+      safeError.method = method;
       throw safeError;
     } finally {
       clearTimeout(timeout);
@@ -123,7 +140,7 @@ function createTelegramBot({
   }
 
   async function notifyAssignment({ driver, taskType, taskId, assignedAt, location, binId, priority }) {
-    if (!token) return { status: 'disabled' };
+    if (!botToken) return { status: 'disabled' };
     if (!driver || !driver.telegramChatId) return { status: 'unlinked' };
 
     const eventId = crypto.createHash('sha256')
@@ -146,6 +163,7 @@ function createTelegramBot({
       await reply(driver.telegramChatId, assignmentMessage({ taskType, location, binId, priority }));
     } catch (error) {
       await NotificationModel.updateOne({ eventId }, { $set: { status: 'failed' } });
+      logApiError('sendMessage for driver assignment', error);
       return { status: 'failed', errorCode: error.code || 'TELEGRAM_ERROR' };
     }
 
@@ -157,12 +175,24 @@ function createTelegramBot({
   }
 
   async function startPolling() {
-    if (!token || pollingStarted) return;
+    if (!botToken || pollingStarted) return;
     pollingStarted = true;
     stopped = false;
     let retryDelay = 5000;
     while (!stopped) {
       try {
+        if (!pollingPrepared) {
+          const bot = await request('getMe', {});
+          const webhook = await request('getWebhookInfo', {});
+          if (webhook && webhook.url) {
+            await request('deleteWebhook', { drop_pending_updates: false });
+            console.warn('[Telegram] Removed the configured webhook before starting long polling; pending updates were preserved.');
+          } else {
+            console.info('[Telegram] No webhook is configured.');
+          }
+          console.info(`[Telegram] Bot token verified${bot && bot.username ? ` for @${bot.username}` : ''}; long polling is ready.`);
+          pollingPrepared = true;
+        }
         const updates = await request('getUpdates', {
           offset,
           timeout: 20,
@@ -173,14 +203,31 @@ function createTelegramBot({
           offset = Math.max(offset, update.update_id + 1);
           try {
             await handleUpdate(update);
-          } catch (_) {
-            console.error('[Telegram] Could not process a bot update.');
+          } catch (error) {
+            logApiError('processing a bot update', error);
           }
         }
-      } catch (_) {
-        console.error('[Telegram] Bot polling failed; check the bot token and ensure no webhook is configured.');
+      } catch (error) {
+        logApiError(error && error.method || 'Bot polling', error);
+        if (Number(error && error.code) === 401 || Number(error && error.code) === 404) {
+          console.error('[Telegram] Polling stopped because Telegram rejected the bot token or API request. Check TELEGRAM_BOT_TOKEN; the token value was not logged.');
+          stopped = true;
+          break;
+        }
+        if (Number(error && error.code) === 409) {
+          console.error('[Telegram] Polling stopped after a conflict. Another process may already be polling this bot, or a webhook is still active. Stop duplicate bot instances before restarting.');
+          stopped = true;
+          break;
+        }
+        if (Number(error && error.code) === 429 && Number.isFinite(Number(error.retryAfter))) {
+          retryDelay = Math.min(Math.max(Number(error.retryAfter), 1) * 1000, 60000);
+        } else if (Number(error && error.code) >= 400 && Number(error && error.code) < 500 && error.code !== 'NETWORK_ERROR' && error.code !== 'TIMEOUT') {
+          console.error('[Telegram] Polling stopped after a non-retryable API error. Correct the reported API issue, then restart the backend.');
+          stopped = true;
+          break;
+        }
         await new Promise(resolve => setTimeout(resolve, retryDelay));
-        retryDelay = Math.min(retryDelay * 2, 60000);
+        if (!error || Number(error.code) !== 429) retryDelay = Math.min(retryDelay * 2, 60000);
       }
     }
     pollingStarted = false;
@@ -191,7 +238,7 @@ function createTelegramBot({
   }
 
   return {
-    isConfigured: () => Boolean(token),
+    isConfigured: () => Boolean(botToken),
     startLink,
     handleUpdate,
     notifyAssignment,

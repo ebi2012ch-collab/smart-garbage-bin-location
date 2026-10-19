@@ -7,6 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="brand.css">
   <link rel="stylesheet" href="report.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="collection-flow.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="readability.css">
   <meta name="theme-color" content="#0A043C">
@@ -20,12 +22,13 @@
       </a>
       <nav id="nav">
         <a href="index.html" class="nav-link">Home</a>
-        <a href="collection.html" class="nav-link active">Request Collection</a>
+        <a href="#requestCollection" class="nav-link active" aria-current="page">Request Collection</a>
+        <a href="#requestHistory" class="nav-link">Track a request</a>
         <a href="report.html" class="nav-link">Report</a>
         <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
       </nav>
-      <a href="collection.html" class="nav-cta">Request Collection</a>
+      <a href="#requestCollection" class="nav-cta">Request Collection</a>
       <button class="hamburger" id="hamburger" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
@@ -36,7 +39,8 @@
     <div class="page-hero-content">
       <span class="hero-tag"><i class="fas fa-truck"></i> Public Service</span>
       <h1>Request a <span class="gradient-text">Collection</span></h1>
-      <p>Submit a collection request for your location. No account or login is required.</p>
+      <p>Request a pickup in a few steps. No account is needed. Keep your ticket reference to check its status later.</p>
+      <div class="hero-actions"><a class="hero-request-button" href="#requestCollection">Request a pickup <i class="fas fa-arrow-right"></i></a><a class="hero-history-button" href="#requestHistory">Track an existing request <i class="fas fa-search"></i></a></div>
     </div>
     <div class="hero-wave">
       <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -45,103 +49,173 @@
     </div>
   </section>
 
-  <section class="report-section" id="main-content">
-    <div class="report-layout">
-      <div class="report-form-wrapper">
-        <div class="form-header">
-          <div class="form-header-icon"><i class="fas fa-truck"></i></div>
-          <div>
-            <h2>Collection Request</h2>
-            <p>Tell us who to contact and where collection is needed.</p>
-          </div>
-        </div>
-
-        <form id="collectionRequestForm" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="requestName">Full Name <span class="req">*</span></label>
-              <div class="input-wrap">
-                <i class="fas fa-user"></i>
-                <input type="text" id="requestName" maxlength="120" autocomplete="name" required>
-              </div>
-              <span class="err" id="requestNameErr"></span>
-            </div>
-            <div class="form-group">
-              <label for="requestPhone">Phone Number <span class="req">*</span></label>
-              <div class="input-wrap">
-                <i class="fas fa-phone"></i>
-                <input type="tel" id="requestPhone" maxlength="40" autocomplete="tel" required>
-              </div>
-              <span class="err" id="requestPhoneErr"></span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="requestLocation">Location / Area <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fas fa-map-marker-alt"></i>
-              <input type="text" id="requestLocation" maxlength="200" required>
-            </div>
-            <span class="err" id="requestLocationErr"></span>
-          </div>
-
-          <div class="form-group">
-            <label>Map Coordinates <span class="req">*</span></label>
-            <p class="location-help">Share your current location so the Driver GIS team can find the collection place.</p>
-            <button type="button" class="location-button" id="useRequestCurrentLocation">
-              <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
-              Use My Current Location
-            </button>
-            <p class="location-status" id="requestLocationStatus" role="status" aria-live="polite">Your location is required to submit a collection request.</p>
-            <div class="coordinates-grid">
-              <label for="requestLatitude">Latitude <span class="req">*</span>
-                <input type="number" id="requestLatitude" min="-90" max="90" step="any" required>
-              </label>
-              <label for="requestLongitude">Longitude <span class="req">*</span>
-                <input type="number" id="requestLongitude" min="-180" max="180" step="any" required>
-              </label>
-            </div>
-            <span class="err" id="requestCoordinatesErr"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="requestDescription">Description <span class="req">*</span></label>
-            <div class="textarea-wrap">
-              <textarea id="requestDescription" rows="5" maxlength="1000" required></textarea>
-            </div>
-            <span class="err" id="requestDescriptionErr"></span>
-          </div>
-
-          <div id="requestError" class="err" role="alert" style="display:none;margin-bottom:12px"></div>
-          <button type="submit" class="btn-submit" id="requestSubmit">
-            <span class="btn-text"><i class="fas fa-paper-plane"></i> Submit Request</span>
-            <span class="btn-loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Submitting…</span>
-          </button>
-        </form>
-
-        <div class="success-msg" id="requestSuccess" style="display:none">
-          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-          <h3>Request Submitted</h3>
-          <p>Your collection request has been received for admin review.</p>
-          <div class="success-ref">Request ID: <strong id="requestRef"></strong></div>
-          <button class="btn-new" id="newRequestBtn" type="button"><i class="fas fa-plus"></i> Submit Another Request</button>
-        </div>
+  <section class="report-section collection-info" id="main-content">
+    <div class="collection-info-card">
+      <i class="fas fa-clipboard-check"></i>
+      <div>
+        <h2>What happens next?</h2>
+        <p>After submission, keep the ticket reference. You can use it with your phone number to review this request and your recent requests.</p>
       </div>
-
-      <aside class="report-info">
-        <div class="info-card">
-          <div class="info-card-icon"><i class="fas fa-clipboard-check"></i></div>
-          <h4>What happens next?</h4>
-          <p>Your request starts as pending. An administrator will review it and accept or reject it.</p>
-        </div>
-        <div class="info-card">
-          <div class="info-card-icon green"><i class="fas fa-user-shield"></i></div>
-          <h4>No account required</h4>
-          <p>Submit a request as a public visitor. You do not need to register or log in.</p>
-        </div>
-      </aside>
+      <a href="#requestCollection">Request a collection</a>
     </div>
   </section>
+
+  <section class="request-history-section" id="requestHistory" aria-labelledby="historyTitle">
+    <div class="request-history-card">
+      <div class="history-heading"><span class="history-icon"><i class="fas fa-ticket-alt"></i></span><div><h2 id="historyTitle">Track a request</h2><p>Enter a ticket reference and the phone number used when you submitted it.</p></div></div>
+      <form id="requestHistoryForm" class="history-form">
+        <label>Ticket reference<input name="refId" type="text" placeholder="CRQ-2026-1A2B3C4D5E6F7788" autocomplete="off" required></label>
+        <label>Phone number<input name="phone" type="tel" placeholder="+251 9 1234 5678" autocomplete="tel" required></label>
+        <button class="primary-button" type="submit"><i class="fas fa-search"></i> Find my requests</button>
+      </form>
+      <p class="history-privacy">Your reference and phone number are used to confirm access. Only matching requests are shown.</p>
+      <div id="requestHistoryResults" class="history-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="request-overlay is-closed" id="requestCollection" role="presentation">
+    <section class="request-modal" role="dialog" aria-modal="true" aria-labelledby="requestTitle" aria-describedby="requestIntro">
+      <div class="modal-topline"></div>
+      <header class="modal-header">
+        <div>
+          <span class="public-badge"><i class="fas fa-shield-alt"></i> Public service · no account required</span>
+          <h2 id="requestTitle">Request Waste Collection</h2>
+          <p id="requestIntro">Tell us who to contact, where to collect, and what needs pickup.</p>
+        </div>
+        <button class="modal-close" id="closeRequest" type="button" aria-label="Close request form"><i class="fas fa-times"></i></button>
+      </header>
+
+      <ol class="request-stepper" aria-label="Request progress">
+        <li class="stepper-item is-active" data-step-indicator="1"><span class="stepper-dot">1</span><span><small>STEP 1</small><strong>Contact</strong></span></li>
+        <li class="stepper-item" data-step-indicator="2"><span class="stepper-dot">2</span><span><small>STEP 2</small><strong>Location &amp; GIS</strong></span></li>
+        <li class="stepper-item" data-step-indicator="3"><span class="stepper-dot">3</span><span><small>STEP 3</small><strong>Details &amp; Review</strong></span></li>
+      </ol>
+
+      <form id="collectionRequestForm" novalidate>
+        <section class="request-step" data-step="1" aria-labelledby="contactStepTitle">
+          <div class="step-heading">
+            <h3 id="contactStepTitle">Who is requesting the collection?</h3>
+            <p>Provide contact details so dispatch can confirm arrival and reach you if there are access questions.</p>
+          </div>
+          <div class="field-grid">
+            <div class="request-field">
+              <label for="requestName">Full name <span class="req">*</span></label>
+              <div class="request-input"><i class="far fa-id-card"></i><input type="text" id="requestName" maxlength="120" autocomplete="name" placeholder="e.g. Abebe Kebede" required></div>
+              <small>Used for collection verification on-site.</small>
+              <span class="field-error" id="requestNameErr" aria-live="polite"></span>
+            </div>
+            <div class="request-field">
+              <label for="requestPhone">Phone number <span class="req">*</span></label>
+              <div class="request-input"><i class="fas fa-phone"></i><span class="phone-prefix">+251</span><input type="tel" id="requestPhone" maxlength="40" autocomplete="tel" placeholder="9 1234 5678" required></div>
+              <small>Driver will call upon arrival.</small>
+              <span class="field-error" id="requestPhoneErr" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="guarantee-notice"><i class="fas fa-shield-alt"></i><div><strong>No account required</strong><p>Your phone number and ticket reference let you check the request later.</p></div></div>
+        </section>
+
+        <section class="request-step" data-step="2" aria-labelledby="locationStepTitle" hidden>
+          <div class="contact-summary"><i class="far fa-user"></i><span id="contactSummary">Contact details will appear here</span><button type="button" class="text-action" data-go-step="1">Edit contact <i class="fas fa-pen"></i></button></div>
+          <div class="step-heading">
+            <h3 id="locationStepTitle">Where should the team collect?</h3>
+            <p>Choose your kebele and a nearby landmark. Then tap the map to mark the pickup point.</p>
+          </div>
+          <div class="field-grid">
+            <div class="request-field">
+              <label for="requestDistrict">Sub-city / kebele <span class="req">*</span></label>
+              <div class="request-input"><i class="fas fa-building"></i><select id="requestDistrict" required><option value="">Choose a district</option><option>Kebele 01</option><option>Kebele 02</option><option>Kebele 03</option><option>Kebele 04 (Central District)</option><option>Kebele 05</option><option>Kebele 06</option><option>Kebele 07</option><option>Kebele 08</option><option>Kebele 09</option><option>Kebele 10</option><option>Kebele 11</option><option>Kebele 12</option><option>Kebele 13</option><option>Kebele 14</option></select><i class="fas fa-chevron-down select-chevron"></i></div>
+              <span class="field-error" id="requestDistrictErr" aria-live="polite"></span>
+            </div>
+            <div class="request-field">
+              <label for="requestLandmark">Street or notable landmark <span class="req">*</span></label>
+              <div class="request-input"><i class="fas fa-map-marker-alt"></i><input type="text" id="requestLandmark" maxlength="160" placeholder="Near Central Commercial Mall, Gate B" required></div>
+              <span class="field-error" id="requestLandmarkErr" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="map-card">
+            <div class="map-card-heading"><span class="map-icon"><i class="fas fa-map-marker-alt"></i></span><div><strong>Confirm pickup point</strong><small>Tap the map or use your current location</small></div><button type="button" class="map-current-button" id="useRequestCurrentLocation"><i class="fas fa-crosshairs"></i> Use my location</button></div>
+            <div id="requestMap" class="request-map" role="application" aria-label="Interactive map. Select your collection point."></div>
+            <p class="location-status" id="requestLocationStatus" role="status" aria-live="polite">Select a point on the map or use your current location.</p>
+            <details class="manual-coordinates"><summary>Enter coordinates manually</summary><div class="coordinates-grid">
+              <label for="requestLatitude">Latitude <span class="req">*</span><input type="number" id="requestLatitude" min="-90" max="90" step="any" placeholder="8.540000" required></label>
+              <label for="requestLongitude">Longitude <span class="req">*</span><input type="number" id="requestLongitude" min="-180" max="180" step="any" placeholder="39.270000" required></label>
+            </div></details>
+            <span class="field-error" id="requestCoordinatesErr" aria-live="polite"></span>
+          </div>
+        </section>
+
+        <section class="request-step" data-step="3" aria-labelledby="detailsStepTitle" hidden>
+          <div class="step-heading">
+            <h3 id="detailsStepTitle">Confirm request &amp; waste details</h3>
+            <p>Verify your contact and pickup location, then choose a category and estimated load for vehicle matching.</p>
+          </div>
+          <div class="review-summaries">
+            <article class="review-summary"><i class="far fa-user"></i><div><small>CONTACT</small><strong id="reviewContact"></strong><span id="reviewPhone"></span></div><button type="button" class="text-action" data-go-step="1">Edit</button></article>
+            <article class="review-summary"><i class="fas fa-map-pin"></i><div><small>PICKUP POINT</small><strong id="reviewLocation"></strong><span id="reviewLandmark"></span></div><button type="button" class="text-action" data-go-step="2">Edit</button></article>
+          </div>
+          <fieldset class="choice-fieldset">
+            <legend>Waste category &amp; nature <span class="req">*</span></legend>
+            <div class="category-grid">
+              <label class="category-card is-selected"><input type="radio" name="wasteCategory" value="Household Waste" checked><span class="category-icon"><i class="fas fa-trash-alt"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Household waste</strong><small>Standard residential bagged refuse, organic bin matter &amp; cleanups.</small></label>
+              <label class="category-card"><input type="radio" name="wasteCategory" value="Bulky &amp; Commercial"><span class="category-icon"><i class="fas fa-couch"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Bulky &amp; commercial</strong><small>Furniture, lumber scraps, renovation packs &amp; merchant crates.</small></label>
+              <label class="category-card"><input type="radio" name="wasteCategory" value="Sorted Recyclables"><span class="category-icon"><i class="fas fa-recycle"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Sorted recyclables</strong><small>Separated plastics, corrugated cardboard, bottles &amp; metals.</small></label>
+            </div>
+          </fieldset>
+          <fieldset class="choice-fieldset volume-fieldset">
+            <legend>Estimated load volume <span class="req">*</span></legend>
+            <div class="volume-options">
+              <label class="volume-option is-selected"><input type="radio" name="loadVolume" value="1–2 Bags (Small)" checked><i class="fas fa-shopping-bag"></i> 1–2 Bags (Small)</label>
+              <label class="volume-option"><input type="radio" name="loadVolume" value="3–5 Bags (Standard)"><i class="fas fa-box"></i> 3–5 Bags (Standard)</label>
+              <label class="volume-option"><input type="radio" name="loadVolume" value="Truck Load (Large)"><i class="fas fa-truck"></i> Truck Load (Large)</label>
+              <label class="volume-option"><input type="radio" name="loadVolume" value="Multi-point Commercial"><i class="fas fa-map-marked-alt"></i> Multi-point Commercial</label>
+            </div>
+          </fieldset>
+          <div class="pickup-estimate"><i class="far fa-clock"></i><div><strong>Pickup time estimate</strong><p>Estimated timing is confirmed after request review and route assignment. We’ll contact you using your preferred method.</p></div></div>
+          <p class="form-error" id="requestError" role="alert" hidden></p>
+        </section>
+
+        <footer class="modal-footer" id="formFooter">
+          <button class="footer-cancel" id="cancelRequest" type="button">Cancel</button>
+          <button class="footer-back" id="backStep" type="button" hidden><i class="fas fa-arrow-left"></i> Back</button>
+          <span class="step-count" id="stepCount">Step 1 of 3</span>
+          <button class="primary-button" id="nextStep" type="button">Continue to Location &amp; GIS <i class="fas fa-arrow-right"></i></button>
+          <button type="submit" class="primary-button" id="requestSubmit" hidden><span class="btn-text">Submit collection request <i class="fas fa-paper-plane"></i></span><span class="btn-loading" hidden><i class="fas fa-spinner fa-spin"></i> Submitting…</span></button>
+        </footer>
+      </form>
+
+      <section class="request-success" id="requestSuccess" aria-labelledby="successTitle" hidden>
+        <button class="modal-close success-close" id="closeSuccess" type="button" aria-label="Close request confirmation"><i class="fas fa-times"></i></button>
+        <span class="public-badge success-badge"><i class="fas fa-check-circle"></i> Request submitted successfully</span>
+        <h2 id="successTitle">Collection Request Received</h2>
+        <p class="success-intro">Your request is waiting for the city sanitation team to review it. Keep this reference so you can check its status later.</p>
+        <div class="ticket-panel">
+        <div class="ticket-heading"><i class="fas fa-ticket-alt"></i><div><small>TICKET REFERENCE ID</small><strong id="requestRef"></strong></div><button class="copy-reference" id="copyRequestRef" type="button"><i class="far fa-copy"></i> Copy</button><span class="queue-badge"><i class="fas fa-circle"></i> Pending review</span></div>
+          <div class="ticket-details">
+            <div class="ticket-main">
+              <article class="arrival-card"><i class="fas fa-truck"></i><div><small>DISPATCH STATUS</small><strong>Awaiting review &amp; assignment</strong><span>Pickup time will be shared when a route is assigned.</span></div></article>
+              <div class="dispatch-facts"><p><i class="fas fa-id-badge"></i><span><b>Assigned driver</b><br><span id="assignedDriver">Not assigned yet</span></span></p><p><i class="fas fa-truck"></i><span><b>Truck ID</b><br><span id="assignedTruck">Not assigned yet</span></span></p></div>
+              <div class="ticket-location" id="successLocation"></div>
+            </div>
+            <div class="qr-card"><small>REQUEST TICKET QR</small><div id="requestQr" aria-label="QR code for request ticket"></div><strong id="qrReference"></strong><span>Show this ticket when contacted</span></div>
+          </div>
+          <div class="success-summary">
+            <div><small>RESIDENT CONTACT</small><strong id="successContact"></strong><span id="successPhone"></span></div>
+            <div><small>SERVICE LOCATION</small><strong id="successDistrict"></strong><span id="successLandmark"></span></div>
+            <div><small>CATEGORY &amp; VOLUME</small><strong id="successCategory"></strong><span id="successVolume"></span></div>
+          </div>
+        <div class="notification-note"><i class="fas fa-info-circle"></i><span>Use your ticket reference and phone number in “Track a request” to check for updates.</span></div>
+        </div>
+        <div class="success-actions">
+          <a class="secondary-button" href="index.html"><i class="fas fa-arrow-left"></i> Done &amp; return home</a>
+          <button class="secondary-button" id="downloadReceipt" type="button"><i class="fas fa-download"></i> Download receipt</button>
+          <button class="tracking-button" id="trackRequest" type="button" disabled aria-describedby="trackingNote"><i class="fas fa-map"></i> View pickup map</button>
+        </div>
+        <p class="tracking-note" id="trackingNote">This opens your pickup point. Live vehicle tracking is not available yet.</p>
+        <p class="service-footnote">No payment required · Municipal Public Sanitation Service · Citizen Charter Protected</p>
+        <button class="new-request-button" id="newRequestBtn" type="button"><i class="fas fa-plus"></i> Submit another request</button>
+      </section>
+    </section>
+  </div>
 
   <footer>
     <div class="footer-inner">
@@ -171,147 +245,8 @@
 
   <div class="toast-container" id="toastContainer"></div>
   <script src="script.js"></script>
-  <script>
-    (function () {
-      var form = document.getElementById('collectionRequestForm');
-      var submitButton = document.getElementById('requestSubmit');
-      var errorBox = document.getElementById('requestError');
-      var locationButton = document.getElementById('useRequestCurrentLocation');
-      var locationStatus = document.getElementById('requestLocationStatus');
-      var latitudeInput = document.getElementById('requestLatitude');
-      var longitudeInput = document.getElementById('requestLongitude');
-      var apiBase = 'http://localhost:3000/api/collection-requests';
-
-      function setError(id, message) {
-        document.getElementById(id).textContent = message;
-      }
-
-      function updateManualLocationStatus() {
-        if (latitudeInput.value.trim() && longitudeInput.value.trim()) {
-          locationStatus.textContent = 'Coordinates entered. Check the values below.';
-        } else {
-          locationStatus.textContent = 'Your location is required to submit a collection request.';
-        }
-      }
-
-      latitudeInput.addEventListener('input', updateManualLocationStatus);
-      longitudeInput.addEventListener('input', updateManualLocationStatus);
-
-      locationButton.addEventListener('click', function () {
-        setError('requestCoordinatesErr', '');
-        if (!navigator.geolocation) {
-          locationStatus.textContent = 'Location is not supported by this browser. Enter the coordinates manually.';
-          return;
-        }
-
-        locationButton.disabled = true;
-        locationStatus.textContent = 'Getting your current location...';
-        navigator.geolocation.getCurrentPosition(function (position) {
-          latitudeInput.value = position.coords.latitude.toFixed(6);
-          longitudeInput.value = position.coords.longitude.toFixed(6);
-          locationStatus.textContent = 'Location found. Check the coordinates below.';
-          locationButton.disabled = false;
-        }, function (error) {
-          var message = error.code === error.PERMISSION_DENIED
-            ? 'Location permission was denied. Allow location access in your browser and try again, or enter coordinates manually.'
-            : error.code === error.TIMEOUT
-              ? 'Could not get your location in time. Please try again or enter coordinates manually.'
-              : 'Your location is unavailable. Please try again or enter coordinates manually.';
-          locationStatus.textContent = message;
-          locationButton.disabled = false;
-        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-      });
-
-      function validate() {
-        ['requestNameErr', 'requestPhoneErr', 'requestLocationErr', 'requestCoordinatesErr', 'requestDescriptionErr']
-          .forEach(function (id) { setError(id, ''); });
-        errorBox.style.display = 'none';
-
-        var valid = true;
-        var latitude = document.getElementById('requestLatitude').value.trim();
-        var longitude = document.getElementById('requestLongitude').value.trim();
-
-        if (!document.getElementById('requestName').value.trim()) {
-          setError('requestNameErr', 'Full name is required.');
-          valid = false;
-        }
-        if (!document.getElementById('requestPhone').value.trim()) {
-          setError('requestPhoneErr', 'Phone number is required.');
-          valid = false;
-        }
-        if (!document.getElementById('requestLocation').value.trim()) {
-          setError('requestLocationErr', 'Location is required.');
-          valid = false;
-        }
-        if (!document.getElementById('requestDescription').value.trim()) {
-          setError('requestDescriptionErr', 'Description is required.');
-          valid = false;
-        }
-        if (!latitude || !longitude || !Number.isFinite(Number(latitude)) || Number(latitude) < -90 || Number(latitude) > 90 ||
-            !Number.isFinite(Number(longitude)) || Number(longitude) < -180 || Number(longitude) > 180) {
-          setError('requestCoordinatesErr', 'Enter valid latitude and longitude values.');
-          valid = false;
-        }
-        return valid;
-      }
-
-      form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        if (!validate()) return;
-
-        var text = submitButton.querySelector('.btn-text');
-        var loading = submitButton.querySelector('.btn-loading');
-        submitButton.disabled = true;
-        text.style.display = 'none';
-        loading.style.display = 'flex';
-
-        var latitude = document.getElementById('requestLatitude').value.trim();
-        var longitude = document.getElementById('requestLongitude').value.trim();
-        var payload = {
-          fullName: document.getElementById('requestName').value.trim(),
-          phone: document.getElementById('requestPhone').value.trim(),
-          location: document.getElementById('requestLocation').value.trim(),
-          description: document.getElementById('requestDescription').value.trim(),
-        };
-        payload.latitude = Number(latitude);
-        payload.longitude = Number(longitude);
-
-        fetch(apiBase, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-          .then(function (response) {
-            return response.json().then(function (data) {
-              if (!response.ok || !data.success) throw new Error(data.message || 'Request submission failed.');
-              return data;
-            });
-          })
-          .then(function (data) {
-            form.style.display = 'none';
-            document.getElementById('requestRef').textContent = data.data.id;
-            document.getElementById('requestSuccess').style.display = 'block';
-          })
-          .catch(function (error) {
-            errorBox.textContent = error.message || 'Cannot reach the server. Please try again.';
-            errorBox.style.display = 'block';
-          })
-          .finally(function () {
-            submitButton.disabled = false;
-            text.style.display = 'flex';
-            loading.style.display = 'none';
-          });
-      });
-
-      document.getElementById('newRequestBtn').addEventListener('click', function () {
-        form.reset();
-        locationStatus.textContent = 'Your location is required to submit a collection request.';
-        setError('requestCoordinatesErr', '');
-        form.style.display = 'block';
-        document.getElementById('requestSuccess').style.display = 'none';
-        form.scrollIntoView({ behavior: 'smooth' });
-      });
-    })();
-  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="collection-flow.js"></script>
 </body>
 </html>

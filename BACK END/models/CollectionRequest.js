@@ -5,6 +5,7 @@ const collectionRequestSchema = new mongoose.Schema({
   refId:      { type: String, unique: true, immutable: true },
   fullName:   { type: String, required: true, trim: true, maxlength: 120 },
   phone:      { type: String, required: true, trim: true, maxlength: 40 },
+  phoneNormalized: { type: String, index: true, default: null, select: false },
   location:   { type: String, required: true, trim: true, maxlength: 200 },
   latitude:   { type: Number, min: -90, max: 90, default: null },
   longitude:  { type: Number, min: -180, max: 180, default: null },
@@ -30,7 +31,7 @@ const collectionRequestSchema = new mongoose.Schema({
 collectionRequestSchema.pre('save', function () {
   if (!this.refId) {
     const year = new Date().getFullYear();
-    const id = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const id = crypto.randomBytes(8).toString('hex').toUpperCase();
     this.refId = `CRQ-${year}-${id}`;
   }
 });
