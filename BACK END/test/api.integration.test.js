@@ -27,7 +27,22 @@ test('API bin monitoring and collection assignment workflow', async t => {
   let server;
   let generatedEvidencePath;
   const previousDeviceKey = process.env.DEVICE_KEY;
+  const previousTurnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  const previousTurnstileHostname = process.env.TURNSTILE_EXPECTED_HOSTNAME;
+  const previousFetch = global.fetch;
   process.env.DEVICE_KEY = 'workflow-test-device-key';
+  process.env.TURNSTILE_SECRET_KEY = 'workflow-test-turnstile-secret';
+  process.env.TURNSTILE_EXPECTED_HOSTNAME = 'localhost';
+  global.fetch = async (input, options) => {
+    const url = typeof input === 'string' ? input : input.url;
+    if (url === 'https://challenges.cloudflare.com/turnstile/v0/siteverify') {
+      return new Response(JSON.stringify({ success: true, hostname: 'localhost' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return previousFetch(input, options);
+  };
   try {
     await mongoose.connection.dropDatabase();
     await Promise.all([Bin.syncIndexes(), CollectionRequest.syncIndexes(), User.syncIndexes(), Report.syncIndexes()]);
@@ -52,7 +67,11 @@ test('API bin monitoring and collection assignment workflow', async t => {
     const call = async (route, method = 'GET', body, bearer) => {
       const response = await fetch(base + route, {
         method,
-        headers: Object.assign({ 'Content-Type': 'application/json' }, bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+        headers: Object.assign(
+          { 'Content-Type': 'application/json' },
+          route === '/collection-requests' && method === 'POST' ? { 'cf-turnstile-response': 'workflow-test-token' } : {},
+          bearer ? { Authorization: `Bearer ${bearer}` } : {}
+        ),
         body: body === undefined ? undefined : JSON.stringify(body),
       });
       return { status: response.status, body: await response.json() };
@@ -60,7 +79,7 @@ test('API bin monitoring and collection assignment workflow', async t => {
     const createReport = async input => {
       const form = new FormData();
       Object.entries(Object.assign({ fullName:'Test Reporter', phone:'0900000000', location:'Test street', problemType:'overflow', priority:'high', description:'Test report details', latitude:'8.54', longitude:'39.27' }, input || {})).forEach(([key, value]) => form.append(key, value));
-      const response = await fetch(base + '/reports', { method:'POST', body:form });
+      const response = await fetch(base + '/reports', { method:'POST', headers:{ 'cf-turnstile-response':'workflow-test-token' }, body:form });
       return { status:response.status, body:await response.json() };
     };
     const adminToken = token(admin);
@@ -336,5 +355,10 @@ test('API bin monitoring and collection assignment workflow', async t => {
     await mongoose.disconnect();
     if (previousDeviceKey === undefined) delete process.env.DEVICE_KEY;
     else process.env.DEVICE_KEY = previousDeviceKey;
+    if (previousTurnstileSecret === undefined) delete process.env.TURNSTILE_SECRET_KEY;
+    else process.env.TURNSTILE_SECRET_KEY = previousTurnstileSecret;
+    if (previousTurnstileHostname === undefined) delete process.env.TURNSTILE_EXPECTED_HOSTNAME;
+    else process.env.TURNSTILE_EXPECTED_HOSTNAME = previousTurnstileHostname;
+    global.fetch = previousFetch;
   }
 });

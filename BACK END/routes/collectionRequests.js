@@ -5,6 +5,7 @@ const User = require('../models/User');
 const { conditionFor } = require('../utils/binCondition');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const notifyAssignedDriver = require('../utils/notifyAssignedDriver');
+const verifyTurnstile = require('../middleware/verifyTurnstile');
 
 const router = express.Router();
 const REQUEST_STATUSES = ['pending', 'accepted', 'rejected', 'assigned', 'in-progress', 'completed'];
@@ -122,7 +123,7 @@ router.post('/from-bin', requireAuth, requireRole('admin'), async (req, res) => 
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', verifyTurnstile, async (req, res) => {
   try {
     const { fullName, phone, location, latitude, longitude, description } = req.body || {};
     if (![fullName, phone, location, description].every(value => typeof value === 'string' && value.trim())) {

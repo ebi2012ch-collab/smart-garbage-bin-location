@@ -16,6 +16,8 @@ const STATIC_ASSETS = [
   '/style.css',
   '/map.css',
   '/report.css',
+  '/captcha-config.js',
+  '/captcha.js',
   '/about.css',
   '/contact.css',
   '/script.js',

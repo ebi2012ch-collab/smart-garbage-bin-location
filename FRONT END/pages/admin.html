@@ -101,6 +101,13 @@
 
     <!-- ══ DASHBOARD VIEW ══ -->
     <div id="view-dashboard">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">CITY OPERATIONS</span>
+          <h1>Operations overview</h1>
+          <p>Live service status, collection workload, and citizen reports.</p>
+        </div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-trash-alt"></i></div><div><div class="stat-num" id="s-total">–</div><div class="stat-label">Total Bins</div></div></div>
         <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-num" id="s-avail">–</div><div class="stat-label">Available Bins</div></div></div>
@@ -115,6 +122,36 @@
         <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-double"></i></div><div><div class="stat-num" id="s-collections-today">–</div><div class="stat-label">Completed Today</div></div></div>
       </div>
 
+      <div class="analytics-grid">
+        <section class="section-card analytics-card" aria-labelledby="binStatusChartTitle">
+          <div class="section-card-header">
+            <div>
+              <h3 id="binStatusChartTitle"><i class="fas fa-chart-bar"></i> Bin status</h3>
+              <p class="card-subtitle">Current status counts from the service statistics.</p>
+            </div>
+          </div>
+          <div class="chart-body">
+            <ol class="metric-bars" id="binStatusChart" aria-label="Current bin status counts">
+              <li class="chart-message">Loading live statistics…</li>
+            </ol>
+          </div>
+        </section>
+        <section class="section-card analytics-card" aria-labelledby="reportTypeChartTitle">
+          <div class="section-card-header">
+            <div>
+              <h3 id="reportTypeChartTitle"><i class="fas fa-chart-column"></i> Reports by issue</h3>
+              <p class="card-subtitle">Reported issue types, including illegal dumping.</p>
+            </div>
+          </div>
+          <div class="chart-body">
+            <ol class="metric-bars" id="reportTypeChart" aria-label="Citizen report counts by issue">
+              <li class="chart-message">Loading live statistics…</li>
+            </ol>
+          </div>
+        </section>
+      </div>
+      <p class="analytics-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Charts show current totals. Historical trend data is not available in the existing service statistics.</p>
+
       <div class="section-card">
         <div class="section-card-header"><h3><i class="fas fa-history"></i> Recent Reports</h3></div>
         <div class="table-wrap">
@@ -128,6 +165,13 @@
 
     <!-- ══ GIS MAP VIEW ══ -->
     <div id="view-gismap" style="display:none">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">LIVE OPERATIONS</span>
+          <h1>GIS map</h1>
+          <p>Locate bins and review service issues across Adama City.</p>
+        </div>
+      </div>
       <div class="section-card">
         <div class="section-card-header">
           <h3><i class="fas fa-map-marked-alt"></i> Live GIS Map — Adama City Bins</h3>
@@ -167,6 +211,13 @@
 
     <!-- ══ BINS VIEW ══ -->
     <div id="view-bins" style="display:none">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">ASSET MANAGEMENT</span>
+          <h1>Bins and collection points</h1>
+          <p>Review sensor readings, service conditions, and bin locations.</p>
+        </div>
+      </div>
       <div class="section-card">
         <div class="tabs">
           <div class="tab active" data-tab="bin-list">All Bins</div>
@@ -235,6 +286,13 @@
 
     <!-- ══ REPORTS VIEW ══ -->
     <div id="view-reports" style="display:none">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">CITIZEN SERVICES</span>
+          <h1>Waste reports</h1>
+          <p>Prioritize incoming reports and follow up on assigned work.</p>
+        </div>
+      </div>
       <div class="stats-grid report-summary-grid">
         <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div><div class="stat-num" id="reportPendingCount">–</div><div class="stat-label">Pending</div></div></div>
         <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-user-slash"></i></div><div><div class="stat-num" id="reportUnassignedCount">–</div><div class="stat-label">Unassigned</div></div></div>
@@ -276,6 +334,13 @@
 
     <!-- ══ COLLECTION REQUESTS VIEW ══ -->
     <div id="view-collectionRequests" style="display:none">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">SERVICE WORKFLOW</span>
+          <h1>Collection requests</h1>
+          <p>Review resident requests and coordinate collection assignments.</p>
+        </div>
+      </div>
       <div class="section-card">
         <div class="section-card-header">
           <h3><i class="fas fa-truck"></i> Collection Requests</h3>
@@ -300,6 +365,13 @@
 
     <!-- ══ DRIVERS VIEW ══ -->
     <div id="view-drivers" style="display:none">
+      <div class="page-heading">
+        <div>
+          <span class="page-eyebrow">TEAM MANAGEMENT</span>
+          <h1>Drivers</h1>
+          <p>Manage driver accounts used for collection assignments.</p>
+        </div>
+      </div>
       <div class="section-card" style="margin-bottom:20px">
         <div class="section-card-header"><h3><i class="fas fa-user-plus"></i> Add Driver</h3></div>
         <form id="addDriverForm" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end">
@@ -530,6 +602,8 @@ document.querySelectorAll('.tab').forEach(function (tab) {
 <script>
 /* ─── DASHBOARD ──────────────────────────────── */
 function loadDashboard() {
+  setMetricChartMessage('binStatusChart', 'Loading live statistics…');
+  setMetricChartMessage('reportTypeChart', 'Loading live statistics…');
   Promise.all([apiFetch('/stats'), apiFetch('/bins')]).then(function (results) {
     var d = results[0];
     var binsResult = results[1];
@@ -562,6 +636,20 @@ function loadDashboard() {
     document.getElementById('s-requests-unassigned').textContent = c ? c.unassigned : '–';
     document.getElementById('s-collections-progress').textContent = c ? c.inProgress : '–';
     document.getElementById('s-collections-today').textContent = c ? c.completedToday : '–';
+
+    renderMetricBars('binStatusChart', [
+      { label: 'Available', value: d.data.bins.available, tone: 'good' },
+      { label: 'Almost full', value: d.data.bins.almostFull, tone: 'watch' },
+      { label: 'Full', value: d.data.bins.full, tone: 'critical' },
+      { label: 'Out of service', value: d.data.bins.outOfService, tone: 'muted' },
+    ], 'No bin status data is available.');
+    renderMetricBars('reportTypeChart', Object.keys(r.byProblemType || {}).map(function (type) {
+      return {
+        label: typeLabel(type),
+        value: r.byProblemType[type],
+        tone: type === 'illegal' ? 'critical' : 'primary',
+      };
+    }), 'No report issue data is available.');
 
     // pending badge in sidebar
     document.getElementById('pendingCount').textContent = r.pending;
@@ -596,8 +684,42 @@ function loadDashboard() {
     ['s-total', 's-avail', 's-full', 's-stale', 's-pending', 's-recycle', 's-zones',
       's-requests-pending', 's-requests-unassigned', 's-collections-progress', 's-collections-today']
       .forEach(function (id) { document.getElementById(id).textContent = '–'; });
+    setMetricChartMessage('binStatusChart', 'Could not load bin statistics.');
+    setMetricChartMessage('reportTypeChart', 'Could not load report statistics.');
     toast(error.message || 'Could not load dashboard.', 'error');
   });
+}
+
+function setMetricChartMessage(id, message) {
+  var chart = document.getElementById(id);
+  if (chart) chart.innerHTML = '<li class="chart-message">' + escapeHtml(message) + '</li>';
+}
+
+function renderMetricBars(id, rows, emptyMessage) {
+  var chart = document.getElementById(id);
+  if (!chart) return;
+
+  var validRows = rows.filter(function (row) {
+    return row.label && Number.isFinite(Number(row.value));
+  });
+  if (!validRows.length) {
+    setMetricChartMessage(id, emptyMessage);
+    return;
+  }
+
+  var maximum = validRows.reduce(function (current, row) {
+    return Math.max(current, Number(row.value));
+  }, 0) || 1;
+  chart.innerHTML = validRows.map(function (row) {
+    var value = Number(row.value);
+    var width = Math.max(0, Math.min(100, Math.round(value / maximum * 100)));
+    return '<li class="metric-bar-row">' +
+      '<div class="metric-bar-label"><span>' + escapeHtml(row.label) + '</span><strong>' + escapeHtml(value) + '</strong></div>' +
+      '<div class="metric-bar-track" role="progressbar" aria-label="' + escapeHtml(row.label + ': ' + value) + '" aria-valuemin="0" aria-valuemax="' + maximum + '" aria-valuenow="' + value + '">' +
+        '<span class="metric-bar-fill tone-' + escapeHtml(row.tone) + '" style="width:' + width + '%"></span>' +
+      '</div>' +
+      '</li>';
+  }).join('');
 }
 
 /* ─── GIS MAP ────────────────────────────────── */

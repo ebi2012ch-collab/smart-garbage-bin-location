@@ -21,6 +21,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./readability.css">
+  <link rel="stylesheet" href="./public-language.css">
+  <link rel="stylesheet" href="about.css">
+  <link rel="stylesheet" href="home-motion.css">
 </head>
 <body>
 
@@ -48,7 +51,7 @@
         <a href="contact.html" class="nav-link">Contact</a>
       </nav>
 
-      <a href="report.html" class="nav-cta">Report Issue</a>
+      
 
       <button class="hamburger" id="hamburger" aria-label="Toggle menu">
         <span></span><span></span><span></span>
@@ -59,7 +62,21 @@
   <!-- ========== HERO ========== -->
   <section class="hero" id="main-content">
     <div class="hero-bg" aria-hidden="true">
-      <img src="images/adama.jpg" alt="">
+      <div class="hero-visual" data-aos="fade-left" data-aos-delay="150">
+        <video
+          class="hero-mobile-img"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="images/adama.jpg"
+        >
+          <source src="videos/Video%20Project%20hero.mp4" type="video/mp4">
+          <source src="videos/Video Project hero.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
       <div class="hero-overlay"></div>
     </div>
 
@@ -86,14 +103,7 @@
         </div>
       </div>
 
-      <div class="hero-visual" data-aos="fade-left" data-aos-delay="150">
-        <img
-          src="images/adama.jpg"
-          alt="Adama City residential neighborhood"
-          class="hero-mobile-img"
-          
-        >
-      </div>
+      
     </div>
   </section>
 
@@ -144,28 +154,125 @@
         <h2 id="homeProcessTitle">How It Works</h2>
         <p>From your report to a collection update, each step has a clear role.</p>
       </div>
-      <div class="home-process-grid">
-        <article class="home-process-card" data-aos="fade-up">
-          <span class="home-process-number">01</span>
-          <span class="home-process-icon"><i class="fas fa-file-circle-exclamation" aria-hidden="true"></i></span>
-          <h3>Report</h3>
-          <p>Share the issue, its location, and optional photo evidence through the report form.</p>
-          <a href="report.html">Submit a report <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-        </article>
-        <article class="home-process-card" data-aos="fade-up" data-aos-delay="100">
-          <span class="home-process-number">02</span>
-          <span class="home-process-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
-          <h3>Admin Assigns</h3>
-          <p>The sanitation team reviews the report and assigns it to a driver for follow-up.</p>
-        </article>
-        <article class="home-process-card" data-aos="fade-up" data-aos-delay="200">
-          <span class="home-process-number">03</span>
-          <span class="home-process-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
-          <h3>Driver Collects</h3>
-          <p>The driver works on the assigned task and updates its status for the team.</p>
-          <a href="collection.html">Request collection <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-        </article>
+      <div class="home-process-showcase" id="homeProcessShowcase">
+        <div class="home-process-previews" role="group" aria-label="Choose a service step">
+          <button class="home-process-preview is-active" type="button" aria-pressed="true"
+            aria-label="Show step 1: Resident reports waste"
+            data-image="images/step%201.jpg"
+            data-alt="A resident photographs a waste problem on an Adama City street."
+            data-title="Resident reports waste"
+            data-label="Community reporting"
+            data-description="Residents identify a waste problem and submit a report with its location and optional photo.">
+            <img src="images/step%201.jpg" alt="">
+            <span class="home-process-preview-number" aria-hidden="true">01</span>
+          </button>
+          <button class="home-process-preview" type="button" aria-pressed="false"
+            aria-label="Show step 2: Admin reviews and assigns"
+            data-image="images/Step%202%20(2).jpg"
+            data-alt="An administrator reviews sanitation reports and assigns a collection task on the map."
+            data-title="Admin reviews and assigns"
+            data-label="Review &amp; assignment"
+            data-description="The administrator reviews reports, verifies the details, and assigns collection tasks to the appropriate driver.">
+            <img src="images/Step%202%20(2).jpg" alt="">
+            <span class="home-process-preview-number" aria-hidden="true">02</span>
+          </button>
+          <button class="home-process-preview" type="button" aria-pressed="false"
+            aria-label="Show step 3: Driver collects waste"
+            data-image="images/stepp%203.jpg"
+            data-alt="Sanitation workers collect waste and clear a city street."
+            data-title="Driver collects waste"
+            data-label="Execution and reporting"
+            data-description="The driver follows the assigned task, collects the waste, and updates its status with notes or evidence when appropriate.">
+            <img src="images/stepp%203.jpg" alt="">
+            <span class="home-process-preview-number" aria-hidden="true">03</span>
+          </button>
+          <button class="home-process-preview" type="button" aria-pressed="false"
+            aria-label="Show step 4: Collection is completed"
+            data-image="images/stepp%204.jpg"
+            data-alt="An administrator reviews submitted driver work and verifies the collection outcome."
+            data-title="Collection is completed"
+            data-label="Status and outcome"
+            data-description="Residents can track collection-request status with their reference and phone number, while administrators review submitted work before closing reports.">
+            <img src="images/stepp%204.jpg" alt="">
+            <span class="home-process-preview-number" aria-hidden="true">04</span>
+          </button>
+        </div>
+
+        <figure class="home-process-feature">
+          <img
+            class="home-process-feature-image"
+            id="homeProcessFeaturedImage"
+            src="images/step%201.jpg"
+            alt="A resident photographs a waste problem on an Adama City street."
+          >
+        </figure>
+
+        <div class="home-process-details" aria-live="polite" aria-atomic="true">
+          <p class="home-process-step-heading">
+            <span class="home-process-step-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
+            <span>Step <span id="homeProcessStepNumber">1</span>.</span>
+            <strong id="homeProcessStepTitle">Resident reports waste</strong>
+          </p>
+          <p class="home-process-step-label" id="homeProcessStepLabel">Community reporting</p>
+          <p class="home-process-description" id="homeProcessDescription">Residents identify a waste problem and submit a report with its location and optional photo.</p>
+        </div>
       </div>
+      <script>
+        (function () {
+          var showcase = document.getElementById('homeProcessShowcase');
+          if (!showcase) return;
+
+          var featuredImage = document.getElementById('homeProcessFeaturedImage');
+          var previews = Array.prototype.slice.call(showcase.querySelectorAll('.home-process-preview'));
+          var stepNumber = document.getElementById('homeProcessStepNumber');
+          var stepTitle = document.getElementById('homeProcessStepTitle');
+          var stepLabel = document.getElementById('homeProcessStepLabel');
+          var description = document.getElementById('homeProcessDescription');
+          var imageRequest = 0;
+
+          function selectStep(preview) {
+            if (preview.classList.contains('is-active')) return;
+
+            previews.forEach(function (item, index) {
+              var isActive = item === preview;
+              item.classList.toggle('is-active', isActive);
+              item.setAttribute('aria-pressed', String(isActive));
+            });
+
+            stepNumber.textContent = String(previews.indexOf(preview) + 1);
+            stepTitle.textContent = preview.dataset.title;
+            stepLabel.textContent = preview.dataset.label;
+            description.textContent = preview.dataset.description;
+
+            featuredImage.classList.add('is-changing');
+            var request = ++imageRequest;
+            function revealImage() {
+              if (request === imageRequest) featuredImage.classList.remove('is-changing');
+            }
+            featuredImage.onload = revealImage;
+            featuredImage.onerror = revealImage;
+            featuredImage.alt = preview.dataset.alt;
+            featuredImage.src = preview.dataset.image;
+            if (featuredImage.complete && featuredImage.naturalWidth) {
+              window.requestAnimationFrame(revealImage);
+            }
+          }
+
+          previews.forEach(function (preview) {
+            preview.addEventListener('mouseenter', function () { selectStep(preview); });
+            preview.addEventListener('focus', function () { selectStep(preview); });
+            preview.addEventListener('click', function () { selectStep(preview); });
+          });
+
+          window.setInterval(function () {
+            if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            var activeIndex = previews.findIndex(function (preview) {
+              return preview.classList.contains('is-active');
+            });
+            selectStep(previews[(activeIndex + 1) % previews.length]);
+          }, 3000);
+        }());
+      </script>
     </div>
   </section>
 
@@ -349,36 +456,166 @@
       </div>
     </div>
   </section>
-
-  <!-- ========== FOOTER ========== -->
-  <footer id="homeFooter">
-    <div class="home-footer-inner">
-      <div class="home-footer-brand">
-        <a href="index.html" class="brand">
-          <span class="brand-city">Adama City</span>
-          <span class="brand-name">Smart Bin</span>
-        </a>
-        <p>Waste reports and collection requests for Adama City.</p>
+<!-- ========== STATS ========== -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="stat-icon"><i class="fas fa-trash-alt"></i></div>
+        <span class="stat-num" data-target="240">0</span><span class="stat-unit">+</span>
+        <p>Active Bin Locations</p>
       </div>
-      <nav class="home-footer-links" aria-label="Footer quick links">
-        <h2>Quick Links</h2>
-        <a href="index.html">Home</a>
-        <a href="collection.html">Request Collection</a>
-        <a href="report.html">Report an Issue</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy.html">Privacy Policy</a>
-      </nav>
-      <div class="home-footer-contact">
-        <h2>Contact</h2>
-        <p><i class="fas fa-location-dot" aria-hidden="true"></i> Adama City Hall, Adama (Nazret), Oromia Region, Ethiopia</p>
-        <p><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+251221100000">+251 22 110 0000</a></p>
-        <p><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:smartbinadamacity@gmail.com">smartbinadamacity@gmail.com</a></p>
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-icon"><i class="fas fa-map"></i></div>
+        <span class="stat-num" data-target="12">0</span><span class="stat-unit"></span>
+        <p>City Zones Covered</p>
+      </div>
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <span class="stat-num" data-target="5200">0</span><span class="stat-unit">+</span>
+        <p>Citizens Served Daily</p>
+      </div>
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="stat-icon"><i class="fas fa-flag"></i></div>
+        <span class="stat-num" data-target="98">0</span><span class="stat-unit">%</span>
+        <p>Report Resolution Rate</p>
       </div>
     </div>
-    <div class="home-footer-bottom">
-      <p>&copy; 2026 Adama City Administration. All Rights Reserved.</p>
-      <a href="privacy.html">Privacy Policy</a>
+  </section>
+
+ 
+  
+  <!-- ========== OBJECTIVES ========== -->
+  <section class="objectives">
+    <div class="section-header" data-aos="fade-up">
+      <span class="section-tag">Our Goals</span>
+      <h2>Key Objectives</h2>
+      <p>What we aim to achieve for Adama City and its citizens</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="obj-num">01</div>
+        <div class="obj-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <h3>Public Access</h3>
+        <p>Provide every citizen with easy access to garbage disposal location information across all city zones.</p>
+      </div>
+      <div class="obj-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="obj-num">02</div>
+        <div class="obj-icon"><i class="fas fa-tachometer-alt"></i></div>
+        <h3>Collection Efficiency</h3>
+        <p>Improve waste collection efficiency by using real-time reporting and smart scheduling systems.</p>
+      </div>
+      <div class="obj-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="obj-num">03</div>
+        <div class="obj-icon"><i class="fas fa-leaf"></i></div>
+        <h3>Clean Environment</h3>
+        <p>Maintain a clean, healthy, and sustainable urban environment for all residents of Adama City.</p>
+      </div>
+      <div class="obj-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="obj-num">04</div>
+        <div class="obj-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>Data-Driven Decisions</h3>
+        <p>Empower city administration with waste data analytics for better urban planning and resource allocation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VIDEO SECTION ========== -->
+  <section class="video-section">
+    <div class="section-header" data-aos="fade-up">
+      <span class="section-tag">City Overview</span>
+      <h2>Adama City Development Video</h2>
+      <p>Learn more about Adama City's smart development initiatives</p>
+    </div>
+    <div class="video-wrapper" data-aos="zoom-in">
+      <div class="video-frame">
+        <iframe
+          src="https://www.youtube.com/embed/1DDoRRBRqug"
+          title="Adama City Sectorial Offices"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TEAM ========== -->
+  <section class="team">
+    <div class="section-header" data-aos="fade-up">
+      <span class="section-tag">The Team</span>
+      <h2>Built By</h2>
+      <p>Developed under the Adama City Administration Waste Management Initiative</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="team-avatar"><i class="fas fa-user-tie"></i></div>
+        <h3>Project Manager</h3>
+        <p>Adama City Administration</p>
+        <span class="team-tag">Management</span>
+      </div>
+      <div class="team-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="team-avatar blue"><i class="fas fa-laptop-code"></i></div>
+        <h3>GIS Developer</h3>
+        <p>Spatial Data &amp; Mapping Team</p>
+        <span class="team-tag">Development</span>
+      </div>
+      <div class="team-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="team-avatar green"><i class="fas fa-recycle"></i></div>
+        <h3>Sanitation Team</h3>
+        <p>Waste Management Division</p>
+        <span class="team-tag">Operations</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA ========== -->
+  <section class="about-cta" data-aos="fade-up">
+    <div class="cta-box">
+      <i class="fas fa-truck"></i>
+      <h2>Need a Waste Collection?</h2>
+      <p>Submit a public collection request for your location or report a waste problem.</p>
+      <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <a href="collection.html" class="btn btn-white"><i class="fas fa-truck"></i> Request Collection</a>
+        <a href="report.html" class="btn btn-outline-white"><i class="fas fa-flag"></i> Report Issue</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <div class="brand-icon"><i class="fas fa-recycle"></i></div>
+          <div class="brand-text">
+            <span class="brand-title">SmartBin</span>
+            <span class="brand-sub">Adama City</span>
+          </div>
+        </a>
+        <p>Building a cleaner and smarter Adama City through GIS technology.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="report.html"><i class="fas fa-chevron-right"></i> Report</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p><i class="fas fa-map-marker-alt"></i> Adama City, Ethiopia</p>
+        <p><i class="fas fa-phone"></i> +251 22 110 XXXX</p>
+        <p><i class="fas fa-envelope"></i> info@smartbin.adama.gov.et</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Smart Waste Management System | Adama City Administration</p>
     </div>
   </footer>
 
@@ -400,6 +637,7 @@
   </div>
 
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+  <script src="public-language.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const notifyAssignedDriver = require('../utils/notifyAssignedDriver');
 const upload = require('../middleware/reportUpload');
 const { requireAuth, requireRole, optionalAuth } = require('../middleware/auth');
+const verifyTurnstile = require('../middleware/verifyTurnstile');
 
 const router = express.Router();
 const REPORT_STATUSES = ['pending', 'in-progress', 'resolved', 'dismissed'];
@@ -25,7 +26,7 @@ function safeCoordinates(body) {
   return { latitude: Number(body.latitude), longitude: Number(body.longitude) };
 }
 
-router.post('/', upload.single('photo'), async (req, res) => {
+router.post('/', verifyTurnstile, upload.single('photo'), async (req, res) => {
   try {
     const { fullName, phone, location, problemType, priority, description } = req.body;
     if (!fullName || !phone || !location || !problemType || !description) {

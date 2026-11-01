@@ -1,265 +1,302 @@
 (function () {
   'use strict';
 
-  var form = document.getElementById('collectionRequestForm');
-  var overlay = document.getElementById('requestCollection');
-  var modal = document.querySelector('.request-modal');
-  if (!form || !overlay || !modal) return;
-
-  var API = 'http://localhost:3000/api/collection-requests';
-  var step = 1;
-  var map;
-  var marker;
-  var submittedRequest;
-  var focusBeforeClose;
-  var steps = Array.prototype.slice.call(form.querySelectorAll('.request-step'));
-  var indicators = Array.prototype.slice.call(document.querySelectorAll('[data-step-indicator]'));
-  var fields = {
-    name: document.getElementById('requestName'),
-    phone: document.getElementById('requestPhone'),
-    district: document.getElementById('requestDistrict'),
-    landmark: document.getElementById('requestLandmark'),
-    latitude: document.getElementById('requestLatitude'),
-    longitude: document.getElementById('requestLongitude')
+  // ---- Config & strings (all user-facing text here, ready for Amharic / Afaan Oromo) ----
+  var CONFIG = { API: 'http://localhost:3000/api/collection-requests' }; // TODO: use a relative path in production
+  var LAST_REF_KEY = 'cf:lastRef';
+  var S = {
+    nameErr: 'Enter your full name.',
+    phoneErr: 'Enter a valid mobile number, e.g. 9 1234 5678.',
+    districtErr: 'Select your kebele.',
+    pinErr: 'Tap the map to drop a pin, or use your location.',
+    noPin: 'No pin yet',
+    pinSet: 'Pin placed',
+    locating: 'Finding your location…',
+    locUnsupported: 'Location is not available in this browser. Tap the map instead.',
+    locDenied: 'Could not get your location. Allow access, or tap the map instead.',
+    submitFail: 'Could not submit your request. Please try again.',
+    lookingUp: 'Looking up your request…',
+    notFound: 'No matching requests found. Check the ticket number and phone number.',
+    lookupFail: 'Could not retrieve your request. Please try again.',
+    copied: 'Ticket number copied.',
+    copyPrompt: 'Copy your ticket number:',
+    recent: 'Your recent requests',
+    submitted: 'Submitted ',
+    declined: 'This request was declined.',
+    timeline: ['Received', 'Approved', 'Driver assigned', 'Collected']
   };
-  var success = document.getElementById('requestSuccess');
 
-  function value(field) { return field.value.trim(); }
-  function selected(name) {
-    var input = form.querySelector('input[name="' + name + '"]:checked');
-    return input ? input.value : '';
-  }
-  function displayStep(number) {
-    step = number;
-    steps.forEach(function (panel) { panel.hidden = Number(panel.dataset.step) !== step; });
-    indicators.forEach(function (item) {
-      var n = Number(item.dataset.stepIndicator);
-      item.classList.toggle('is-active', n === step);
-      item.classList.toggle('is-complete', n < step);
-      var dot = item.querySelector('.stepper-dot');
-      if (dot) dot.innerHTML = n < step ? '<i class="fas fa-check" aria-hidden="true"></i>' : String(n);
-      var small = item.querySelector('small');
-      if (small) small.textContent = 'STEP ' + n + (n === step ? ' (ACTIVE)' : '');
+  var form = document.getElementById('collectionRequestForm');
+  if (!form) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var steps = [].slice.call(form.querySelectorAll('.cf-step'));
+  var indicators = [].slice.call(document.querySelectorAll('[data-step-indicator]'));
+  var f = {
+    name: $('requestName'), phone: $('requestPhone'), district: $('requestDistrict'),
+    landmark: $('requestLandmark'), lat: $('requestLatitude'), lng: $('requestLongitude')
+  };
+  var step = 1, map, marker, dirty = false, submittedRequest;
+  var toast = function (m, t) { if (window.showToast) window.showToast(m, t); };
+
+  // ---- helpers ----
+  function val(el) { return el.value.trim(); }
+  function selected(name) { var i = form.querySelector('input[name="' + name + '"]:checked'); return i ? i.value : ''; }
+  function short(text) { return String(text).replace(/\s*\([^)]*\)/, ''); }
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
-    document.getElementById('stepCount').textContent = 'Step ' + step + ' of 3';
-    document.getElementById('nextStep').hidden = step === 3;
-    document.getElementById('requestSubmit').hidden = step !== 3;
-    document.getElementById('backStep').hidden = step === 1;
-    document.getElementById('cancelRequest').hidden = step !== 1;
-    if (step === 2) {
-      document.getElementById('contactSummary').textContent = value(fields.name) + '  •  +251 ' + value(fields.phone);
-      ensureMap();
-      window.setTimeout(function () { if (map) map.invalidateSize(); }, 80);
-    }
-    if (step === 3) updateReview();
-    modal.scrollTop = 0;
   }
+  // Phone: accepts 0911…, +251911…, 251 911…, 911… → 9 national digits starting with 7 or 9.
+  function nationalPhone(raw) {
+    var d = String(raw).replace(/\D/g, '');
+    if (d.indexOf('251') === 0 && d.length > 9) d = d.slice(3);
+    d = d.replace(/^0+/, '');
+    return /^[79]\d{8}$/.test(d) ? d : '';
+  }
+  function fmtPhone(d) { return '+251 ' + d.charAt(0) + ' ' + d.slice(1, 5) + ' ' + d.slice(5); }
+
+  // ---- validation (errors are linked with aria-describedby in the HTML) ----
+  function setErr(input, errId, msg) {
+    $(errId).textContent = msg || '';
+    if (input) { if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid'); }
+    return !msg;
+  }
+  function checkName() { return setErr(f.name, 'requestNameErr', val(f.name).length < 2 ? S.nameErr : ''); }
+  function checkPhone() { return setErr(f.phone, 'requestPhoneErr', nationalPhone(f.phone.value) ? '' : S.phoneErr); }
+  function checkDistrict() { return setErr(f.district, 'requestDistrictErr', val(f.district) ? '' : S.districtErr); }
+  function validPin() {
+    var la = Number(f.lat.value), lo = Number(f.lng.value);
+    return f.lat.value !== '' && f.lng.value !== '' && isFinite(la) && isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180;
+  }
+  function checkPin() { $('requestCoordinatesErr').textContent = validPin() ? '' : S.pinErr; return validPin(); }
+  function validateStep(n) {
+    var first = null;
+    if (n === 1) {
+      var d = checkDistrict(), p = checkPin();
+      first = !p ? $('useRequestCurrentLocation') : (!d ? f.district : null);
+    } else if (n === 3) {
+      var a = checkName(), b = checkPhone();
+      first = !a ? f.name : (!b ? f.phone : null);
+    }
+    if (first) first.focus();
+    return !first;
+  }
+
+  // ---- steps ----
+  function showStep(n, scroll) {
+    step = n;
+    steps.forEach(function (s) { s.hidden = Number(s.dataset.step) !== n; });
+    indicators.forEach(function (li) {
+      var i = Number(li.dataset.stepIndicator);
+      li.classList.toggle('is-active', i === n);
+      li.classList.toggle('is-done', i < n);
+      if (i === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+      li.querySelector('.dot').innerHTML = i < n ? '<i class="fas fa-check" aria-hidden="true"></i>' : String(i);
+    });
+    $('backStep').hidden = n === 1;
+    $('nextStep').hidden = n === 3;
+    $('requestSubmit').hidden = n !== 3;
+    if (n === 3 && window.SmartBinCaptcha) window.SmartBinCaptcha.init('collectionCaptcha', 'collectionCaptchaStatus');
+    if (n === 1 && map) setTimeout(function () { map.invalidateSize(); }, 50);
+    if (n === 3) updateReview();
+    if (scroll) $('stepper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function next() { if (step < 3 && (step === 2 || validateStep(step))) showStep(step + 1, true); }
+  function updateReview() {
+    var lm = val(f.landmark);
+    $('reviewLocation').textContent = short(val(f.district)) + (lm ? ' · ' + lm : '');
+    $('reviewWaste').textContent = selected('wasteCategory') + ' · ' + short(selected('loadVolume'));
+  }
+
+  // ---- map ----
   function ensureMap() {
     if (map || !window.L) return;
     map = L.map('requestMap', { scrollWheelZoom: false }).setView([8.54, 39.27], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-    map.on('click', function (event) { setCoordinates(event.latlng.lat, event.latlng.lng, 'Collection point selected on map.'); });
-    if (fields.latitude.value && fields.longitude.value) setCoordinates(Number(fields.latitude.value), Number(fields.longitude.value), 'Saved collection point.');
+    map.on('click', function (e) { setCoordinates(e.latlng.lat, e.latlng.lng); });
+    if (validPin()) setCoordinates(Number(f.lat.value), Number(f.lng.value));
   }
-  function setCoordinates(lat, lng, message) {
-    fields.latitude.value = Number(lat).toFixed(6);
-    fields.longitude.value = Number(lng).toFixed(6);
-    document.getElementById('requestCoordinatesErr').textContent = '';
+  function setCoordinates(lat, lng, extra) {
+    f.lat.value = Number(lat).toFixed(6); f.lng.value = Number(lng).toFixed(6);
+    $('requestCoordinatesErr').textContent = '';
+    $('mapHint').hidden = true;
+    var chip = $('requestLocationStatus');
+    chip.classList.add('is-set');
+    chip.textContent = S.pinSet + ' · ' + Number(lat).toFixed(5) + ', ' + Number(lng).toFixed(5) + (extra ? ' · ' + extra : '');
     if (map) {
-      var point = [Number(lat), Number(lng)];
-      if (marker) marker.setLatLng(point);
-      else marker = L.marker(point, { draggable: true }).addTo(map);
-      marker.off('dragend').on('dragend', function (event) {
-        var p = event.target.getLatLng();
-        setCoordinates(p.lat, p.lng, 'Pinpoint adjusted.');
-      });
-      map.panTo(point);
-    }
-    document.getElementById('requestLocationStatus').textContent = message + ' ' + Number(lat).toFixed(5) + ', ' + Number(lng).toFixed(5);
-  }
-  function updateReview() {
-    document.getElementById('reviewContact').textContent = value(fields.name);
-    document.getElementById('reviewPhone').textContent = '+251 ' + value(fields.phone);
-    document.getElementById('reviewLocation').textContent = value(fields.district).replace(/\s*\([^)]*\)/, '');
-    document.getElementById('reviewLandmark').textContent = value(fields.landmark);
-  }
-  function setError(id, message) { document.getElementById(id).textContent = message || ''; }
-  function validPhone(text) { return /^[0-9\s()+.-]{7,25}$/.test(text) && text.replace(/\D/g, '').length >= 7; }
-  function validateContact() {
-    var ok = true;
-    setError('requestNameErr', ''); setError('requestPhoneErr', '');
-    if (value(fields.name).length < 2) { setError('requestNameErr', 'Enter your full name.'); ok = false; }
-    if (!validPhone(value(fields.phone))) { setError('requestPhoneErr', 'Enter a valid phone number.'); ok = false; }
-    if (!ok) form.querySelector('.field-error:not(:empty)')?.previousElementSibling?.querySelector('input')?.focus();
-    return ok;
-  }
-  function validateLocation() {
-    var ok = true;
-    setError('requestDistrictErr', ''); setError('requestLandmarkErr', ''); setError('requestCoordinatesErr', '');
-    if (!value(fields.district)) { setError('requestDistrictErr', 'Choose your sub-city or kebele.'); ok = false; }
-    if (value(fields.landmark).length < 3) { setError('requestLandmarkErr', 'Add a street or nearby landmark.'); ok = false; }
-    var lat = Number(fields.latitude.value); var lng = Number(fields.longitude.value);
-    if (!fields.latitude.value || !fields.longitude.value || !Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
-      setError('requestCoordinatesErr', 'Select the pickup point on the map or enter valid coordinates.'); ok = false;
-    }
-    return ok;
-  }
-  function setOpen(open) {
-    if (open) {
-      focusBeforeClose = document.activeElement;
-      overlay.classList.remove('is-closed');
-      document.body.classList.add('request-modal-open');
-      window.setTimeout(function () { fields.name.focus(); }, 20);
-    } else {
-      overlay.classList.add('is-closed');
-      document.body.classList.remove('request-modal-open');
-      if (focusBeforeClose && focusBeforeClose.focus) focusBeforeClose.focus();
+      var pt = [Number(lat), Number(lng)];
+      if (marker) marker.setLatLng(pt); else marker = L.marker(pt, { draggable: true }).addTo(map);
+      marker.off('dragend').on('dragend', function (e) { var p = e.target.getLatLng(); setCoordinates(p.lat, p.lng); });
+      map.panTo(pt);
     }
   }
-  document.querySelectorAll('a[href="#requestCollection"]').forEach(function (link) {
-    link.addEventListener('click', function (event) { event.preventDefault(); setOpen(true); });
-  });
-  document.getElementById('closeRequest').addEventListener('click', function () { setOpen(false); });
-  document.getElementById('closeSuccess').addEventListener('click', function () { setOpen(false); });
-  document.getElementById('cancelRequest').addEventListener('click', function () { setOpen(false); });
-  overlay.addEventListener('click', function (event) { if (event.target === overlay) setOpen(false); });
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && !overlay.classList.contains('is-closed')) setOpen(false);
-    if (event.key === 'Tab' && !overlay.classList.contains('is-closed')) {
-      var focusable = Array.prototype.slice.call(modal.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), a[href]')).filter(function (el) { return el.offsetParent !== null; });
-      if (!focusable.length) return;
-      if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable[focusable.length - 1].focus(); }
-      else if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) { event.preventDefault(); focusable[0].focus(); }
-    }
-  });
-  document.getElementById('nextStep').addEventListener('click', function () {
-    if (step === 1 && validateContact()) displayStep(2);
-    else if (step === 2 && validateLocation()) displayStep(3);
-  });
-  document.getElementById('backStep').addEventListener('click', function () { displayStep(Math.max(1, step - 1)); });
-  document.querySelectorAll('[data-go-step]').forEach(function (button) {
-    button.addEventListener('click', function () { displayStep(Number(button.dataset.goStep)); });
-  });
-  form.querySelectorAll('input[name="wasteCategory"]').forEach(function (input) {
-    input.addEventListener('change', function () { form.querySelectorAll('.category-card').forEach(function (card) { card.classList.toggle('is-selected', card.contains(input) && input.checked); }); });
-  });
-  form.querySelectorAll('input[name="loadVolume"]').forEach(function (input) {
-    input.addEventListener('change', function () { form.querySelectorAll('.volume-option').forEach(function (label) { label.classList.toggle('is-selected', label.contains(input) && input.checked); }); });
-  });
-  [fields.latitude, fields.longitude].forEach(function (field) {
-    field.addEventListener('change', function () {
-      var lat = Number(fields.latitude.value); var lng = Number(fields.longitude.value);
-      if (fields.latitude.value && fields.longitude.value && Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) setCoordinates(lat, lng, 'Coordinates updated.');
-    });
-  });
-  document.getElementById('useRequestCurrentLocation').addEventListener('click', function () {
-    var button = document.getElementById('useRequestCurrentLocation');
-    if (!navigator.geolocation) { document.getElementById('requestLocationStatus').textContent = 'Location is not available in this browser. Select a point on the map.'; return; }
-    button.disabled = true; document.getElementById('requestLocationStatus').textContent = 'Finding your location…';
-    navigator.geolocation.getCurrentPosition(function (position) {
-      setCoordinates(position.coords.latitude, position.coords.longitude, 'Current location found. GPS accuracy ±' + Math.round(position.coords.accuracy) + ' m.');
+  $('useRequestCurrentLocation').addEventListener('click', function () {
+    var btn = this, chip = $('requestLocationStatus');
+    if (!navigator.geolocation) { chip.textContent = S.locUnsupported; return; }
+    btn.disabled = true; chip.classList.remove('is-set'); chip.textContent = S.locating;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      setCoordinates(pos.coords.latitude, pos.coords.longitude, '±' + Math.round(pos.coords.accuracy) + ' m');
       if (map) map.setZoom(17);
-      button.disabled = false;
-    }, function () {
-      document.getElementById('requestLocationStatus').textContent = 'Could not access your location. Allow location access or select a point on the map.';
-      button.disabled = false;
-    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+      btn.disabled = false;
+    }, function () { chip.textContent = S.locDenied; btn.disabled = false; },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
   });
+  [f.lat, f.lng].forEach(function (el) {
+    el.addEventListener('change', function () { if (validPin()) setCoordinates(Number(f.lat.value), Number(f.lng.value)); });
+  });
+
+  // ---- events: navigation, Enter key, blur validation ----
+  $('nextStep').addEventListener('click', next);
+  $('backStep').addEventListener('click', function () { showStep(Math.max(1, step - 1), true); });
+  [].forEach.call(document.querySelectorAll('[data-go-step]'), function (b) {
+    b.addEventListener('click', function () { showStep(Number(b.dataset.goStep), true); });
+  });
+  form.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.target.tagName === 'BUTTON' || e.target.tagName === 'SUMMARY') return;
+    e.preventDefault();
+    if (step < 3) next(); else form.requestSubmit();
+  });
+  form.addEventListener('input', function () { dirty = true; });
+  f.name.addEventListener('blur', function () { if (f.name.value) checkName(); });
+  f.district.addEventListener('change', checkDistrict);
+  f.phone.addEventListener('blur', function () {
+    var d = nationalPhone(f.phone.value);
+    if (d) f.phone.value = d.charAt(0) + ' ' + d.slice(1, 5) + ' ' + d.slice(5);
+    if (f.phone.value) checkPhone();
+  });
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  // ---- submit ----
   function showSuccess(data, payload) {
-    submittedRequest = { data: data, payload: payload };
-    form.hidden = true; document.querySelector('.request-stepper').hidden = true; document.querySelector('.modal-header').hidden = true;
-    success.hidden = false;
+    submittedRequest = payload; dirty = false;
+    // NOTE: a locally generated ref only appears if the server returns none; it cannot be tracked.
     var ref = data.refId || data.id || data._id || ('CRQ-' + new Date().getFullYear() + '-' + Math.random().toString(16).slice(2, 10).toUpperCase());
-    document.getElementById('requestRef').textContent = ref;
-    document.getElementById('qrReference').textContent = ref;
-    document.getElementById('assignedDriver').textContent = data.assignedDriver && (data.assignedDriver.displayName || data.assignedDriver.username) || 'Not assigned yet';
-    document.getElementById('assignedTruck').textContent = data.binCode || 'Not assigned yet';
-    document.getElementById('trackRequest').disabled = false;
-    document.getElementById('successLocation').textContent = payload.location + ' · ' + Number(payload.latitude).toFixed(5) + ', ' + Number(payload.longitude).toFixed(5);
-    document.getElementById('successContact').textContent = payload.fullName;
-    document.getElementById('successPhone').textContent = payload.phone;
-    document.getElementById('successDistrict').textContent = value(fields.district).replace(/\s*\([^)]*\)/, '');
-    document.getElementById('successLandmark').textContent = value(fields.landmark);
-    document.getElementById('successCategory').textContent = selected('wasteCategory');
-    document.getElementById('successVolume').textContent = selected('loadVolume').replace(/\s*\([^)]*\)/, '');
-    document.getElementById('requestError').hidden = true;
-    var qr = document.getElementById('requestQr'); qr.textContent = '';
-    if (window.QRCode) new QRCode(qr, { text: ref + ' | ' + payload.location, width: 104, height: 104, colorDark: '#171342', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-    modal.scrollTop = 0;
+    $('requestRef').textContent = ref;
+    $('successSummary').textContent = short(val(f.district)) + ' · ' + selected('wasteCategory') + ' · ' + short(selected('loadVolume'));
+    try { localStorage.setItem(LAST_REF_KEY, ref); } catch (e) {}
+    $('trackRef').value = ref;
+    form.hidden = true; $('stepper').hidden = true; $('requestSuccess').hidden = false;
+    $('successTitle').focus();
   }
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();
-    if (step !== 3 || !validateContact() || !validateLocation()) return;
-    var description = ['Category: ' + selected('wasteCategory'), 'Estimated volume: ' + selected('loadVolume')].join('\n');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (step !== 3) return;
+    if (!validateStep(1)) { showStep(1); return; }
+    if (!validateStep(3)) return;
+    var captchaToken = window.SmartBinCaptcha && window.SmartBinCaptcha.getToken();
+    var btn = $('requestSubmit'), err = $('requestError');
+    if (!captchaToken) {
+      if (window.SmartBinCaptcha) window.SmartBinCaptcha.init('collectionCaptcha', 'collectionCaptchaStatus');
+      err.textContent = 'Please complete the CAPTCHA verification before submitting.';
+      err.hidden = false;
+      $('collectionCaptcha').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var lm = val(f.landmark);
     var payload = {
-      fullName: value(fields.name),
-      phone: '+251 ' + value(fields.phone),
-      location: value(fields.district) + ' — ' + value(fields.landmark),
-      latitude: Number(fields.latitude.value), longitude: Number(fields.longitude.value), description: description
+      fullName: val(f.name),
+      phone: fmtPhone(nationalPhone(f.phone.value)),
+      location: val(f.district) + (lm ? ' — ' + lm : ''),
+      latitude: Number(f.lat.value), longitude: Number(f.lng.value),
+      description: 'Category: ' + selected('wasteCategory') + '\nEstimated volume: ' + selected('loadVolume')
     };
-    var submit = document.getElementById('requestSubmit');
-    var error = document.getElementById('requestError');
-    submit.disabled = true; error.hidden = true;
-    submit.querySelector('.btn-text').hidden = true; submit.querySelector('.btn-loading').hidden = false;
-    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      .then(function (response) { return response.json().catch(function () { return {}; }).then(function (body) { if (!response.ok) throw new Error(body.message || 'The request could not be submitted.'); return body; }); })
-      .then(function (body) { if (body.success === false) throw new Error(body.message || 'The request could not be submitted.'); showSuccess(body.data || {}, payload); })
-      .catch(function (err) { error.textContent = err.message || 'Could not connect to the dispatch service. Please try again.'; error.hidden = false; })
-      .finally(function () { submit.disabled = false; submit.querySelector('.btn-text').hidden = false; submit.querySelector('.btn-loading').hidden = true; });
+    btn.disabled = true; err.hidden = true;
+    btn.querySelector('.btn-text').hidden = true; btn.querySelector('.btn-loading').hidden = false;
+    fetch(CONFIG.API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'cf-turnstile-response': captchaToken },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error(b.message || S.submitFail); return b; }); })
+      .then(function (b) { if (b.success === false) throw new Error(b.message || S.submitFail); showSuccess(b.data || {}, payload); })
+      .catch(function (x) {
+        if (window.SmartBinCaptcha) window.SmartBinCaptcha.reset();
+        err.textContent = x.message || S.submitFail; err.hidden = false;
+      })
+      .finally(function () { btn.disabled = false; btn.querySelector('.btn-text').hidden = false; btn.querySelector('.btn-loading').hidden = true; });
   });
-  document.getElementById('downloadReceipt').addEventListener('click', function () { window.print(); });
-  document.getElementById('copyRequestRef').addEventListener('click', function () {
-    var ref = document.getElementById('requestRef').textContent;
-    if (!navigator.clipboard) { window.prompt('Copy your ticket reference:', ref); return; }
-    navigator.clipboard.writeText(ref).then(function () { window.showToast('Ticket reference copied.', 'success'); }).catch(function () { window.prompt('Copy your ticket reference:', ref); });
+
+  // ---- success actions ----
+  $('downloadReceipt').addEventListener('click', function () { window.print(); });
+  $('copyRequestRef').addEventListener('click', function () {
+    var ref = $('requestRef').textContent;
+    if (!navigator.clipboard) { window.prompt(S.copyPrompt, ref); return; }
+    navigator.clipboard.writeText(ref).then(function () { toast(S.copied, 'success'); }).catch(function () { window.prompt(S.copyPrompt, ref); });
   });
-  document.getElementById('trackRequest').addEventListener('click', function () {
-    if (submittedRequest) window.open('https://www.openstreetmap.org/?mlat=' + encodeURIComponent(submittedRequest.payload.latitude) + '&mlon=' + encodeURIComponent(submittedRequest.payload.longitude) + '#map=16/' + encodeURIComponent(submittedRequest.payload.latitude) + '/' + encodeURIComponent(submittedRequest.payload.longitude), '_blank', 'noopener');
+  $('trackRequest').addEventListener('click', function () { showTab('requestHistory', true); $('trackPhone').focus(); });
+  $('newRequestBtn').addEventListener('click', function () {
+    form.reset(); form.hidden = false; $('requestSuccess').hidden = true; $('stepper').hidden = false;
+    if (window.SmartBinCaptcha) window.SmartBinCaptcha.reset();
+    [].forEach.call(form.querySelectorAll('.field-error'), function (el) { el.textContent = ''; });
+    [].forEach.call(form.querySelectorAll('[aria-invalid]'), function (el) { el.removeAttribute('aria-invalid'); });
+    if (marker && map) { map.removeLayer(marker); marker = null; }
+    $('mapHint').hidden = false;
+    var chip = $('requestLocationStatus'); chip.classList.remove('is-set'); chip.textContent = S.noPin;
+    dirty = false; showStep(1, true);
   });
-  document.getElementById('newRequestBtn').addEventListener('click', function () {
-    form.reset(); form.hidden = false; success.hidden = true;
-    document.querySelector('.request-stepper').hidden = false; document.querySelector('.modal-header').hidden = false;
-    document.getElementById('requestQr').textContent = '';
-    document.getElementById('trackRequest').disabled = true;
-    form.querySelectorAll('.field-error').forEach(function (el) { el.textContent = ''; });
-    form.querySelectorAll('.category-card').forEach(function (el) { el.classList.toggle('is-selected', el.querySelector('input').checked); });
-    form.querySelectorAll('.volume-option').forEach(function (el) { el.classList.toggle('is-selected', el.querySelector('input').checked); });
-    if (marker) { map.removeLayer(marker); marker = null; }
-    displayStep(1); fields.name.focus();
-  });
-  displayStep(1);
-  var historyForm = document.getElementById('requestHistoryForm');
-  var historyResults = document.getElementById('requestHistoryResults');
-  function escapeHtml(text) {
-    return String(text == null ? '' : text).replace(/[&<>"']/g, function (char) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+
+  // ---- tabs (supports #requestCollection and #requestHistory deep links) ----
+  function showTab(id, scroll) {
+    [].forEach.call(document.querySelectorAll('.cf-tab'), function (t) {
+      var on = t.dataset.tab === id;
+      t.classList.toggle('is-active', on); t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
+    $('requestCollection').hidden = id !== 'requestCollection';
+    $('requestHistory').hidden = id !== 'requestHistory';
+    if (id === 'requestCollection' && map) setTimeout(function () { map.invalidateSize(); }, 50);
+    if (scroll) document.querySelector('.cf-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  function statusLabel(status) {
-    return { pending: 'Waiting for review', accepted: 'Approved, awaiting driver', rejected: 'Request declined', assigned: 'Driver assigned', 'in-progress': 'Collection in progress', completed: 'Completed' }[status] || 'Status update';
+  [].forEach.call(document.querySelectorAll('.cf-tab'), function (t) {
+    t.addEventListener('click', function () { showTab(t.dataset.tab, false); });
+  });
+  [].forEach.call(document.querySelectorAll('a[href="#requestCollection"], a[href="#requestHistory"]'), function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.getAttribute('href').slice(1), true); });
+  });
+
+  // ---- tracking ----
+  function statusIndex(s) { return { pending: 0, accepted: 1, assigned: 2, 'in-progress': 2, completed: 3 }[s]; }
+  function parseDesc(t) {
+    var c = /Category:\s*(.+)/i.exec(t || ''), v = /Estimated volume:\s*(.+)/i.exec(t || '');
+    return c && v ? c[1].trim() + ' · ' + short(v[1].trim()) : (t || '');
   }
-  historyForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-    var refId = historyForm.elements.refId.value.trim().toUpperCase();
-    var phone = historyForm.elements.phone.value.trim();
-    var button = historyForm.querySelector('button[type="submit"]');
-    button.disabled = true;
-    historyResults.innerHTML = '<p class="history-message">Looking up your request…</p>';
-    fetch(API + '/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refId: refId, phone: phone }) })
-      .then(function (response) { return response.json().catch(function () { return {}; }).then(function (body) { if (!response.ok) throw new Error(body.message || 'Could not find that request.'); return body; }); })
-      .then(function (body) {
-        var requests = Array.isArray(body.data) ? body.data : [];
-        if (!requests.length) throw new Error('No matching requests were found. Check the reference and phone number.');
-        historyResults.innerHTML = '<h3>Your recent requests</h3>' + requests.map(function (request) {
-          var date = request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date unavailable';
-          var details = escapeHtml(request.description || '').replace(/\n/g, '<br>');
-          return '<article class="history-request"><div class="history-request-top"><strong>' + escapeHtml(request.refId) + '</strong><span class="history-status status-' + escapeHtml(request.status) + '">' + escapeHtml(statusLabel(request.status)) + '</span></div><p>' + escapeHtml(request.location) + '</p>' + (details ? '<p class="history-request-details">' + details + '</p>' : '') + '<small>Submitted ' + escapeHtml(date) + '</small></article>';
+  function timeline(status) {
+    if (status === 'rejected') return '<p class="declined"><i class="fas fa-times-circle"></i> ' + S.declined + '</p>';
+    var idx = statusIndex(status); if (idx === undefined) idx = 0;
+    return '<ol class="tl">' + S.timeline.map(function (label, i) {
+      return '<li class="' + (i < idx || status === 'completed' ? 'done' : (i === idx ? 'current' : '')) + '"' + (i === idx ? ' aria-current="step"' : '') + '><span></span>' + label + '</li>';
+    }).join('') + '</ol>';
+  }
+  var hf = $('requestHistoryForm'), hr = $('requestHistoryResults');
+  try { var last = localStorage.getItem(LAST_REF_KEY); if (last) hf.elements.refId.value = last; } catch (e) {}
+  hf.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var refId = hf.elements.refId.value.trim().toUpperCase();
+    var d = nationalPhone(hf.elements.phone.value);
+    var btn = hf.querySelector('button[type="submit"]');
+    if (!d) { hr.innerHTML = '<p class="history-message is-error">' + S.phoneErr + '</p>'; return; }
+    btn.disabled = true; hr.innerHTML = '<p class="history-message">' + S.lookingUp + '</p>';
+    fetch(CONFIG.API + '/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refId: refId, phone: fmtPhone(d) }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error(b.message || S.notFound); return b; }); })
+      .then(function (b) {
+        var list = Array.isArray(b.data) ? b.data : [];
+        if (!list.length) throw new Error(S.notFound);
+        hr.innerHTML = '<h3>' + S.recent + '</h3>' + list.map(function (r) {
+          var date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '';
+          return '<article class="history-request"><div class="history-top"><strong>' + esc(r.refId) + '</strong>' +
+            (date ? '<small>' + S.submitted + esc(date) + '</small>' : '') + '</div>' +
+            '<p>' + esc(r.location) + '</p><p class="muted">' + esc(parseDesc(r.description)) + '</p>' + timeline(r.status) + '</article>';
         }).join('');
       })
-      .catch(function (error) { historyResults.innerHTML = '<p class="history-message is-error">' + escapeHtml(error.message || 'Could not retrieve request history. Please try again.') + '</p>'; })
-      .finally(function () { button.disabled = false; });
+      .catch(function (x) { hr.innerHTML = '<p class="history-message is-error">' + esc(x.message || S.lookupFail) + '</p>'; })
+      .finally(function () { btn.disabled = false; });
   });
+
+  // ---- init ----
+  ensureMap();
+  showStep(1, false);
+  var h = (location.hash || '').slice(1);
+  if (h === 'requestHistory') showTab('requestHistory', false);
 })();

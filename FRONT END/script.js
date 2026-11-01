@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SMART GARBAGE BIN LOCATOR — MAIN SCRIPT
    All pages: header, nav, animations, counters, form, upload
    ============================================================ */
@@ -13,6 +13,28 @@
   }
   updateHeader();
   window.addEventListener('scroll', updateHeader, { passive: true });
+})();
+
+/* -- 1B. HERO VIDEO AUTOPLAY LOOP -------------------------- */
+(function () {
+  var video = document.querySelector('.hero-visual video');
+  if (!video) return;
+  video.muted = true;
+  video.loop = true;
+  var promise = video.play();
+  if (promise !== undefined) {
+    promise.catch(function () {
+      function startOnInteraction() {
+        video.play();
+        ['click', 'touchstart', 'scroll'].forEach(function (ev) {
+          window.removeEventListener(ev, startOnInteraction);
+        });
+      }
+      ['click', 'touchstart', 'scroll'].forEach(function (ev) {
+        window.addEventListener(ev, startOnInteraction, { passive: true });
+      });
+    });
+  }
 })();
 
 /* ── 2. MOBILE HAMBURGER ─────────────────────────────────── */
@@ -424,15 +446,28 @@ window.showToast = function (message, type) {
 };
 
 /* ── 11. PAGE LOADER ────────────────────────────────────── */
-window.addEventListener('load', function () {
+(function () {
   var loader = document.querySelector('.page-loader');
-  if (loader) {
+  if (!loader) return;
+  var dismissed = false;
+  function hideLoader() {
+    if (dismissed) return;
+    dismissed = true;
     loader.classList.add('hidden');
     setTimeout(function () {
-      loader.remove();
-    }, 300);
+      if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+    }, 400);
   }
-});
+  if (document.readyState === 'complete') {
+    hideLoader();
+  } else {
+    window.addEventListener('load', hideLoader);
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(hideLoader, 350);
+    });
+    setTimeout(hideLoader, 1200);
+  }
+})();
 
 /* ── 12. OFFICIAL BADGE CLICK ────────────────────────────── */
 (function () {

@@ -95,7 +95,7 @@
 - ✅ **Drag & Drop** — Photo upload with drag-and-drop
 - ✅ **Error Recovery** — Graceful error handling throughout
 - ✅ **Performance** — Optimized loading and rendering
-- ✅ **Security** — Honeypot anti-spam, input sanitization
+- ✅ **Security** — Cloudflare Turnstile on public report and collection forms, server-side token verification
 
 ---
 
@@ -134,6 +134,9 @@ FRONT END/
 # Just open in browser — no build required!
 # Double-click: index.html
 ```
+
+### **CAPTCHA Setup**
+Create a Cloudflare Turnstile widget for the public website hostname. Put its **site key** in `captcha-config.js` and set the matching **secret key** as `TURNSTILE_SECRET_KEY` in the backend `.env` file. Never put the secret key in frontend code. Until both keys are configured, public form submissions fail closed. The backend can optionally restrict verification to `TURNSTILE_EXPECTED_HOSTNAME`.
 
 ### **2. Testing Checklist**
 - [ ] Open `index.html` in browser

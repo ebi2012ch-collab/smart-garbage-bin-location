@@ -1,0 +1,234 @@
+/* Full-bleed home hero video. Keep this after the shared/page styles. */
+.hero-bg {
+  overflow: hidden;
+}
+
+.hero-bg .hero-visual {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: none;
+  margin: 0;
+  transform: none;
+  overflow: hidden;
+}
+
+.hero-bg .hero-visual::before {
+  display: none;
+  animation: none;
+}
+
+.hero-bg video.hero-mobile-img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-width: 100%;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+  animation: heroVideoFadeIn .9s ease-out both;
+  will-change: opacity;
+}
+
+.hero-bg .hero-visual-badge {
+  display: none;
+}
+
+.hero-overlay {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-inner {
+  z-index: 2;
+}
+
+@keyframes heroVideoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg video.hero-mobile-img {
+    animation: none;
+    opacity: 1;
+    will-change: auto;
+  }
+}
+
+.home-process-showcase {
+  width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+.home-process-previews {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 18px);
+  width: min(100%, 820px);
+  margin: 0 auto;
+}
+
+.home-process-preview {
+  position: relative;
+  display: block;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #f2f4f8;
+  box-shadow: 0 5px 16px rgba(10, 4, 60, .09);
+  cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.home-process-preview:hover {
+  transform: translateY(-2px);
+}
+
+.home-process-preview.is-active {
+  border-color: var(--accent, #5146c8);
+  box-shadow: 0 0 0 3px rgba(81, 70, 200, .12), 0 8px 20px rgba(10, 4, 60, .12);
+}
+
+.home-process-preview:focus-visible {
+  outline: 3px solid #22206b;
+  outline-offset: 4px;
+}
+
+.home-process-preview > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-process-preview-number {
+  position: absolute;
+  bottom: 6px;
+  left: 7px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .75);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, .72);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.home-process-feature {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: clamp(18px, 3vw, 28px) auto 0;
+  overflow: hidden;
+  border: 1px solid rgba(10, 4, 60, .08);
+  border-radius: clamp(16px, 2.5vw, 26px);
+  background: #eef1f5;
+  box-shadow: 0 18px 44px rgba(10, 4, 60, .12);
+}
+
+.home-process-feature-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity .24s ease, transform .32s ease;
+}
+
+.home-process-feature-image.is-changing {
+  opacity: .35;
+  transform: scale(.99);
+}
+
+.home-process-details {
+  max-width: 720px;
+  min-height: 148px;
+  margin: 20px auto 0;
+  text-align: center;
+}
+
+.home-process-step-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--navy, #172554);
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem) !important;
+}
+
+.home-process-step-heading strong {
+  font-weight: 700;
+}
+
+.home-process-step-icon {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-right: 3px;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef1ff;
+  color: var(--accent, #5146c8);
+  font-size: .72rem;
+}
+
+.home-process-step-label {
+  margin-top: 4px;
+  color: var(--text-muted, #778196);
+  font-size: clamp(1rem, 1.8vw, 1.15rem) !important;
+  font-weight: 500;
+}
+
+.home-process-description {
+  margin: 14px auto 0;
+  color: var(--text-muted, #596579);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.2rem, 2.7vw, 1.6rem) !important;
+  line-height: 1.55;
+}
+
+@media (max-width: 600px) {
+  .home-process-previews {
+    gap: 7px;
+  }
+
+  .home-process-preview {
+    border-radius: 9px;
+  }
+
+  .home-process-preview-number {
+    bottom: 4px;
+    left: 4px;
+    width: 21px;
+    height: 21px;
+    font-size: .6rem;
+  }
+
+  .home-process-details {
+    min-height: 170px;
+    margin-top: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-process-preview,
+  .home-process-feature-image {
+    transition: none;
+  }
+}

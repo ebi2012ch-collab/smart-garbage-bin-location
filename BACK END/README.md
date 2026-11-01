@@ -13,7 +13,7 @@ npm install
 ```
 
 ### 2. Configure environment
-Copy `.env.example` to `.env` and set `MONGO_URI`, a long random `JWT_SECRET`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` before starting the API. Set `DEVICE_KEY` to a unique high-entropy value before enabling physical devices. Optional thresholds are `BIN_FILLING_THRESHOLD=70`, `BIN_COLLECTION_THRESHOLD=90`, and `BIN_READING_STALE_MINUTES=120`.
+Copy `.env.example` to `.env` and set `MONGO_URI`, a long random `JWT_SECRET`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` before starting the API. Set `TURNSTILE_SECRET_KEY` to the secret key from your Cloudflare Turnstile widget; public collection requests and report submissions are rejected when CAPTCHA verification is missing, invalid, or unavailable. Optionally set `TURNSTILE_EXPECTED_HOSTNAME` to the exact public hostname. Set `DEVICE_KEY` to a unique high-entropy value before enabling physical devices. Optional thresholds are `BIN_FILLING_THRESHOLD=70`, `BIN_COLLECTION_THRESHOLD=90`, and `BIN_READING_STALE_MINUTES=120`.
 
 ### 3. Start the server
 ```bash
@@ -25,6 +25,8 @@ npm run dev
 ```
 
 The API will be running at **http://localhost:3000** unless `PORT` is set.
+
+Configure the matching public Turnstile site key in `FRONT END/captcha-config.js`. Keep the secret key only in the backend `.env`; do not commit it or put it in frontend files. The Turnstile widget must allow the public site's hostname.
 
 Run the monitoring and assignment checks with `npm test`. The API integration test uses a separate `smartbin_workflow_test_*` database only when `MONGO_URI` points to local MongoDB; it skips rather than writing to a remote database.
 
@@ -66,7 +68,7 @@ To safely register the one demo bin without deleting existing data, configure `.
 ### Reports
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/reports` | Submit citizen report | Public |
+| POST | `/api/reports` | Submit citizen report; requires a valid `cf-turnstile-response` header | Public + CAPTCHA |
 | GET | `/api/reports` | List all reports | JWT (admin) |
 | GET | `/api/reports?status=pending` | Filter by status | JWT |
 | GET | `/api/reports/:id` | Get single report | Public |
@@ -78,7 +80,7 @@ The admin status update enforces `pending → in-progress → resolved` and acce
 ### Collection Requests
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/collection-requests` | Submit a public collection request | Public |
+| POST | `/api/collection-requests` | Submit a collection request; requires a valid `cf-turnstile-response` header | Public + CAPTCHA |
 | GET | `/api/collection-requests` | List requests; optional `?status=` filter | JWT (admin) |
 | PATCH | `/api/collection-requests/:id/status` | Accept or reject a pending request | JWT (admin) |
 | PATCH | `/api/collection-requests/:id/assign` | Assign a driver to an accepted request | JWT (admin) |

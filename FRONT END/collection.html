@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Request Collection | Adama City Smart Bin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="public-language.css">
   <link rel="stylesheet" href="report.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="collection-flow.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="readability.css">
+  <link rel="stylesheet" href="collection-flow.css">
   <meta name="theme-color" content="#0A043C">
 </head>
 <body>
@@ -28,7 +28,6 @@
         <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
       </nav>
-      <a href="#requestCollection" class="nav-cta">Request Collection</a>
       <button class="hamburger" id="hamburger" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
@@ -39,8 +38,7 @@
     <div class="page-hero-content">
       <span class="hero-tag"><i class="fas fa-truck"></i> Public Service</span>
       <h1>Request a <span class="gradient-text">Collection</span></h1>
-      <p>Request a pickup in a few steps. No account is needed. Keep your ticket reference to check its status later.</p>
-      <div class="hero-actions"><a class="hero-request-button" href="#requestCollection">Request a pickup <i class="fas fa-arrow-right"></i></a><a class="hero-history-button" href="#requestHistory">Track an existing request <i class="fas fa-search"></i></a></div>
+      <p>Free, takes about a minute, no account needed. You get a ticket number to check progress later.</p>
     </div>
     <div class="hero-wave">
       <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -49,180 +47,158 @@
     </div>
   </section>
 
-  <section class="report-section collection-info" id="main-content">
-    <div class="collection-info-card">
-      <i class="fas fa-clipboard-check"></i>
-      <div>
-        <h2>What happens next?</h2>
-        <p>After submission, keep the ticket reference. You can use it with your phone number to review this request and your recent requests.</p>
-      </div>
-      <a href="#requestCollection">Request a collection</a>
+  <main class="cf" id="main-content">
+    <div class="cf-tabs" role="tablist" aria-label="Collection service">
+      <button class="cf-tab is-active" role="tab" id="tabRequest" aria-selected="true" aria-controls="requestCollection" data-tab="requestCollection" type="button"><i class="fas fa-truck"></i> Request pickup</button>
+      <button class="cf-tab" role="tab" id="tabTrack" aria-selected="false" aria-controls="requestHistory" data-tab="requestHistory" type="button"><i class="fas fa-ticket-alt"></i> Track a request</button>
     </div>
-  </section>
 
-  <section class="request-history-section" id="requestHistory" aria-labelledby="historyTitle">
-    <div class="request-history-card">
-      <div class="history-heading"><span class="history-icon"><i class="fas fa-ticket-alt"></i></span><div><h2 id="historyTitle">Track a request</h2><p>Enter a ticket reference and the phone number used when you submitted it.</p></div></div>
-      <form id="requestHistoryForm" class="history-form">
-        <label>Ticket reference<input name="refId" type="text" placeholder="CRQ-2026-1A2B3C4D5E6F7788" autocomplete="off" required></label>
-        <label>Phone number<input name="phone" type="tel" placeholder="+251 9 1234 5678" autocomplete="tel" required></label>
-        <button class="primary-button" type="submit"><i class="fas fa-search"></i> Find my requests</button>
-      </form>
-      <p class="history-privacy">Your reference and phone number are used to confirm access. Only matching requests are shown.</p>
-      <div id="requestHistoryResults" class="history-results" aria-live="polite"></div>
-    </div>
-  </section>
-
-  <div class="request-overlay is-closed" id="requestCollection" role="presentation">
-    <section class="request-modal" role="dialog" aria-modal="true" aria-labelledby="requestTitle" aria-describedby="requestIntro">
-      <div class="modal-topline"></div>
-      <header class="modal-header">
-        <div>
-          <span class="public-badge"><i class="fas fa-shield-alt"></i> Public service · no account required</span>
-          <h2 id="requestTitle">Request Waste Collection</h2>
-          <p id="requestIntro">Tell us who to contact, where to collect, and what needs pickup.</p>
-        </div>
-        <button class="modal-close" id="closeRequest" type="button" aria-label="Close request form"><i class="fas fa-times"></i></button>
-      </header>
-
-      <ol class="request-stepper" aria-label="Request progress">
-        <li class="stepper-item is-active" data-step-indicator="1"><span class="stepper-dot">1</span><span><small>STEP 1</small><strong>Contact</strong></span></li>
-        <li class="stepper-item" data-step-indicator="2"><span class="stepper-dot">2</span><span><small>STEP 2</small><strong>Location &amp; GIS</strong></span></li>
-        <li class="stepper-item" data-step-indicator="3"><span class="stepper-dot">3</span><span><small>STEP 3</small><strong>Details &amp; Review</strong></span></li>
+    <!-- REQUEST PANEL -->
+    <section class="cf-card" id="requestCollection" role="tabpanel" aria-labelledby="tabRequest">
+      <ol class="cf-stepper" id="stepper" aria-label="Request progress">
+        <li data-step-indicator="1"><span class="dot">1</span><span class="lbl">Location</span></li>
+        <li data-step-indicator="2"><span class="dot">2</span><span class="lbl">Waste</span></li>
+        <li data-step-indicator="3"><span class="dot">3</span><span class="lbl">Contact</span></li>
       </ol>
 
       <form id="collectionRequestForm" novalidate>
-        <section class="request-step" data-step="1" aria-labelledby="contactStepTitle">
-          <div class="step-heading">
-            <h3 id="contactStepTitle">Who is requesting the collection?</h3>
-            <p>Provide contact details so dispatch can confirm arrival and reach you if there are access questions.</p>
+        <!-- STEP 1: LOCATION -->
+        <section class="cf-step" data-step="1" aria-labelledby="locTitle">
+          <h2 id="locTitle">Where should we collect?</h2>
+          <p class="cf-lead">Drop a pin on the map. This is the most important part.</p>
+          <button type="button" class="btn btn-primary btn-block" id="useRequestCurrentLocation"><i class="fas fa-crosshairs"></i> Use my location</button>
+          <div class="cf-map-wrap">
+            <div id="requestMap" class="cf-map" role="application" aria-label="Map. Tap to place the pickup pin."></div>
+            <div class="cf-map-hint" id="mapHint"><i class="fas fa-hand-pointer"></i> Tap to drop a pin. You can drag it.</div>
           </div>
-          <div class="field-grid">
-            <div class="request-field">
+          <p class="cf-chip" id="requestLocationStatus" role="status" aria-live="polite">No pin yet</p>
+          <span class="field-error" id="requestCoordinatesErr" aria-live="polite"></span>
+
+          <div class="cf-grid">
+            <div class="field">
+              <label for="requestDistrict">Kebele <span class="req">*</span></label>
+              <select id="requestDistrict" aria-describedby="requestDistrictErr" required>
+                <option value="">Select your kebele</option>
+                <option>Kebele 01</option><option>Kebele 02</option><option>Kebele 03</option>
+                <option>Kebele 04 (Central District)</option><option>Kebele 05</option><option>Kebele 06</option>
+                <option>Kebele 07</option><option>Kebele 08</option><option>Kebele 09</option>
+                <option>Kebele 10</option><option>Kebele 11</option><option>Kebele 12</option>
+                <option>Kebele 13</option><option>Kebele 14</option>
+              </select>
+              <span class="field-error" id="requestDistrictErr" aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="requestLandmark">Street or landmark <span class="opt">(optional)</span></label>
+              <input type="text" id="requestLandmark" maxlength="160" placeholder="Near Central Mall, Gate B">
+            </div>
+          </div>
+
+          <details class="cf-manual">
+            <summary>Can't use the map? Enter coordinates</summary>
+            <div class="cf-grid">
+              <div class="field"><label for="requestLatitude">Latitude</label><input type="number" id="requestLatitude" min="-90" max="90" step="any" placeholder="8.540000"></div>
+              <div class="field"><label for="requestLongitude">Longitude</label><input type="number" id="requestLongitude" min="-180" max="180" step="any" placeholder="39.270000"></div>
+            </div>
+          </details>
+        </section>
+
+        <!-- STEP 2: WASTE -->
+        <section class="cf-step" data-step="2" aria-labelledby="wasteTitle" hidden>
+          <h2 id="wasteTitle">What needs to be collected?</h2>
+          <fieldset class="cf-fieldset">
+            <legend>Type of waste</legend>
+            <div class="cf-options">
+              <label class="opt-card"><input type="radio" name="wasteCategory" value="Household Waste" checked><i class="fas fa-trash-alt"></i><strong>Household</strong><small>Bagged household trash</small></label>
+              <label class="opt-card"><input type="radio" name="wasteCategory" value="Bulky &amp; Commercial"><i class="fas fa-couch"></i><strong>Bulky &amp; commercial</strong><small>Furniture, construction, shop waste</small></label>
+              <label class="opt-card"><input type="radio" name="wasteCategory" value="Sorted Recyclables"><i class="fas fa-recycle"></i><strong>Recyclables</strong><small>Plastic, paper, metal, glass</small></label>
+            </div>
+          </fieldset>
+          <fieldset class="cf-fieldset">
+            <legend>Estimated amount</legend>
+            <div class="cf-options cf-options-4">
+              <label class="opt-card"><input type="radio" name="loadVolume" value="1–2 Bags (Small)" checked><i class="fas fa-shopping-bag"></i><strong>1–2 bags</strong><small>Small</small></label>
+              <label class="opt-card"><input type="radio" name="loadVolume" value="3–5 Bags (Standard)"><i class="fas fa-box"></i><strong>3–5 bags</strong><small>Standard</small></label>
+              <label class="opt-card"><input type="radio" name="loadVolume" value="Truck Load (Large)"><i class="fas fa-truck"></i><strong>Truck load</strong><small>Large</small></label>
+              <label class="opt-card"><input type="radio" name="loadVolume" value="Multi-point Commercial"><i class="fas fa-map-marked-alt"></i><strong>Several locations</strong><small>Commercial</small></label>
+            </div>
+          </fieldset>
+        </section>
+
+        <!-- STEP 3: CONTACT + CONFIRM -->
+        <section class="cf-step" data-step="3" aria-labelledby="contactTitle" hidden>
+          <h2 id="contactTitle">Your contact details</h2>
+          <p class="cf-lead">We'll call you to confirm the pickup time. No account needed.</p>
+          <div class="cf-grid">
+            <div class="field">
               <label for="requestName">Full name <span class="req">*</span></label>
-              <div class="request-input"><i class="far fa-id-card"></i><input type="text" id="requestName" maxlength="120" autocomplete="name" placeholder="e.g. Abebe Kebede" required></div>
-              <small>Used for collection verification on-site.</small>
+              <input type="text" id="requestName" maxlength="120" autocomplete="name" placeholder="Abebe Kebede" aria-describedby="requestNameErr" required>
               <span class="field-error" id="requestNameErr" aria-live="polite"></span>
             </div>
-            <div class="request-field">
+            <div class="field">
               <label for="requestPhone">Phone number <span class="req">*</span></label>
-              <div class="request-input"><i class="fas fa-phone"></i><span class="phone-prefix">+251</span><input type="tel" id="requestPhone" maxlength="40" autocomplete="tel" placeholder="9 1234 5678" required></div>
-              <small>Driver will call upon arrival.</small>
+              <div class="phone-wrap"><span class="phone-prefix">+251</span><input type="tel" id="requestPhone" maxlength="20" inputmode="tel" autocomplete="tel-national" placeholder="9 1234 5678" aria-describedby="requestPhoneErr" required></div>
               <span class="field-error" id="requestPhoneErr" aria-live="polite"></span>
             </div>
           </div>
-          <div class="guarantee-notice"><i class="fas fa-shield-alt"></i><div><strong>No account required</strong><p>Your phone number and ticket reference let you check the request later.</p></div></div>
-        </section>
-
-        <section class="request-step" data-step="2" aria-labelledby="locationStepTitle" hidden>
-          <div class="contact-summary"><i class="far fa-user"></i><span id="contactSummary">Contact details will appear here</span><button type="button" class="text-action" data-go-step="1">Edit contact <i class="fas fa-pen"></i></button></div>
-          <div class="step-heading">
-            <h3 id="locationStepTitle">Where should the team collect?</h3>
-            <p>Choose your kebele and a nearby landmark. Then tap the map to mark the pickup point.</p>
+          <div class="cf-summary">
+            <h3>Check your request</h3>
+            <div class="sum-row"><i class="fas fa-map-pin"></i><div><small>Pickup</small><strong id="reviewLocation"></strong></div><button type="button" class="link-btn" data-go-step="1">Edit</button></div>
+            <div class="sum-row"><i class="fas fa-trash-alt"></i><div><small>Waste</small><strong id="reviewWaste"></strong></div><button type="button" class="link-btn" data-go-step="2">Edit</button></div>
           </div>
-          <div class="field-grid">
-            <div class="request-field">
-              <label for="requestDistrict">Sub-city / kebele <span class="req">*</span></label>
-              <div class="request-input"><i class="fas fa-building"></i><select id="requestDistrict" required><option value="">Choose a district</option><option>Kebele 01</option><option>Kebele 02</option><option>Kebele 03</option><option>Kebele 04 (Central District)</option><option>Kebele 05</option><option>Kebele 06</option><option>Kebele 07</option><option>Kebele 08</option><option>Kebele 09</option><option>Kebele 10</option><option>Kebele 11</option><option>Kebele 12</option><option>Kebele 13</option><option>Kebele 14</option></select><i class="fas fa-chevron-down select-chevron"></i></div>
-              <span class="field-error" id="requestDistrictErr" aria-live="polite"></span>
-            </div>
-            <div class="request-field">
-              <label for="requestLandmark">Street or notable landmark <span class="req">*</span></label>
-              <div class="request-input"><i class="fas fa-map-marker-alt"></i><input type="text" id="requestLandmark" maxlength="160" placeholder="Near Central Commercial Mall, Gate B" required></div>
-              <span class="field-error" id="requestLandmarkErr" aria-live="polite"></span>
-            </div>
+          <div class="captcha-field">
+            <p class="captcha-label">Security verification</p>
+            <div id="collectionCaptcha" aria-label="CAPTCHA verification"></div>
+            <p class="captcha-status" id="collectionCaptchaStatus" role="status" aria-live="polite"></p>
           </div>
-          <div class="map-card">
-            <div class="map-card-heading"><span class="map-icon"><i class="fas fa-map-marker-alt"></i></span><div><strong>Confirm pickup point</strong><small>Tap the map or use your current location</small></div><button type="button" class="map-current-button" id="useRequestCurrentLocation"><i class="fas fa-crosshairs"></i> Use my location</button></div>
-            <div id="requestMap" class="request-map" role="application" aria-label="Interactive map. Select your collection point."></div>
-            <p class="location-status" id="requestLocationStatus" role="status" aria-live="polite">Select a point on the map or use your current location.</p>
-            <details class="manual-coordinates"><summary>Enter coordinates manually</summary><div class="coordinates-grid">
-              <label for="requestLatitude">Latitude <span class="req">*</span><input type="number" id="requestLatitude" min="-90" max="90" step="any" placeholder="8.540000" required></label>
-              <label for="requestLongitude">Longitude <span class="req">*</span><input type="number" id="requestLongitude" min="-180" max="180" step="any" placeholder="39.270000" required></label>
-            </div></details>
-            <span class="field-error" id="requestCoordinatesErr" aria-live="polite"></span>
-          </div>
-        </section>
-
-        <section class="request-step" data-step="3" aria-labelledby="detailsStepTitle" hidden>
-          <div class="step-heading">
-            <h3 id="detailsStepTitle">Confirm request &amp; waste details</h3>
-            <p>Verify your contact and pickup location, then choose a category and estimated load for vehicle matching.</p>
-          </div>
-          <div class="review-summaries">
-            <article class="review-summary"><i class="far fa-user"></i><div><small>CONTACT</small><strong id="reviewContact"></strong><span id="reviewPhone"></span></div><button type="button" class="text-action" data-go-step="1">Edit</button></article>
-            <article class="review-summary"><i class="fas fa-map-pin"></i><div><small>PICKUP POINT</small><strong id="reviewLocation"></strong><span id="reviewLandmark"></span></div><button type="button" class="text-action" data-go-step="2">Edit</button></article>
-          </div>
-          <fieldset class="choice-fieldset">
-            <legend>Waste category &amp; nature <span class="req">*</span></legend>
-            <div class="category-grid">
-              <label class="category-card is-selected"><input type="radio" name="wasteCategory" value="Household Waste" checked><span class="category-icon"><i class="fas fa-trash-alt"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Household waste</strong><small>Standard residential bagged refuse, organic bin matter &amp; cleanups.</small></label>
-              <label class="category-card"><input type="radio" name="wasteCategory" value="Bulky &amp; Commercial"><span class="category-icon"><i class="fas fa-couch"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Bulky &amp; commercial</strong><small>Furniture, lumber scraps, renovation packs &amp; merchant crates.</small></label>
-              <label class="category-card"><input type="radio" name="wasteCategory" value="Sorted Recyclables"><span class="category-icon"><i class="fas fa-recycle"></i></span><span class="category-check"><i class="fas fa-check"></i></span><strong>Sorted recyclables</strong><small>Separated plastics, corrugated cardboard, bottles &amp; metals.</small></label>
-            </div>
-          </fieldset>
-          <fieldset class="choice-fieldset volume-fieldset">
-            <legend>Estimated load volume <span class="req">*</span></legend>
-            <div class="volume-options">
-              <label class="volume-option is-selected"><input type="radio" name="loadVolume" value="1–2 Bags (Small)" checked><i class="fas fa-shopping-bag"></i> 1–2 Bags (Small)</label>
-              <label class="volume-option"><input type="radio" name="loadVolume" value="3–5 Bags (Standard)"><i class="fas fa-box"></i> 3–5 Bags (Standard)</label>
-              <label class="volume-option"><input type="radio" name="loadVolume" value="Truck Load (Large)"><i class="fas fa-truck"></i> Truck Load (Large)</label>
-              <label class="volume-option"><input type="radio" name="loadVolume" value="Multi-point Commercial"><i class="fas fa-map-marked-alt"></i> Multi-point Commercial</label>
-            </div>
-          </fieldset>
-          <div class="pickup-estimate"><i class="far fa-clock"></i><div><strong>Pickup time estimate</strong><p>Estimated timing is confirmed after request review and route assignment. We’ll contact you using your preferred method.</p></div></div>
           <p class="form-error" id="requestError" role="alert" hidden></p>
         </section>
 
-        <footer class="modal-footer" id="formFooter">
-          <button class="footer-cancel" id="cancelRequest" type="button">Cancel</button>
-          <button class="footer-back" id="backStep" type="button" hidden><i class="fas fa-arrow-left"></i> Back</button>
-          <span class="step-count" id="stepCount">Step 1 of 3</span>
-          <button class="primary-button" id="nextStep" type="button">Continue to Location &amp; GIS <i class="fas fa-arrow-right"></i></button>
-          <button type="submit" class="primary-button" id="requestSubmit" hidden><span class="btn-text">Submit collection request <i class="fas fa-paper-plane"></i></span><span class="btn-loading" hidden><i class="fas fa-spinner fa-spin"></i> Submitting…</span></button>
-        </footer>
+        <div class="cf-actions" id="formFooter">
+          <button class="btn btn-ghost" id="backStep" type="button" hidden><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn btn-primary" id="nextStep" type="button">Next <i class="fas fa-arrow-right"></i></button>
+          <button class="btn btn-primary" id="requestSubmit" type="submit" hidden><span class="btn-text">Submit request <i class="fas fa-paper-plane"></i></span><span class="btn-loading" hidden><i class="fas fa-spinner fa-spin"></i> Submitting…</span></button>
+        </div>
       </form>
 
-      <section class="request-success" id="requestSuccess" aria-labelledby="successTitle" hidden>
-        <button class="modal-close success-close" id="closeSuccess" type="button" aria-label="Close request confirmation"><i class="fas fa-times"></i></button>
-        <span class="public-badge success-badge"><i class="fas fa-check-circle"></i> Request submitted successfully</span>
-        <h2 id="successTitle">Collection Request Received</h2>
-        <p class="success-intro">Your request is waiting for the city sanitation team to review it. Keep this reference so you can check its status later.</p>
-        <div class="ticket-panel">
-        <div class="ticket-heading"><i class="fas fa-ticket-alt"></i><div><small>TICKET REFERENCE ID</small><strong id="requestRef"></strong></div><button class="copy-reference" id="copyRequestRef" type="button"><i class="far fa-copy"></i> Copy</button><span class="queue-badge"><i class="fas fa-circle"></i> Pending review</span></div>
-          <div class="ticket-details">
-            <div class="ticket-main">
-              <article class="arrival-card"><i class="fas fa-truck"></i><div><small>DISPATCH STATUS</small><strong>Awaiting review &amp; assignment</strong><span>Pickup time will be shared when a route is assigned.</span></div></article>
-              <div class="dispatch-facts"><p><i class="fas fa-id-badge"></i><span><b>Assigned driver</b><br><span id="assignedDriver">Not assigned yet</span></span></p><p><i class="fas fa-truck"></i><span><b>Truck ID</b><br><span id="assignedTruck">Not assigned yet</span></span></p></div>
-              <div class="ticket-location" id="successLocation"></div>
-            </div>
-            <div class="qr-card"><small>REQUEST TICKET QR</small><div id="requestQr" aria-label="QR code for request ticket"></div><strong id="qrReference"></strong><span>Show this ticket when contacted</span></div>
-          </div>
-          <div class="success-summary">
-            <div><small>RESIDENT CONTACT</small><strong id="successContact"></strong><span id="successPhone"></span></div>
-            <div><small>SERVICE LOCATION</small><strong id="successDistrict"></strong><span id="successLandmark"></span></div>
-            <div><small>CATEGORY &amp; VOLUME</small><strong id="successCategory"></strong><span id="successVolume"></span></div>
-          </div>
-        <div class="notification-note"><i class="fas fa-info-circle"></i><span>Use your ticket reference and phone number in “Track a request” to check for updates.</span></div>
+      <!-- SUCCESS -->
+      <section class="cf-success" id="requestSuccess" aria-labelledby="successTitle" hidden>
+        <div class="ok-icon"><i class="fas fa-check"></i></div>
+        <h2 id="successTitle" tabindex="-1">Request received</h2>
+        <div class="ticket">
+          <small>Your ticket number</small>
+          <strong id="requestRef"></strong>
+          <button class="btn btn-ghost btn-sm" id="copyRequestRef" type="button"><i class="far fa-copy"></i> Copy</button>
         </div>
-        <div class="success-actions">
-          <a class="secondary-button" href="index.html"><i class="fas fa-arrow-left"></i> Done &amp; return home</a>
-          <button class="secondary-button" id="downloadReceipt" type="button"><i class="fas fa-download"></i> Download receipt</button>
-          <button class="tracking-button" id="trackRequest" type="button" disabled aria-describedby="trackingNote"><i class="fas fa-map"></i> View pickup map</button>
+        <p class="status-line"><span class="pill"><i class="fas fa-circle"></i> Pending review</span> We'll call you to confirm the pickup time.</p>
+        <p class="sum-line" id="successSummary"></p>
+        <div class="cf-success-actions">
+          <button class="btn btn-primary" id="trackRequest" type="button"><i class="fas fa-search"></i> Track request</button>
+          <button class="btn btn-ghost" id="downloadReceipt" type="button"><i class="fas fa-print"></i> Print</button>
+          <a class="btn btn-ghost" href="index.html">Done</a>
         </div>
-        <p class="tracking-note" id="trackingNote">This opens your pickup point. Live vehicle tracking is not available yet.</p>
-        <p class="service-footnote">No payment required · Municipal Public Sanitation Service · Citizen Charter Protected</p>
-        <button class="new-request-button" id="newRequestBtn" type="button"><i class="fas fa-plus"></i> Submit another request</button>
+        <button class="link-btn" id="newRequestBtn" type="button"><i class="fas fa-plus"></i> Submit another request</button>
       </section>
     </section>
-  </div>
+
+    <!-- TRACK PANEL -->
+    <section class="cf-card" id="requestHistory" role="tabpanel" aria-labelledby="tabTrack" hidden>
+      <h2>Track a request</h2>
+      <p class="cf-lead">Enter your ticket number and the phone number you used.</p>
+      <form id="requestHistoryForm" class="cf-grid cf-track-form">
+        <div class="field"><label for="trackRef">Ticket number</label><input id="trackRef" name="refId" type="text" placeholder="CRQ-2026-…" autocomplete="off" required></div>
+        <div class="field"><label for="trackPhone">Phone number</label><input id="trackPhone" name="phone" type="tel" inputmode="tel" placeholder="9 1234 5678" autocomplete="tel" required></div>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fas fa-search"></i> Find my requests</button>
+      </form>
+      <div id="requestHistoryResults" class="history-results" aria-live="polite"></div>
+    </section>
+  </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-brand">
         <a href="index.html" class="brand">
           <div class="brand-icon"><i class="fas fa-recycle"></i></div>
-          <div class="brand-text"><span class="brand-title">SmartBin</span><span class="brand-sub">Adama City</span></div>
+          <div class="brand-text"><span class="brand-title">Smart Bin</span><span class="brand-sub">Adama City</span></div>
         </a>
         <p>Building a cleaner and smarter Adama City through GIS technology.</p>
       </div>
@@ -244,9 +220,11 @@
   </footer>
 
   <div class="toast-container" id="toastContainer"></div>
-  <script src="script.js"></script>
+<script src="public-language.js"></script>
+<script src="script.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="captcha-config.js"></script>
+  <script src="captcha.js"></script>
   <script src="collection-flow.js"></script>
 </body>
 </html>
