@@ -3,7 +3,7 @@
    Enables offline access and fast loading
    ============================================================ */
 
-const CACHE_NAME = 'smartbin-adama-v1.3';
+const CACHE_NAME = 'smartbin-adama-v1.4';
 const OFFLINE_URL = '/index.html';
 
 const STATIC_ASSETS = [
@@ -20,9 +20,10 @@ const STATIC_ASSETS = [
   '/captcha.js',
   '/about.css',
   '/contact.css',
+  '/public-theme.css',
   '/script.js',
   '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap',
+  'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'
 ];
 

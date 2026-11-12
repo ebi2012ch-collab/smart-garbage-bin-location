@@ -1,0 +1,404 @@
+.municipal-login,
+.municipal-driver,
+.municipal-admin,
+.municipal-map {
+  --brand-forest: #0F3924;
+  --brand-green: #1E6B3E;
+  --brand-gold: #F5B800;
+  --brand-ink: #111827;
+  --brand-page: #F8FAF9;
+  --brand-soft: #F1F5F2;
+  --brand-white: #FFFFFF;
+  --brand-border: #E5E7EB;
+  --brand-muted: #6B7280;
+  --brand-heading-font: 'Space Grotesk', sans-serif;
+  --brand-body-font: 'Hanken Grotesk', sans-serif;
+  font-family: var(--brand-body-font);
+}
+
+.municipal-login h1,
+.municipal-login h2,
+.municipal-driver h1,
+.municipal-driver h2,
+.municipal-driver h3,
+.municipal-admin h1,
+.municipal-admin h2,
+.municipal-admin h3,
+.municipal-map h1,
+.municipal-map h2,
+.municipal-map h3 {
+  font-family: var(--brand-heading-font);
+}
+
+.municipal-login :not(i),
+.municipal-driver :not(i),
+.municipal-admin :not(i),
+.municipal-map :not(i) {
+  font-family: var(--brand-body-font);
+}
+.municipal-login h1,
+.municipal-login h2,
+.municipal-driver h1,
+.municipal-driver h2,
+.municipal-driver h3,
+.municipal-admin h1,
+.municipal-admin h2,
+.municipal-admin h3,
+.municipal-map h1,
+.municipal-map h2,
+.municipal-map h3 { font-family: var(--brand-heading-font); }
+.municipal-login h1,
+.municipal-login h2,
+.municipal-driver h1,
+.municipal-driver h2,
+.municipal-driver h3,
+.municipal-admin h1,
+.municipal-admin h2,
+.municipal-admin h3,
+.municipal-map h1,
+.municipal-map h2,
+.municipal-map h3 { font-weight: 700; }
+.municipal-login input,
+.municipal-login select,
+.municipal-login button,
+.municipal-driver button,
+.municipal-driver input,
+.municipal-driver select,
+.municipal-driver textarea,
+.municipal-admin button,
+.municipal-admin input,
+.municipal-admin select,
+.municipal-admin textarea,
+.municipal-map button {
+  font-family: var(--brand-body-font);
+}
+
+.municipal-login :focus-visible,
+.municipal-driver :focus-visible,
+.municipal-admin :focus-visible,
+.municipal-map :focus-visible {
+  outline: 3px solid rgba(30, 107, 62, .28);
+  outline-offset: 2px;
+}
+
+/* Staff sign-in */
+.municipal-login {
+  color: var(--brand-ink);
+  background:
+    radial-gradient(ellipse at 8% 90%, rgba(245, 184, 0, .12), transparent 35%),
+    linear-gradient(135deg, #0F3924, #1E6B3E 58%, #0F3924);
+}
+.municipal-login .login-layout {
+  border-color: rgba(255, 255, 255, .24);
+  border-radius: 20px;
+  box-shadow: 0 28px 80px rgba(17, 24, 39, .24);
+}
+.municipal-login .brand-mark,
+.municipal-login .brand-icon,
+.municipal-login .login-logo-icon {
+  color: var(--brand-green);
+}
+.municipal-login .login-panel h1,
+.municipal-login .login-panel h2 {
+  color: var(--brand-forest);
+}
+.municipal-login .visual-panel {
+  background: var(--brand-forest);
+}
+.municipal-login .visual-overlay {
+  background:
+    linear-gradient(180deg, rgba(15, 57, 36, .72), rgba(15, 57, 36, .48) 48%, rgba(15, 57, 36, .84)),
+    linear-gradient(90deg, rgba(15, 57, 36, .42), transparent 75%);
+}
+.municipal-login .visual-kicker i,
+.municipal-login .visual-caption i { color: var(--brand-gold); }
+.municipal-login label { color: var(--brand-ink); }
+.municipal-login input,
+.municipal-login select {
+  border-color: var(--brand-border);
+  color: var(--brand-ink);
+}
+.municipal-login input:focus,
+.municipal-login select:focus {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px rgba(30, 107, 62, .12);
+}
+.municipal-login button[type="submit"],
+.municipal-login #submitButton,
+.municipal-login .login-button {
+  background: var(--brand-forest);
+}
+.municipal-login button[type="submit"]:hover,
+.municipal-login #submitButton:hover,
+.municipal-login .login-button:hover {
+  background: var(--brand-green);
+}
+.municipal-login a { color: var(--brand-green); }
+
+/* Driver operations */
+.municipal-driver {
+  --primary: var(--brand-forest);
+  --primary-dk: var(--brand-forest);
+  --primary-lt: var(--brand-soft);
+  --accent: var(--brand-green);
+  --text: var(--brand-ink);
+  --text-light: var(--brand-muted);
+  --bg: var(--brand-page);
+  --white: var(--brand-white);
+  --border: var(--brand-border);
+  background: var(--brand-page);
+  color: var(--brand-ink);
+}
+.municipal-driver .sidebar { background: var(--brand-forest); }
+.municipal-driver .brand-mark {
+  background: var(--brand-green);
+  box-shadow: 0 6px 14px rgba(15, 57, 36, .28);
+}
+.municipal-driver .nav-item.active,
+.municipal-driver .nav-item:hover { background: rgba(255, 255, 255, .12); }
+.municipal-driver .nav-item.active { border-right-color: var(--brand-gold); }
+.municipal-driver .welcome {
+  background: var(--brand-forest);
+  box-shadow: 0 8px 24px rgba(15, 57, 36, .12);
+}
+.municipal-driver .stat,
+.municipal-driver .card,
+.municipal-driver .profile-card,
+.municipal-driver .profile-info-card {
+  background: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 3px 12px rgba(17, 24, 39, .045);
+}
+.municipal-driver .profile-avatar {
+  background: linear-gradient(135deg, var(--brand-forest), var(--brand-green));
+  box-shadow: 0 8px 24px rgba(15, 57, 36, .18);
+}
+.municipal-driver .profile-role { background: var(--brand-soft); color: var(--brand-forest); }
+.municipal-driver .profile-status-row {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand-green);
+}
+.municipal-driver .telegram-link-card { border-color: var(--brand-border); background: var(--brand-white); }
+.municipal-driver .telegram-link-heading h3,
+.municipal-driver .telegram-code-panel code,
+.municipal-driver .telegram-bot-link { color: var(--brand-green); }
+.municipal-driver .telegram-link-status { background: var(--brand-soft); color: var(--brand-muted); }
+.municipal-driver .telegram-link-status.is-linked { background: var(--brand-soft); color: var(--brand-forest); }
+.municipal-driver .telegram-link-status.is-unlinked { background: var(--brand-gold); color: var(--brand-forest); }
+.municipal-driver .telegram-code-panel { border-top-color: var(--brand-border); }
+.municipal-driver .stat-icon.blue,
+.municipal-driver .stat-icon.green { background: var(--brand-soft); color: var(--brand-green); }
+.municipal-driver .stat-icon.amber { background: var(--brand-gold); color: var(--brand-forest); }
+.municipal-driver .section-card-header,
+.municipal-driver .profile-info-header { border-color: var(--brand-border); }
+.municipal-driver .task-ref,
+.municipal-driver .profile-info-header i { color: var(--brand-green); }
+.municipal-driver .action.primary,
+.municipal-driver .action.start,
+.municipal-driver .action.complete {
+  border-color: var(--brand-forest);
+  background: var(--brand-forest);
+  color: var(--brand-white);
+}
+.municipal-driver .action.primary:hover,
+.municipal-driver .action.start:hover,
+.municipal-driver .action.complete:hover { background: var(--brand-green); }
+.municipal-driver .action.map {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand-forest);
+}
+.municipal-driver .action.map:hover { border-color: var(--brand-green); }
+.municipal-driver .badge.in-progress { color: var(--brand-green); background: var(--brand-soft); }
+.municipal-driver .badge.assigned { color: var(--brand-forest); background: var(--brand-gold); }
+.municipal-driver .badge.completed { color: var(--brand-forest); background: var(--brand-soft); }
+.municipal-driver .search,
+.municipal-driver .filter,
+.municipal-driver .report-work-form textarea {
+  border-color: var(--brand-border);
+  background: var(--brand-white);
+  color: var(--brand-ink);
+}
+.municipal-driver .search:focus,
+.municipal-driver .filter:focus,
+.municipal-driver .report-work-form textarea:focus {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px rgba(30, 107, 62, .12);
+}
+.municipal-driver .logout-confirm-dialog .logout-confirm {
+  border-color: var(--brand-forest);
+  background: var(--brand-forest);
+}
+.municipal-driver .map-dialog { background: var(--brand-page); }
+.municipal-driver .map-dialog-header { background: var(--brand-forest); }
+.municipal-driver .logout-confirm-dialog .logout-confirm-actions .logout-confirm {
+  border-color: var(--brand-forest);
+  background: var(--brand-forest);
+}
+.municipal-driver .notice { background: var(--brand-forest); }
+
+/* Admin dashboard and its GIS view */
+.municipal-admin {
+  --primary: var(--brand-forest);
+  --primary-dk: var(--brand-forest);
+  --primary-lt: var(--brand-soft);
+  --accent: var(--brand-green);
+  --text: var(--brand-ink);
+  --text-light: var(--brand-muted);
+  --bg: var(--brand-page);
+  --white: var(--brand-white);
+  --border: var(--brand-border);
+  --shadow: 0 3px 12px rgba(17, 24, 39, .045);
+  --shadow-lg: 0 16px 42px rgba(17, 24, 39, .16);
+  color: var(--brand-ink);
+  background: var(--brand-page);
+}
+.municipal-admin .sidebar { background: var(--brand-forest); }
+.municipal-admin .nav-item.active,
+.municipal-admin .nav-item:hover { background: rgba(255, 255, 255, .12); }
+.municipal-admin .nav-item.active {
+  border-right-color: var(--brand-gold);
+  box-shadow: inset 3px 0 var(--brand-gold);
+}
+.municipal-admin .topbar,
+.municipal-admin .section-card,
+.municipal-admin .stat-card,
+.municipal-admin .analytics-card {
+  background: var(--brand-white);
+  border-color: var(--brand-border);
+  box-shadow: 0 3px 12px rgba(17, 24, 39, .045);
+}
+.municipal-admin .page-heading h1,
+.municipal-admin .section-card-header h3,
+.municipal-admin .stat-num { color: var(--brand-ink); }
+.municipal-admin .section-card-header h3 i,
+.municipal-admin .stat-icon.green { color: var(--brand-green); }
+.municipal-admin .stat-icon.blue,
+.municipal-admin .stat-icon.purple { background: var(--brand-soft); color: var(--brand-green); }
+.municipal-admin .stat-icon.orange { background: var(--brand-gold); color: var(--brand-forest); }
+.municipal-admin .metric-bar-fill.tone-primary,
+.municipal-admin .metric-bar-fill.tone-good { background: var(--brand-green); }
+.municipal-admin .metric-bar-fill.tone-watch { background: var(--brand-gold); }
+.municipal-admin .badge.available,
+.municipal-admin .badge.accepted,
+.municipal-admin .badge.completed,
+.municipal-admin .badge.resolved,
+.municipal-admin .badge.assigned,
+.municipal-admin .badge.in-progress,
+.municipal-admin .badge.medium {
+  background: var(--brand-soft);
+  color: var(--brand-forest);
+}
+.municipal-admin .badge.almost-full,
+.municipal-admin .badge.pending,
+.municipal-admin .badge.high { background: var(--brand-gold); color: var(--brand-forest); }
+.municipal-admin .btn-primary {
+  border-color: var(--brand-forest) !important;
+  background: var(--brand-forest) !important;
+  color: var(--brand-white) !important;
+}
+.municipal-admin .btn-primary:hover { background: var(--brand-green) !important; }
+.municipal-admin .btn-login {
+  border-color: var(--brand-forest);
+  background: var(--brand-forest);
+  color: var(--brand-white);
+}
+.municipal-admin .btn-login:hover { background: var(--brand-green); }
+.municipal-admin .btn-action:hover { background: var(--brand-forest); border-color: var(--brand-forest); }
+.municipal-admin .tabs { background: var(--brand-white); }
+.municipal-admin .tab.active { color: var(--brand-forest); border-bottom-color: var(--brand-forest); }
+.municipal-admin th { background: var(--brand-soft); color: var(--brand-muted); }
+.municipal-admin tr:hover td { background: var(--brand-soft); }
+.municipal-admin .form-field-sm input,
+.municipal-admin .form-field-sm select,
+.municipal-admin .report-filters input,
+.municipal-admin .report-filters select,
+.municipal-admin .report-action-form input,
+.municipal-admin .report-action-form select,
+.municipal-admin .report-action-form textarea,
+.municipal-admin #filterCollectionRequestStatus {
+  border-color: var(--brand-border);
+  background: var(--brand-white);
+  color: var(--brand-ink);
+}
+.municipal-admin .form-field-sm input:focus,
+.municipal-admin .form-field-sm select:focus,
+.municipal-admin .report-filters input:focus,
+.municipal-admin .report-filters select:focus,
+.municipal-admin .report-action-form input:focus,
+.municipal-admin .report-action-form select:focus,
+.municipal-admin .report-action-form textarea:focus,
+.municipal-admin #filterCollectionRequestStatus:focus {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px rgba(30, 107, 62, .12);
+}
+.municipal-admin .map-chip.active {
+  background: var(--brand-forest);
+  border-color: var(--brand-forest);
+}
+.municipal-admin .map-chip:hover { border-color: var(--brand-green); color: var(--brand-forest); }
+.municipal-admin .map-chip.active:hover { color: var(--brand-white); }
+.municipal-admin #adminMap { border-color: var(--brand-border); }
+.municipal-admin .admin-map-popup { min-width: 200px; padding: 4px; color: var(--brand-ink); }
+.municipal-admin .admin-map-popup strong { font-family: var(--brand-heading-font); }
+.municipal-admin .admin-map-popup p { margin: 5px 0; color: var(--brand-muted); }
+.municipal-admin .admin-map-popup .popup-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.municipal-admin .admin-map-popup .popup-tag {
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: var(--brand-soft);
+  color: var(--brand-forest);
+  font-size: 11px;
+  font-weight: 700;
+}
+.municipal-admin .admin-map-popup .popup-tag.condition {
+  background: var(--marker-color);
+  color: var(--brand-white);
+}
+.municipal-admin .admin-map-popup .popup-task { margin-top: 8px; }
+.municipal-admin .report-dialog,
+.municipal-admin .logout-confirm-dialog,
+.municipal-admin .notif-panel {
+  background: var(--brand-white);
+  border-color: var(--brand-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.municipal-admin .report-dialog::backdrop,
+.municipal-admin .logout-confirm-dialog::backdrop { background: rgba(17, 24, 39, .48); }
+.municipal-admin .report-action-form { background: var(--brand-soft); }
+
+/* Driver task map, including the embedded map dialog */
+.municipal-map {
+  --primary: var(--brand-forest);
+  --primary-dk: var(--brand-forest);
+  --primary-lt: var(--brand-soft);
+  background: var(--brand-page);
+  color: var(--brand-ink);
+}
+.municipal-map.embedded { background: var(--brand-page); }
+.municipal-map header { background: var(--brand-forest); border-bottom-color: rgba(255,255,255,.12); }
+.municipal-map .brand,
+.municipal-map .request-ref { color: var(--brand-forest); }
+.municipal-map header .brand { color: var(--brand-white); }
+.municipal-map .task-panel,
+.municipal-map .map-panel { border-color: var(--brand-border); }
+.municipal-map .start,
+.municipal-map .navigate { background: var(--brand-forest); color: var(--brand-white); }
+.municipal-map .start:hover,
+.municipal-map .navigate:hover { background: var(--brand-green); }
+.municipal-map .complete { background: var(--brand-green); color: var(--brand-white); }
+.municipal-map .status.in-progress { background: var(--brand-soft); color: var(--brand-forest); }
+.municipal-map .secondary,
+.municipal-map .locate { background: var(--brand-soft); color: var(--brand-forest); }
+.municipal-map .map-message { border: 1px solid var(--brand-border); color: var(--brand-muted); }
+.municipal-map .leaflet-popup-content-wrapper,
+.municipal-map .leaflet-popup-tip { background: var(--brand-white); }
+.municipal-map .leaflet-popup-content { color: var(--brand-ink); font-family: var(--brand-body-font); }
+
+@media (max-width: 640px) {
+  .municipal-login { padding: 16px; }
+  .municipal-driver .welcome { border-radius: 16px; }
+  .municipal-admin .map-controls { row-gap: 8px; }
+}

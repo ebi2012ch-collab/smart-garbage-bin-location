@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Adama City Smart Bin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="../brand.css">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="../readability.css">
-  <meta name="theme-color" content="#0A043C">
+  <link rel="stylesheet" href="../staff-theme.css">
+  <meta name="theme-color" content="#0F3924">
 </head>
 <body class="municipal-admin">
 
@@ -783,17 +784,17 @@ function loadBinsOnMap(silent, focusBinId) {
       var marker = L.marker([b.lat, b.lng], { icon: makeMapIcon(color) });
 
       var popupHtml =
-        '<div style="font-family:Inter;min-width:200px;padding:4px">' +
-        '<strong style="font-size:14px">' + escapeHtml(b.name) + '</strong>' +
-        '<p style="font-size:12px;color:#666;margin:5px 0">' + escapeHtml(b.description || '') + '</p>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">' +
-        '<span style="background:' + color + ';color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.fillCondition || 'unavailable') + '</span>' +
-        '<span style="background:#f0f4ff;color:#333;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.operationalStatus || 'operational') + '</span>' +
-        '<span style="background:#f0f4ff;color:#0057b8;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700">' + escapeHtml(b.type) + '</span>' +
+        '<div class="admin-map-popup">' +
+        '<strong>' + escapeHtml(b.name) + '</strong>' +
+        '<p>' + escapeHtml(b.description || '') + '</p>' +
+        '<div class="popup-tags">' +
+        '<span class="popup-tag condition" style="--marker-color:' + color + '">' + escapeHtml(b.fillCondition || 'unavailable') + '</span>' +
+        '<span class="popup-tag">' + escapeHtml(b.operationalStatus || 'operational') + '</span>' +
+        '<span class="popup-tag">' + escapeHtml(b.type) + '</span>' +
         '</div>' +
-        '<p style="font-size:11px;color:#888">Sensor: <strong>' + escapeHtml(b.sensorStatus || 'UNAVAILABLE') + '</strong> · Device: <strong>' + escapeHtml(b.sensorDeviceState || 'NOT_CONNECTED') + '</strong></p>' +
-        '<p style="font-size:11px;color:#888">Fill: <strong>' + (b.fillLevel == null ? 'Unavailable' : b.fillLevel + '% (' + escapeHtml(b.readingSource || 'unknown') + ')') + '</strong> | Updated: ' + escapeHtml(fmtDate(b.lastReadingAt)) + ' | Zone: ' + escapeHtml(b.zone) + '</p>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+        '<p>Sensor: <strong>' + escapeHtml(b.sensorStatus || 'UNAVAILABLE') + '</strong> · Device: <strong>' + escapeHtml(b.sensorDeviceState || 'NOT_CONNECTED') + '</strong></p>' +
+        '<p>Fill: <strong>' + (b.fillLevel == null ? 'Unavailable' : b.fillLevel + '% (' + escapeHtml(b.readingSource || 'unknown') + ')') + '</strong> | Updated: ' + escapeHtml(fmtDate(b.lastReadingAt)) + ' | Zone: ' + escapeHtml(b.zone) + '</p>' +
+        '<div class="popup-task">' +
         '<span>Collection task: ' + escapeHtml(b.collectionState || 'none') + '</span>' +
         '</div>' +
         '</div>';
