@@ -156,49 +156,6 @@
         <p>From your report to a collection update, each step has a clear role.</p>
       </div>
       <div class="home-process-showcase" id="homeProcessShowcase">
-        <div class="home-process-previews" role="group" aria-label="Choose a service step">
-          <button class="home-process-preview is-active" type="button" aria-pressed="true"
-            aria-label="Show step 1: Resident reports waste"
-            data-image="images/step%201.jpg"
-            data-alt="A resident photographs a waste problem on an Adama City street."
-            data-title="Resident reports waste"
-            data-label="Community reporting"
-            data-description="Residents identify a waste problem and submit a report with its location and optional photo.">
-            <img src="images/step%201.jpg" alt="">
-            <span class="home-process-preview-number" aria-hidden="true">01</span>
-          </button>
-          <button class="home-process-preview" type="button" aria-pressed="false"
-            aria-label="Show step 2: Admin reviews and assigns"
-            data-image="images/Step%202%20(2).jpg"
-            data-alt="An administrator reviews sanitation reports and assigns a collection task on the map."
-            data-title="Admin reviews and assigns"
-            data-label="Review &amp; assignment"
-            data-description="The administrator reviews reports, verifies the details, and assigns collection tasks to the appropriate driver.">
-            <img src="images/Step%202%20(2).jpg" alt="">
-            <span class="home-process-preview-number" aria-hidden="true">02</span>
-          </button>
-          <button class="home-process-preview" type="button" aria-pressed="false"
-            aria-label="Show step 3: Driver collects waste"
-            data-image="images/stepp%203.jpg"
-            data-alt="Sanitation workers collect waste and clear a city street."
-            data-title="Driver collects waste"
-            data-label="Execution and reporting"
-            data-description="The driver follows the assigned task, collects the waste, and updates its status with notes or evidence when appropriate.">
-            <img src="images/stepp%203.jpg" alt="">
-            <span class="home-process-preview-number" aria-hidden="true">03</span>
-          </button>
-          <button class="home-process-preview" type="button" aria-pressed="false"
-            aria-label="Show step 4: Collection is completed"
-            data-image="images/stepp%204.jpg"
-            data-alt="An administrator reviews submitted driver work and verifies the collection outcome."
-            data-title="Collection is completed"
-            data-label="Status and outcome"
-            data-description="Residents can track collection-request status with their reference and phone number, while administrators review submitted work before closing reports.">
-            <img src="images/stepp%204.jpg" alt="">
-            <span class="home-process-preview-number" aria-hidden="true">04</span>
-          </button>
-        </div>
-
         <figure class="home-process-feature">
           <img
             class="home-process-feature-image"
@@ -206,16 +163,26 @@
             src="images/step%201.jpg"
             alt="A resident photographs a waste problem on an Adama City street."
           >
+          <img class="home-process-feature-image home-process-feature-image-incoming" id="homeProcessIncomingImage" alt="" aria-hidden="true">
         </figure>
 
-        <div class="home-process-details" aria-live="polite" aria-atomic="true">
-          <p class="home-process-step-heading">
-            <span class="home-process-step-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
-            <span>Step <span id="homeProcessStepNumber">1</span>.</span>
-            <strong id="homeProcessStepTitle">Resident reports waste</strong>
-          </p>
-          <p class="home-process-step-label" id="homeProcessStepLabel">Community reporting</p>
-          <p class="home-process-description" id="homeProcessDescription">Residents identify a waste problem and submit a report with its location and optional photo.</p>
+        <div class="home-process-copy">
+          <div class="home-process-details" aria-live="polite" aria-atomic="true">
+            <p class="home-process-step-heading">
+              <span>Step <span id="homeProcessStepNumber">1</span>.</span>
+              <strong id="homeProcessStepTitle">Resident reports waste</strong>
+            </p>
+            <p class="home-process-step-label" id="homeProcessStepLabel">Community reporting</p>
+            <p class="home-process-description" id="homeProcessDescription">Residents identify a waste problem and submit a report with its location and optional photo.</p>
+          </div>
+          <div class="home-process-controls" role="group" aria-label="How it works navigation">
+            <button class="home-process-nav" id="homeProcessPrevious" type="button" aria-label="Previous step" disabled>
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <button class="home-process-nav" id="homeProcessNext" type="button" aria-label="Next step">
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
       <script>
@@ -224,54 +191,106 @@
           if (!showcase) return;
 
           var featuredImage = document.getElementById('homeProcessFeaturedImage');
-          var previews = Array.prototype.slice.call(showcase.querySelectorAll('.home-process-preview'));
+          var incomingImage = document.getElementById('homeProcessIncomingImage');
           var stepNumber = document.getElementById('homeProcessStepNumber');
           var stepTitle = document.getElementById('homeProcessStepTitle');
           var stepLabel = document.getElementById('homeProcessStepLabel');
           var description = document.getElementById('homeProcessDescription');
-          var imageRequest = 0;
-
-          function selectStep(preview) {
-            if (preview.classList.contains('is-active')) return;
-
-            previews.forEach(function (item, index) {
-              var isActive = item === preview;
-              item.classList.toggle('is-active', isActive);
-              item.setAttribute('aria-pressed', String(isActive));
-            });
-
-            stepNumber.textContent = String(previews.indexOf(preview) + 1);
-            stepTitle.textContent = preview.dataset.title;
-            stepLabel.textContent = preview.dataset.label;
-            description.textContent = preview.dataset.description;
-
-            featuredImage.classList.add('is-changing');
-            var request = ++imageRequest;
-            function revealImage() {
-              if (request === imageRequest) featuredImage.classList.remove('is-changing');
+          var previousButton = document.getElementById('homeProcessPrevious');
+          var nextButton = document.getElementById('homeProcessNext');
+          var activeIndex = 0;
+          var isAnimating = false;
+          var steps = [
+            {
+              image: 'images/step%201.jpg',
+              alt: 'A resident photographs a waste problem on an Adama City street.',
+              title: 'Resident reports waste',
+              label: 'Community reporting',
+              description: 'Residents identify a waste problem and submit a report with its location and optional photo.'
+            },
+            {
+              image: 'images/Step%202%20(2).jpg',
+              alt: 'An administrator reviews sanitation reports and assigns a collection task on the map.',
+              title: 'Admin reviews and assigns',
+              label: 'Review & assignment',
+              description: 'The administrator reviews reports, verifies the details, and assigns collection tasks to the appropriate driver.'
+            },
+            {
+              image: 'images/stepp%203.jpg',
+              alt: 'Sanitation workers collect waste and clear a city street.',
+              title: 'Driver collects waste',
+              label: 'Execution and reporting',
+              description: 'The driver follows the assigned task, collects the waste, and updates its status with notes or evidence when appropriate.'
+            },
+            {
+              image: 'images/stepp%204.jpg',
+              alt: 'An administrator reviews submitted driver work and verifies the collection outcome.',
+              title: 'Collection is completed',
+              label: 'Status and outcome',
+              description: 'Residents can track collection-request status with their reference and phone number, while administrators review submitted work before closing reports.'
             }
-            featuredImage.onload = revealImage;
-            featuredImage.onerror = revealImage;
-            featuredImage.alt = preview.dataset.alt;
-            featuredImage.src = preview.dataset.image;
-            if (featuredImage.complete && featuredImage.naturalWidth) {
-              window.requestAnimationFrame(revealImage);
+          ];
+
+          function updateControls() {
+            previousButton.disabled = isAnimating || activeIndex === 0;
+            nextButton.disabled = isAnimating || activeIndex === steps.length - 1;
+          }
+
+          function updateDetails(step, index) {
+            stepNumber.textContent = String(index + 1);
+            stepTitle.textContent = step.title;
+            stepLabel.textContent = step.label;
+            description.textContent = step.description;
+          }
+
+          function navigate(direction) {
+            if (isAnimating) return;
+
+            var nextIndex = activeIndex + direction;
+            if (nextIndex < 0 || nextIndex >= steps.length) return;
+
+            var nextStep = steps[nextIndex];
+            var transitionStarted = false;
+            isAnimating = true;
+            updateControls();
+
+            function startTransition() {
+              if (transitionStarted) return;
+              transitionStarted = true;
+              activeIndex = nextIndex;
+              updateDetails(nextStep, activeIndex);
+              showcase.dataset.direction = direction > 0 ? 'next' : 'previous';
+              showcase.classList.add('is-transitioning');
+
+              var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              window.setTimeout(finishTransition, reducedMotion ? 0 : 520);
+            }
+
+            incomingImage.onload = startTransition;
+            incomingImage.onerror = function () {
+              incomingImage.removeAttribute('src');
+              isAnimating = false;
+              updateControls();
+              console.error('Unable to load How It Works image:', nextStep.image);
+            };
+            incomingImage.src = nextStep.image;
+            if (incomingImage.complete && incomingImage.naturalWidth) startTransition();
+
+            function finishTransition() {
+              if (!transitionStarted) return;
+              featuredImage.src = incomingImage.src;
+              featuredImage.alt = nextStep.alt;
+              incomingImage.removeAttribute('src');
+              showcase.classList.remove('is-transitioning');
+              delete showcase.dataset.direction;
+              isAnimating = false;
+              updateControls();
             }
           }
 
-          previews.forEach(function (preview) {
-            preview.addEventListener('mouseenter', function () { selectStep(preview); });
-            preview.addEventListener('focus', function () { selectStep(preview); });
-            preview.addEventListener('click', function () { selectStep(preview); });
-          });
-
-          window.setInterval(function () {
-            if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            var activeIndex = previews.findIndex(function (preview) {
-              return preview.classList.contains('is-active');
-            });
-            selectStep(previews[(activeIndex + 1) % previews.length]);
-          }, 3000);
+          previousButton.addEventListener('click', function () { navigate(-1); });
+          nextButton.addEventListener('click', function () { navigate(1); });
+          updateControls();
         }());
       </script>
     </div>
@@ -545,7 +564,7 @@
     <div class="section-header" data-aos="fade-up">
       <span class="section-tag">The Team</span>
       <h2>Built By</h2>
-      <p>Developed under the Adama City Administration Waste Management Initiative</p>
+      <p>Developed under the Adama City Administration Waste Management Initiative Internship Students</p>
     </div>
     <div class="team-grid">
       <div class="team-card" data-aos="fade-up" data-aos-delay="0">
@@ -556,7 +575,7 @@
       </div>
       <div class="team-card" data-aos="fade-up" data-aos-delay="100">
         <div class="team-avatar blue"><i class="fas fa-laptop-code"></i></div>
-        <h3>GIS Developer</h3>
+        <h3>Web Developer</h3>
         <p>Spatial Data &amp; Mapping Team</p>
         <span class="team-tag">Development</span>
       </div>

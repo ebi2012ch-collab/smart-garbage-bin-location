@@ -38,16 +38,6 @@
     </div>
   </header>
 
-  <!-- SETUP NOTICE â€” only visible until configured -->
-  <div class="setup-notice" id="setupNotice">
-    <i class="fas fa-info-circle"></i>
-    <span>
-      <strong>Setup Required:</strong> To receive real emails, follow the 3-step setup below the form.
-      Once configured, this bar disappears automatically.
-    </span>
-    <button onclick="document.getElementById('setupNotice').style.display='none'">Ã—</button>
-  </div>
-
   <!-- HERO -->
   <section class="page-hero">
     <div class="page-hero-content">
@@ -116,17 +106,17 @@
               <label for="cName">Full Name <span class="req">*</span></label>
               <div class="input-wrap">
                 <i class="fas fa-user"></i>
-                <input type="text" id="cName" name="from_name" placeholder="Your full name" required>
+                <input type="text" id="cName" name="from_name" placeholder="Your full name" aria-describedby="cNameErr" required>
               </div>
-              <span class="err" id="cNameErr"></span>
+              <span class="err" id="cNameErr" aria-live="polite"></span>
             </div>
             <div class="form-group">
               <label for="cEmail">Your Email <span class="req">*</span></label>
               <div class="input-wrap">
                 <i class="fas fa-envelope"></i>
-                <input type="email" id="cEmail" name="from_email" placeholder="your@email.com" required>
+                <input type="email" id="cEmail" name="from_email" placeholder="your@email.com" aria-describedby="cEmailErr" required>
               </div>
-              <span class="err" id="cEmailErr"></span>
+              <span class="err" id="cEmailErr" aria-live="polite"></span>
             </div>
           </div>
 
@@ -142,7 +132,7 @@
             <label for="cSubject">Subject <span class="req">*</span></label>
             <div class="input-wrap select-wrap">
               <i class="fas fa-tag"></i>
-              <select id="cSubject" name="subject" required>
+              <select id="cSubject" name="subject" aria-describedby="cSubjectErr" required>
                 <option value="" disabled selected>Select a subject</option>
                 <option value="Waste Collection Service">Waste Collection Service</option>
                 <option value="Bin Location Request">Bin Location Request</option>
@@ -154,16 +144,16 @@
               </select>
               <i class="fas fa-chevron-down select-arrow"></i>
             </div>
-            <span class="err" id="cSubjectErr"></span>
+            <span class="err" id="cSubjectErr" aria-live="polite"></span>
           </div>
 
           <div class="form-group">
             <label for="cMessage">Message <span class="req">*</span></label>
             <div class="textarea-wrap">
-              <textarea id="cMessage" name="message" rows="6"
+              <textarea id="cMessage" name="message" rows="6" aria-describedby="cMsgErr"
                 placeholder="Describe your issue or question in detailâ€¦" required></textarea>
             </div>
-            <span class="err" id="cMsgErr"></span>
+            <span class="err" id="cMsgErr" aria-live="polite"></span>
           </div>
 
           <!-- Honeypot anti-spam (hidden) -->
@@ -171,20 +161,20 @@
 
           <button type="submit" class="btn-submit" id="cSubmitBtn">
             <span class="btn-text"><i class="fas fa-paper-plane"></i> Send Message</span>
-            <span class="btn-loading" style="display:none">
-              <i class="fas fa-spinner fa-spin"></i> Sending real emailâ€¦
+            <span class="btn-loading" hidden>
+              <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Sending message…
             </span>
           </button>
 
+          <p class="contact-form-status" id="contactFormStatus" role="status" aria-live="polite" aria-atomic="true"></p>
           <p class="form-note">
             <i class="fas fa-lock"></i>
-            Your message is sent securely via EmailJS directly to our inbox.
-            No data is stored on any third-party server.
+            Your message is sent securely to the SmartBin team.
           </p>
         </form>
 
         <!-- SUCCESS -->
-        <div class="success-msg" id="cSuccessMsg" style="display:none">
+        <div class="success-msg" id="cSuccessMsg" hidden>
           <div class="success-icon"><i class="fas fa-check-circle"></i></div>
           <h3>Message Delivered!</h3>
           <p>Your message was sent to the SmartBin Adama City team. We will reply to <strong id="repliedEmail"></strong> within 24 hours.</p>
@@ -198,65 +188,6 @@
             <a href="index.html" class="btn-new" style="background:#f3f4f6;color:#1a1a2e;text-decoration:none">
               <i class="fas fa-home"></i> Back to Home
             </a>
-          </div>
-        </div>
-
-        <!-- EMAILJS SETUP GUIDE -->
-        <div class="setup-guide" id="setupGuide">
-          <div class="setup-header">
-            <i class="fas fa-tools"></i>
-            <h3>3-Step Email Setup (One Time, Free)</h3>
-            <button class="toggle-guide" id="toggleGuide">
-              <i class="fas fa-chevron-down"></i> Show Setup Steps
-            </button>
-          </div>
-          <div class="setup-steps" id="setupSteps" style="display:none">
-            <div class="setup-step">
-              <div class="step-circle">1</div>
-              <div>
-                <strong>Create Free EmailJS Account</strong>
-                <p>Go to <a href="https://www.emailjs.com" target="_blank" rel="noopener">emailjs.com</a> â†’ Sign Up Free â†’ Use your Gmail address</p>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="step-circle">2</div>
-              <div>
-                <strong>Connect Your Gmail & Get IDs</strong>
-                <p>Dashboard â†’ Email Services â†’ Add Gmail â†’ Note your <code>Service ID</code><br>
-                Then: Email Templates â†’ Create Template â†’ Note your <code>Template ID</code><br>
-                Then: Account â†’ General â†’ Note your <code>Public Key</code></p>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="step-circle">3</div>
-              <div>
-                <strong>Paste Your IDs into the Code Below</strong>
-                <p>Open <code>contact.html</code> â†’ Find the script at the bottom â†’ Replace the 3 placeholder values:</p>
-                <div class="code-block">
-<pre>var SERVICE_ID  = 'YOUR_SERVICE_ID';   // e.g. service_abc123
-var TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // e.g. template_xyz789
-var PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // e.g. user_AbCdEf</pre>
-                </div>
-                <p class="setup-done-note">
-                  <i class="fas fa-check-circle"></i>
-                  Save the file â†’ Done! The form now sends real emails to your Gmail.
-                </p>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="step-circle" style="background:#00c896">âœ“</div>
-              <div>
-                <strong>EmailJS Template Variables</strong>
-                <p>When creating your email template on EmailJS, use these exact variable names:</p>
-                <div class="code-block">
-<pre>From Name:    {{from_name}}
-From Email:   {{from_email}}
-Phone:        {{from_phone}}
-Subject:      {{subject}}
-Message:      {{message}}</pre>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -372,44 +303,53 @@ Message:      {{message}}</pre>
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   //  â–¶â–¶  STEP 3: PASTE YOUR EMAILJS IDs HERE  â—€â—€
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  var SERVICE_ID  = 'YOUR_SERVICE_ID';   // from emailjs.com â†’ Email Services
-  var TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // from emailjs.com â†’ Email Templates
-  var PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // from emailjs.com â†’ Account â†’ General
+  var SERVICE_ID = 'service_4d3bpgh';
+  var TEMPLATE_ID = 'template_t5j3j0m';
+  var PUBLIC_KEY = 'OSnRJoFlxD7gc4YUH';
+  var RECIPIENT_EMAIL = 'smartbinadamacity@gmail.com';
+  var isSubmitting = false;
+  var emailjsReady = false;
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   // Initialize EmailJS
   (function() {
-    if (PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-      emailjs.init({ publicKey: PUBLIC_KEY });
-      // Hide setup notice and guide when properly configured
-      var notice = document.getElementById('setupNotice');
-      var guide  = document.getElementById('setupGuide');
-      if (notice) notice.style.display = 'none';
-      if (guide)  guide.style.display  = 'none';
+    if (!window.emailjs) return;
+    try {
+      window.emailjs.init({ publicKey: PUBLIC_KEY });
+      emailjsReady = true;
+    } catch (error) {
+      console.error('EmailJS initialization failed:', error);
     }
   })();
 
-  // Toggle setup steps visibility
-  document.getElementById('toggleGuide').addEventListener('click', function() {
-    var steps = document.getElementById('setupSteps');
-    var icon  = this.querySelector('i');
-    if (steps.style.display === 'none') {
-      steps.style.display = 'block';
-      icon.className = 'fas fa-chevron-up';
-      this.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Setup Steps';
-    } else {
-      steps.style.display = 'none';
-      icon.className = 'fas fa-chevron-down';
-      this.innerHTML = '<i class="fas fa-chevron-down"></i> Show Setup Steps';
-    }
-  });
+  var contactForm = document.getElementById('contactForm');
+  var formStatus = document.getElementById('contactFormStatus');
+
+  function setFormStatus(message, state) {
+    formStatus.textContent = message;
+    formStatus.className = 'contact-form-status';
+    if (state) formStatus.classList.add('is-' + state);
+  }
+
+  function setSubmitting(submitting) {
+    isSubmitting = submitting;
+    var form = document.getElementById('contactForm');
+    var button = document.getElementById('cSubmitBtn');
+    form.setAttribute('aria-busy', String(submitting));
+    button.disabled = submitting;
+    button.querySelector('.btn-text').hidden = submitting;
+    button.querySelector('.btn-loading').hidden = !submitting;
+    button.classList.toggle('is-loading', submitting);
+  }
 
   // Contact form handler
-  document.getElementById('contactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+  contactForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    setFormStatus('', '');
 
     // Honeypot check
-    if (document.querySelector('input[name="_hp"]').value) return;
+    if (contactForm.querySelector('input[name="_hp"]').value) return;
 
     // Validate
     var ok      = true;
@@ -425,7 +365,7 @@ Message:      {{message}}</pre>
 
     if (!nameVal)  { document.getElementById('cNameErr').textContent = 'Full name is required.'; ok = false; }
     if (!emailVal) { document.getElementById('cEmailErr').textContent = 'Email address is required.'; ok = false; }
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+    else if (!document.getElementById('cEmail').validity.valid) {
       document.getElementById('cEmailErr').textContent = 'Enter a valid email address.'; ok = false;
     }
     if (!subjVal)  { document.getElementById('cSubjectErr').textContent = 'Please select a subject.'; ok = false; }
@@ -434,75 +374,81 @@ Message:      {{message}}</pre>
       document.getElementById('cMsgErr').textContent = 'Message must be at least 10 characters.'; ok = false;
     }
 
-    if (!ok) return;
+    var validationFields = [
+      [document.getElementById('cName'), document.getElementById('cNameErr')],
+      [document.getElementById('cEmail'), document.getElementById('cEmailErr')],
+      [document.getElementById('cSubject'), document.getElementById('cSubjectErr')],
+      [document.getElementById('cMessage'), document.getElementById('cMsgErr')]
+    ];
+    var firstInvalid = null;
+    validationFields.forEach(function(field) {
+      if (field[1].textContent) {
+        field[0].setAttribute('aria-invalid', 'true');
+        if (!firstInvalid) firstInvalid = field[0];
+      } else {
+        field[0].removeAttribute('aria-invalid');
+      }
+    });
 
-    // UI: loading state
-    var btn    = document.getElementById('cSubmitBtn');
-    var txtEl  = btn.querySelector('.btn-text');
-    var lodEl  = btn.querySelector('.btn-loading');
-    txtEl.style.display = 'none';
-    lodEl.style.display = 'flex';
-    btn.disabled = true;
-
-    // Check if EmailJS is configured
-    if (PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
-      // Demo mode â€” show what would happen
-      setTimeout(function() {
-        showSuccess(emailVal);
-        window.showToast && window.showToast('Demo mode â€” configure EmailJS to send real emails', 'info');
-      }, 1500);
+    if (!ok) {
+      firstInvalid.focus();
       return;
     }
+
+    // UI: loading state
+    if (!emailjsReady) {
+      setFormStatus('Email service is unavailable right now. Please try again later or email smartbinadamacity@gmail.com.', 'error');
+      return;
+    }
+
+    setSubmitting(true);
+    setFormStatus('Sending your message…', 'loading');
 
     // Real email send via EmailJS
     var templateParams = {
       from_name:  nameVal,
       from_email: emailVal,
-      from_phone: document.getElementById('cPhone').value.trim() || 'Not provided',
+      from_phone: document.getElementById('cPhone').value.trim(),
       subject:    subjVal,
       message:    msgVal,
       reply_to:   emailVal,
-      sent_time:  new Date().toLocaleString('en-ET', { timeZone: 'Africa/Addis_Ababa' })
+      to_email:   RECIPIENT_EMAIL
     };
 
-    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
-      .then(function(response) {
-        console.log('Email sent:', response.status);
+    window.emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
+      .then(function() {
+        setSubmitting(false);
+        setFormStatus('', '');
         showSuccess(emailVal);
-        window.showToast && window.showToast('Message sent to SmartBin team!', 'success');
       })
       .catch(function(error) {
         console.error('EmailJS error:', error);
-        // Reset button
-        txtEl.style.display = 'flex';
-        lodEl.style.display = 'none';
-        btn.disabled = false;
-        // Show error
-        document.getElementById('cMsgErr').textContent =
-          'Failed to send. Please try emailing us directly at smartbinadamacity@gmail.com';
-        window.showToast && window.showToast('Send failed â€” try direct email', 'error');
+        setSubmitting(false);
+        setFormStatus('We could not send your message. Please try again or email smartbinadamacity@gmail.com.', 'error');
       });
   });
 
   function showSuccess(email) {
-    document.getElementById('contactForm').style.display  = 'none';
-    document.getElementById('cSuccessMsg').style.display  = 'block';
+    document.getElementById('contactForm').hidden = true;
+    document.getElementById('cSuccessMsg').hidden = false;
     document.getElementById('repliedEmail').textContent   = email;
     document.getElementById('sentTime').textContent       =
       new Date().toLocaleString('en-ET', { timeZone: 'Africa/Addis_Ababa' });
   }
 
   function resetContactForm() {
-    document.getElementById('contactForm').reset();
-    document.getElementById('contactForm').style.display  = 'block';
-    document.getElementById('cSuccessMsg').style.display  = 'none';
+    contactForm.reset();
+    contactForm.hidden = false;
+    document.getElementById('cSuccessMsg').hidden = true;
     ['cNameErr','cEmailErr','cSubjectErr','cMsgErr'].forEach(function(id) {
       document.getElementById(id).textContent = '';
     });
-    var btn   = document.getElementById('cSubmitBtn');
-    btn.querySelector('.btn-text').style.display    = 'flex';
-    btn.querySelector('.btn-loading').style.display = 'none';
-    btn.disabled = false;
+    ['cName', 'cEmail', 'cSubject', 'cMessage'].forEach(function(id) {
+      document.getElementById(id).removeAttribute('aria-invalid');
+    });
+    setFormStatus('', '');
+    setSubmitting(false);
+    document.getElementById('cName').focus();
   }
   </script>
   <script>

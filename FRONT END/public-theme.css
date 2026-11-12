@@ -315,8 +315,7 @@ body.public-site .news-link:hover { color: var(--brand-forest); }
 body.public-site .home-stat-value,
 body.public-site .home-stat-label,
 body.public-site .home-process-step-heading { color: var(--brand-forest); }
-body.public-site .home-stat-icon,
-body.public-site .home-process-step-icon {
+body.public-site .home-stat-icon {
   color: var(--brand-deep-green);
   background: var(--brand-background-muted);
 }
@@ -324,19 +323,9 @@ body.public-site .home-stat-note,
 body.public-site .home-stats-status,
 body.public-site .home-process-step-label,
 body.public-site .home-process-description { color: var(--brand-muted); }
-body.public-site .home-process-preview {
-  border-color: var(--brand-border);
-  background: var(--brand-background-muted);
-  box-shadow: var(--brand-shadow-sm);
-}
-body.public-site .home-process-preview.is-active {
-  border-color: var(--brand-deep-green);
-  box-shadow: 0 0 0 3px rgba(30, 107, 62, .12), var(--brand-shadow-md);
-}
-body.public-site .home-process-preview:focus-visible { outline-color: var(--brand-deep-green); }
-body.public-site .home-process-preview-number {
-  border-color: rgba(255, 255, 255, .75);
-  background: rgba(15, 57, 36, .86);
+body.public-site .home-process-description {
+  color: var(--brand-forest);
+  font-family: Georgia, "Times New Roman", serif;
 }
 body.public-site .home-process-feature {
   border-color: var(--brand-border);
@@ -386,9 +375,84 @@ body.public-site .experience-section .app-download h2 { color: var(--brand-fores
 body.public-site .experience-section .app-download > p { color: var(--brand-muted); }
 body.public-site .experience-section .app-download .store-btn { background: var(--brand-forest); color: #fff; }
 body.public-site .about-cta { background: var(--brand-background-muted); }
-body.public-site .about-cta .cta-box { background: var(--brand-forest); }
-body.public-site .about-cta .cta-box h2,
-body.public-site .about-cta .cta-box p { color: #fff; }
+body.public-site .about-cta .cta-box {
+  max-width: 900px;
+  padding: clamp(32px, 5vw, 56px) clamp(22px, 5vw, 48px);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--brand-radius-lg);
+  background: linear-gradient(135deg, var(--brand-forest), var(--brand-deep-green));
+  box-shadow: var(--brand-shadow-md);
+}
+body.public-site .about-cta .cta-box > i {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 22px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: var(--brand-gold);
+  font-size: 26px;
+}
+body.public-site .about-cta .cta-box h2 {
+  margin-bottom: 12px;
+  color: #fff;
+  font-size: clamp(1.55rem, 3vw, 2.2rem);
+}
+body.public-site .about-cta .cta-box p {
+  max-width: 620px;
+  margin: 0 auto 26px;
+  color: rgba(255, 255, 255, .82);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+body.public-site .about-cta .cta-box .btn {
+  min-height: 50px;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: var(--brand-radius-sm);
+  font-size: .95rem;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+body.public-site .about-cta .cta-box .btn i {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1em;
+}
+body.public-site .about-cta .cta-box .btn-white {
+  border-color: #fff;
+  background: #fff;
+  color: var(--brand-forest);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .14);
+}
+body.public-site .about-cta .cta-box .btn-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
+}
+body.public-site .about-cta .cta-box .btn-outline-white {
+  border-color: rgba(255, 255, 255, .62);
+  background: transparent;
+  color: #fff;
+}
+body.public-site .about-cta .cta-box .btn-outline-white:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, .12);
+}
+@media (max-width: 520px) {
+  body.public-site .about-cta .cta-box > div {
+    gap: 10px !important;
+  }
+  body.public-site .about-cta .cta-box .btn {
+    width: 100%;
+  }
+}
 
 body.public-site :where(.contact-form-wrapper, .contact-info, .report-form-wrapper, .cf-card, .home-trust-card) {
   padding: clamp(22px, 4vw, 36px);
